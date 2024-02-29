@@ -1,0 +1,8 @@
+[package]
+name = "vec-utils"
+version = "0.1.0"
+edition = "2021"
+authors = ["Akari Harada <akaritwo0two@gmail.com>"]
+license = "GPL-3"
+
+[dependencies]

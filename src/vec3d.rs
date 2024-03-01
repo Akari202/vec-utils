@@ -11,6 +11,14 @@ impl Vec3d {
         Vec3d { x, y, z }
     }
 
+    pub fn new_from_to(from: &Vec3d, to: &Vec3d) -> Vec3d {
+        Vec3d {
+            x: to.x - from.x,
+            y: to.y - from.y,
+            z: to.z - from.z
+        }
+    }
+
     pub fn zero() -> Vec3d {
         Vec3d { x: 0.0, y: 0.0, z: 0.0 }
     }
@@ -209,5 +217,159 @@ mod tests {
         assert_eq!(v.x, 0.0);
         assert_eq!(v.y, 0.0);
         assert_eq!(v.z, 1.0);
+    }
+
+    #[test]
+    fn test_new_from_to() {
+        let from = Vec3d::new(1.0, 1.0, 1.0);
+        let to = Vec3d::new(2.0, 2.0, 2.0);
+        let v = Vec3d::new_from_to(&from, &to);
+        assert_eq!(v.x, 1.0);
+        assert_eq!(v.y, 1.0);
+        assert_eq!(v.z, 1.0);
+    }
+
+    #[test]
+    fn test_from_quat() {
+        let q = Quat::new(1.0, 2.0, 3.0, 4.0);
+        let v = Vec3d::from_quat(&q);
+        assert_eq!(v.x, 2.0);
+        assert_eq!(v.y, 3.0);
+        assert_eq!(v.z, 4.0);
+    }
+
+    #[test]
+    fn test_from_array() {
+        let arr = [1.0, 2.0, 3.0];
+        let v = Vec3d::from_array(&arr);
+        assert_eq!(v.x, 1.0);
+        assert_eq!(v.y, 2.0);
+        assert_eq!(v.z, 3.0);
+    }
+
+    #[test]
+    fn test_to_array() {
+        let v = Vec3d::new(1.0, 2.0, 3.0);
+        let arr = v.to_array();
+        assert_eq!(arr[0], 1.0);
+        assert_eq!(arr[1], 2.0);
+        assert_eq!(arr[2], 3.0);
+    }
+
+    #[test]
+    fn test_to_quat() {
+        let v = Vec3d::new(1.0, 2.0, 3.0);
+        let q = v.to_quat();
+        assert_eq!(q.w, 0.0);
+        assert_eq!(q.x, 1.0);
+        assert_eq!(q.y, 2.0);
+        assert_eq!(q.z, 3.0);
+    }
+
+    #[test]
+    fn test_from_vec() {
+        let v = Vec3d::from_vec(&vec![1.0, 2.0, 3.0]);
+        assert_eq!(v.x, 1.0);
+        assert_eq!(v.y, 2.0);
+        assert_eq!(v.z, 3.0);
+    }
+
+    #[test]
+    fn test_dot() {
+        let v1 = Vec3d::new(1.0, 2.0, 3.0);
+        let v2 = Vec3d::new(4.0, 5.0, 6.0);
+        assert_eq!(v1.dot(&v2), 32.0);
+    }
+
+    #[test]
+    fn test_cross() {
+        let v1 = Vec3d::new(1.0, 2.0, 3.0);
+        let v2 = Vec3d::new(4.0, 5.0, 6.0);
+        let v = v1.cross(&v2);
+        assert_eq!(v.x, -3.0);
+        assert_eq!(v.y, 6.0);
+        assert_eq!(v.z, -3.0);
+    }
+
+    #[test]
+    fn test_magnitude() {
+        let v = Vec3d::new(1.0, 2.0, 3.0);
+        assert_eq!(v.magnitude(), 3.7416573867739413);
+    }
+
+    #[test]
+    fn test_is_unit() {
+        let v = Vec3d::new(1.0, 2.0, 3.0);
+        assert_eq!(v.is_unit(), false);
+    }
+
+    #[test]
+    fn test_normalize() {
+        let v = Vec3d::new(1.0, 2.0, 3.0);
+        let n = v.normalize();
+        assert_eq!(n.x, 0.2672612419124244);
+        assert_eq!(n.y, 0.5345224838248488);
+        assert_eq!(n.z, 0.8017837257372732);
+    }
+
+    #[test]
+    fn test_angle_to() {
+        let v1 = Vec3d::k();
+        let v2 = Vec3d::i();
+        assert_eq!(v1.angle_to(&v2), 1.5707963267948966);
+    }
+
+    #[test]
+    fn test_scalar_triple_product() {
+        let v1 = Vec3d::new(1.0, 2.0, 3.0);
+        let v2 = Vec3d::new(4.0, 5.0, 6.0);
+        let v3 = Vec3d::new(7.0, 8.0, 9.0);
+        assert_eq!(Vec3d::scalar_triple_product(&v1, &v2, &v3), 0.0);
+    }
+
+    #[test]
+    fn test_add() {
+        let v1 = Vec3d::new(1.0, 2.0, 3.0);
+        let v2 = Vec3d::new(4.0, 5.0, 6.0);
+        let v = v1 + v2;
+        assert_eq!(v.x, 5.0);
+        assert_eq!(v.y, 7.0);
+        assert_eq!(v.z, 9.0);
+    }
+
+    #[test]
+    fn test_sub() {
+        let v1 = Vec3d::new(1.0, 2.0, 3.0);
+        let v2 = Vec3d::new(4.0, 5.0, 6.0);
+        let v = v1 - v2;
+        assert_eq!(v.x, -3.0);
+        assert_eq!(v.y, -3.0);
+        assert_eq!(v.z, -3.0);
+    }
+
+    #[test]
+    fn test_mul() {
+        let v1 = Vec3d::new(1.0, 2.0, 3.0);
+        let v = v1 * 2.0;
+        assert_eq!(v.x, 2.0);
+        assert_eq!(v.y, 4.0);
+        assert_eq!(v.z, 6.0);
+    }
+
+    #[test]
+    fn test_div() {
+        let v1 = Vec3d::new(1.0, 2.0, 3.0);
+        let v = v1 / 2.0;
+        assert_eq!(v.x, 0.5);
+        assert_eq!(v.y, 1.0);
+        assert_eq!(v.z, 1.5);
+    }
+
+    #[test]
+    fn test_index() {
+        let v = Vec3d::new(1.0, 2.0, 3.0);
+        assert_eq!(v[0], 1.0);
+        assert_eq!(v[1], 2.0);
+        assert_eq!(v[2], 3.0);
     }
 }

@@ -2,22 +2,26 @@ use crate::vec3d::Vec3d;
 
 /// A quaternion
 pub struct Quat {
+    /// The real component of the quaternion
     pub w: f64,
-    pub x: f64,
-    pub y: f64,
-    pub z: f64
+    /// The i component of the quaternion
+    pub i: f64,
+    /// The j component of the quaternion
+    pub j: f64,
+    /// The k component of the quaternion
+    pub k: f64
 }
 
 impl Quat {
     /// Create a new quaternion
-    pub fn new(w: f64, x: f64, y: f64, z: f64) -> Quat {
-        Quat { w, x, y, z }
+    pub fn new(w: f64, i: f64, j: f64, k: f64) -> Quat {
+        Quat { w, i, j, k }
     }
 
     /// Create a new identity quaternion
     /// i.e. a quaternion with a real component of 1 and imaginary components of 0
     pub fn identity() -> Quat {
-        Quat { w: 1.0, x: 0.0, y: 0.0, z: 0.0 }
+        Quat { w: 1.0, i: 0.0, j: 0.0, k: 0.0 }
     }
 
     /// Create a new quaternion from an axis and an angle
@@ -28,45 +32,45 @@ impl Quat {
         let s = half_angle.sin();
         Quat {
             w: half_angle.cos(),
-            x: axis[0] * s,
-            y: axis[1] * s,
-            z: axis[2] * s
+            i: axis[0] * s,
+            j: axis[1] * s,
+            k: axis[2] * s
         }
     }
 
     /// Create a new quaternion from a rotation matrix
     pub fn from_rotation_matrix(m: &[[f64; 3]; 3]) -> Quat {
         let w = (1.0 + m[0][0] + m[1][1] + m[2][2]).sqrt() / 2.0;
-        let x = (1.0 + m[0][0] - m[1][1] - m[2][2]).sqrt() / 2.0;
-        let y = (1.0 - m[0][0] + m[1][1] - m[2][2]).sqrt() / 2.0;
-        let z = (1.0 - m[0][0] - m[1][1] + m[2][2]).sqrt() / 2.0;
-        if w > x && w > y && w > z {
+        let i = (1.0 + m[0][0] - m[1][1] - m[2][2]).sqrt() / 2.0;
+        let j = (1.0 - m[0][0] + m[1][1] - m[2][2]).sqrt() / 2.0;
+        let k = (1.0 - m[0][0] - m[1][1] + m[2][2]).sqrt() / 2.0;
+        if w > i && w > j && w > k {
             Quat {
                 w,
-                x: (m[2][1] - m[1][2]) / (4.0 * w),
-                y: (m[0][2] - m[2][0]) / (4.0 * w),
-                z: (m[1][0] - m[0][1]) / (4.0 * w)
+                i: (m[2][1] - m[1][2]) / (4.0 * w),
+                j: (m[0][2] - m[2][0]) / (4.0 * w),
+                k: (m[1][0] - m[0][1]) / (4.0 * w)
             }
-        } else if x > y && x > z {
+        } else if i > j && i > k {
             Quat {
-                w: (m[2][1] - m[1][2]) / (4.0 * x),
-                x,
-                y: (m[0][1] + m[1][0]) / (4.0 * x),
-                z: (m[0][2] + m[2][0]) / (4.0 * x)
+                w: (m[2][1] - m[1][2]) / (4.0 * i),
+                i,
+                j: (m[0][1] + m[1][0]) / (4.0 * i),
+                k: (m[0][2] + m[2][0]) / (4.0 * i)
             }
-        } else if y > z {
+        } else if j > k {
             Quat {
-                w: (m[0][2] - m[2][0]) / (4.0 * y),
-                x: (m[0][1] + m[1][0]) / (4.0 * y),
-                y,
-                z: (m[1][2] + m[2][1]) / (4.0 * y)
+                w: (m[0][2] - m[2][0]) / (4.0 * j),
+                i: (m[0][1] + m[1][0]) / (4.0 * j),
+                j,
+                k: (m[1][2] + m[2][1]) / (4.0 * j)
             }
         } else {
             Quat {
-                w: (m[1][0] - m[0][1]) / (4.0 * z),
-                x: (m[0][2] + m[2][0]) / (4.0 * z),
-                y: (m[1][2] + m[2][1]) / (4.0 * z),
-                z
+                w: (m[1][0] - m[0][1]) / (4.0 * k),
+                i: (m[0][2] + m[2][0]) / (4.0 * k),
+                j: (m[1][2] + m[2][1]) / (4.0 * k),
+                k
             }
         }
     }
@@ -76,15 +80,15 @@ impl Quat {
     pub fn conjugate(&self) -> Quat {
         Quat {
             w: self.w,
-            x: -self.x,
-            y: -self.y,
-            z: -self.z
+            i: -self.i,
+            j: -self.j,
+            k: -self.k
         }
     }
 
     /// Calculate the magnitude of the quaternion
     pub fn magnitude(&self) -> f64 {
-        (self.w * self.w + self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+        (self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k).sqrt()
     }
 
     /// Check if the quaternion is a unit quaternion
@@ -99,9 +103,9 @@ impl Quat {
         } else {
             let angle = 2.0 * self.w.acos();
             let s = (angle / 2.0).sin();
-            let x = self.x / s;
-            let y = self.y / s;
-            let z = self.z / s;
+            let x = self.i / s;
+            let y = self.j / s;
+            let z = self.k / s;
             (Vec3d::new(x, y, z), angle)
         }
     }
@@ -110,26 +114,26 @@ impl Quat {
     /// the real component of the quaternion is discarded
     /// the imaginary components of the quaternion are used as the vector components
     pub fn to_vec(&self) -> Vec3d {
-        Vec3d::new(self.x, self.y, self.z)
+        Vec3d::new(self.i, self.j, self.k)
     }
 
     /// Convert the quaternion to a rotation matrix
     pub fn to_rotation_matrix(&self) -> [[f64; 3]; 3] {
         [
             [
-                1.0 - 2.0 * (self.y * self.y + self.z * self.z),
-                2.0 * (self.x * self.y - self.z * self.w),
-                2.0 * (self.x * self.z + self.y * self.w)
+                1.0 - 2.0 * (self.j * self.j + self.k * self.k),
+                2.0 * (self.i * self.j - self.k * self.w),
+                2.0 * (self.i * self.k + self.j * self.w)
             ],
             [
-                2.0 * (self.x * self.y + self.z * self.w),
-                1.0 - 2.0 * (self.x * self.x + self.z * self.z),
-                2.0 * (self.y * self.z - self.x * self.w)
+                2.0 * (self.i * self.j + self.k * self.w),
+                1.0 - 2.0 * (self.i * self.i + self.k * self.k),
+                2.0 * (self.j * self.k - self.i * self.w)
             ],
             [
-                2.0 * (self.x * self.z - self.y * self.w),
-                2.0 * (self.y * self.z + self.x * self.w),
-                1.0 - 2.0 * (self.x * self.x + self.y * self.y)
+                2.0 * (self.i * self.k - self.j * self.w),
+                2.0 * (self.j * self.k + self.i * self.w),
+                1.0 - 2.0 * (self.i * self.i + self.j * self.j)
             ]
         ]
     }
@@ -137,7 +141,7 @@ impl Quat {
     /// Rotate a vector by the quaternion
     /// this is an active rotation
     pub fn rotate(&self, v: &Vec3d) -> Vec3d {
-        let qv = Quat { w: 0.0, x: v.x, y: v.y, z: v.z };
+        let qv = Quat { w: 0.0, i: v.x, j: v.y, k: v.z };
         (self.conjugate() * qv * self).to_vec()
     }
 }
@@ -158,10 +162,10 @@ impl std::ops::Mul<&Quat> for Quat {
     /// also known as a Hamilton product
     fn mul(self, rhs: &Quat) -> Quat {
         Quat {
-            w: self.w * rhs.w - self.x * rhs.x - self.y * rhs.y - self.z * rhs.z,
-            x: self.w * rhs.x + self.x * rhs.w + self.y * rhs.z - self.z * rhs.y,
-            y: self.w * rhs.y + self.y * rhs.w + self.z * rhs.x - self.x * rhs.z,
-            z: self.w * rhs.z + self.z * rhs.w + self.x * rhs.y - self.y * rhs.x
+            w: self.w * rhs.w - self.i * rhs.i - self.j * rhs.j - self.k * rhs.k,
+            i: self.w * rhs.i + self.i * rhs.w + self.j * rhs.k - self.k * rhs.j,
+            j: self.w * rhs.j + self.j * rhs.w + self.k * rhs.i - self.i * rhs.k,
+            k: self.w * rhs.k + self.k * rhs.w + self.i * rhs.j - self.j * rhs.i
         }
     }
 }
@@ -175,9 +179,9 @@ impl std::ops::Index<usize> for Quat {
     fn index(&self, index: usize) -> &f64 {
         match index {
             0 => &self.w,
-            1 => &self.x,
-            2 => &self.y,
-            3 => &self.z,
+            1 => &self.i,
+            2 => &self.j,
+            3 => &self.k,
             _ => panic!("Index out of range")
         }
     }
@@ -191,18 +195,18 @@ mod tests {
     fn test_new() {
         let q = Quat::new(1.0, 2.0, 3.0, 4.0);
         assert_eq!(q.w, 1.0);
-        assert_eq!(q.x, 2.0);
-        assert_eq!(q.y, 3.0);
-        assert_eq!(q.z, 4.0);
+        assert_eq!(q.i, 2.0);
+        assert_eq!(q.j, 3.0);
+        assert_eq!(q.k, 4.0);
     }
 
     #[test]
     fn test_identity() {
         let q = Quat::identity();
         assert_eq!(q.w, 1.0);
-        assert_eq!(q.x, 0.0);
-        assert_eq!(q.y, 0.0);
-        assert_eq!(q.z, 0.0);
+        assert_eq!(q.i, 0.0);
+        assert_eq!(q.j, 0.0);
+        assert_eq!(q.k, 0.0);
     }
 
     #[test]
@@ -210,9 +214,9 @@ mod tests {
         let axis = Vec3d::i();
         let q = Quat::from_axis_angle(&axis, 0.0);
         assert_eq!(q.w, 1.0);
-        assert_eq!(q.x, 0.0);
-        assert_eq!(q.y, 0.0);
-        assert_eq!(q.z, 0.0);
+        assert_eq!(q.i, 0.0);
+        assert_eq!(q.j, 0.0);
+        assert_eq!(q.k, 0.0);
     }
 
     #[test]
@@ -224,9 +228,9 @@ mod tests {
         ];
         let q = Quat::from_rotation_matrix(&m);
         assert_eq!(q.w, 1.0);
-        assert_eq!(q.x, 0.0);
-        assert_eq!(q.y, 0.0);
-        assert_eq!(q.z, 0.0);
+        assert_eq!(q.i, 0.0);
+        assert_eq!(q.j, 0.0);
+        assert_eq!(q.k, 0.0);
     }
 
     #[test]
@@ -234,9 +238,9 @@ mod tests {
         let q = Quat::new(1.0, 2.0, 3.0, 4.0);
         let c = q.conjugate();
         assert_eq!(c.w, 1.0);
-        assert_eq!(c.x, -2.0);
-        assert_eq!(c.y, -3.0);
-        assert_eq!(c.z, -4.0);
+        assert_eq!(c.i, -2.0);
+        assert_eq!(c.j, -3.0);
+        assert_eq!(c.k, -4.0);
     }
 
     #[test]
@@ -301,9 +305,9 @@ mod tests {
         let q2 = Quat::new(5.0, 6.0, 7.0, 8.0);
         let q = q1 * q2;
         assert_eq!(q.w, -60.0);
-        assert_eq!(q.x, 12.0);
-        assert_eq!(q.y, 30.0);
-        assert_eq!(q.z, 24.0);
+        assert_eq!(q.i, 12.0);
+        assert_eq!(q.j, 30.0);
+        assert_eq!(q.k, 24.0);
     }
 
     #[test]

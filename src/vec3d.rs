@@ -2,8 +2,11 @@ use crate::quat::Quat;
 
 /// A 3D vector
 pub struct Vec3d {
+    /// The x component of the vector
     pub x: f64,
+    /// The y component of the vector
     pub y: f64,
+    /// The z component of the vector
     pub z: f64
 }
 
@@ -47,9 +50,9 @@ impl Vec3d {
     /// the real component of the quaternion is ignored
     pub fn from_quat(q: &Quat) -> Vec3d {
         Vec3d {
-            x: q.x,
-            y: q.y,
-            z: q.z
+            x: q.i,
+            y: q.j,
+            z: q.k
         }
     }
 
@@ -73,9 +76,9 @@ impl Vec3d {
     pub fn to_quat(&self) -> Quat {
         Quat {
             w: 0.0,
-            x: self.x,
-            y: self.y,
-            z: self.z
+            i: self.x,
+            j: self.y,
+            k: self.z
         }
     }
 
@@ -292,9 +295,9 @@ mod tests {
         let v = Vec3d::new(1.0, 2.0, 3.0);
         let q = v.to_quat();
         assert_eq!(q.w, 0.0);
-        assert_eq!(q.x, 1.0);
-        assert_eq!(q.y, 2.0);
-        assert_eq!(q.z, 3.0);
+        assert_eq!(q.i, 1.0);
+        assert_eq!(q.j, 2.0);
+        assert_eq!(q.k, 3.0);
     }
 
     #[test]

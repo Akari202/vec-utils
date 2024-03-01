@@ -1,5 +1,6 @@
 use crate::quat::Quat;
 
+/// A 3D vector
 pub struct Vec3d {
     pub x: f64,
     pub y: f64,
@@ -7,10 +8,12 @@ pub struct Vec3d {
 }
 
 impl Vec3d {
+    /// Create a new Vec3d
     pub fn new(x: f64, y: f64, z: f64) -> Vec3d {
         Vec3d { x, y, z }
     }
 
+    /// Create a new Vec3d from a start point to an end point
     pub fn new_from_to(from: &Vec3d, to: &Vec3d) -> Vec3d {
         Vec3d {
             x: to.x - from.x,
@@ -19,22 +22,29 @@ impl Vec3d {
         }
     }
 
+    /// Create a new Vec3d with all components set to 0
     pub fn zero() -> Vec3d {
         Vec3d { x: 0.0, y: 0.0, z: 0.0 }
     }
 
+    /// Create a new Vec3d of the i unit vector
     pub fn i() -> Vec3d {
         Vec3d { x: 1.0, y: 0.0, z: 0.0 }
     }
 
+    /// Create a new Vec3d of the j unit vector
     pub fn j() -> Vec3d {
         Vec3d { x: 0.0, y: 1.0, z: 0.0 }
     }
 
+    /// Create a new Vec3d of the k unit vector
     pub fn k() -> Vec3d {
         Vec3d { x: 0.0, y: 0.0, z: 1.0 }
     }
 
+    /// Create a new Vec3d from a quaternion
+    /// the imaginary components of the quaternion are used as the x, y, and z components of the vector
+    /// the real component of the quaternion is ignored
     pub fn from_quat(q: &Quat) -> Vec3d {
         Vec3d {
             x: q.x,
@@ -43,6 +53,7 @@ impl Vec3d {
         }
     }
 
+    /// Create a new Vec3d from an array
     pub fn from_array(arr: &[f64; 3]) -> Vec3d {
         Vec3d {
             x: arr[0],
@@ -51,10 +62,14 @@ impl Vec3d {
         }
     }
 
+    /// Convert the Vec3d to an array
     pub fn to_array(&self) -> [f64; 3] {
         [self.x, self.y, self.z]
     }
 
+    /// Convert the Vec3d to a quaternion
+    /// the x, y, and z components of the vector are used as the imaginary components of the quaternion
+    /// the real component of the quaternion is set to 0
     pub fn to_quat(&self) -> Quat {
         Quat {
             w: 0.0,
@@ -64,6 +79,7 @@ impl Vec3d {
         }
     }
 
+    /// Convert the Vec3d to a vector of f64
     pub fn from_vec(v: &Vec<f64>) -> Vec3d {
         Vec3d {
             x: v[0],
@@ -72,10 +88,12 @@ impl Vec3d {
         }
     }
 
+    /// Calculate the dot product of two Vec3d
     pub fn dot(&self, other: &Vec3d) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
+    /// Calculate the cross product of two Vec3d
     pub fn cross(&self, other: &Vec3d) -> Vec3d {
         Vec3d {
             x: self.y * other.z - self.z * other.y,
@@ -84,14 +102,17 @@ impl Vec3d {
         }
     }
 
+    /// Calculate the magnitude of the Vec3d
     pub fn magnitude(&self) -> f64 {
         (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
+    /// Check if the Vec3d is a unit vector
     pub fn is_unit(&self) -> bool {
         self.magnitude() == 1.0
     }
 
+    /// Return a new Vec3d of the normalized vector
     pub fn normalize(&self) -> Vec3d {
         let magnitude = self.magnitude();
         Vec3d {
@@ -101,14 +122,17 @@ impl Vec3d {
         }
     }
 
+    /// Calculate the angle between two Vec3d's
     pub fn angle_to(&self, other: &Vec3d) -> f64 {
         self.dot(other).acos() / (self.magnitude() * other.magnitude())
     }
 
+    /// Calculate the scalar triple product of three Vec3d's
     pub fn scalar_triple_product(a: &Vec3d, b: &Vec3d, c: &Vec3d) -> f64 {
         a.dot(&b.cross(&c))
     }
 
+    // im not sure if i want to have duplicate functions like this
     // pub fn angle_between(a: &Vec3d, b: &Vec3d) -> f64 {
     //     a.dot(b).acos() / (a.magnitude() * b.magnitude())
     // }
@@ -117,6 +141,7 @@ impl Vec3d {
 impl std::ops::Add for Vec3d {
     type Output = Vec3d;
 
+    /// Add two Vec3d's together component-wise
     fn add(self, other: Vec3d) -> Vec3d {
         Vec3d {
             x: self.x + other.x,
@@ -129,6 +154,7 @@ impl std::ops::Add for Vec3d {
 impl std::ops::Sub for Vec3d {
     type Output = Vec3d;
 
+    /// Subtract one Vec3d from another component-wise
     fn sub(self, other: Vec3d) -> Vec3d {
         Vec3d {
             x: self.x - other.x,
@@ -141,6 +167,7 @@ impl std::ops::Sub for Vec3d {
 impl std::ops::Mul<f64> for Vec3d {
     type Output = Vec3d;
 
+    /// Multiply a Vec3d by a scalar
     fn mul(self, other: f64) -> Vec3d {
         Vec3d {
             x: self.x * other,
@@ -153,6 +180,7 @@ impl std::ops::Mul<f64> for Vec3d {
 impl std::ops::Div<f64> for Vec3d {
     type Output = Vec3d;
 
+    /// Divide a Vec3d by a scalar
     fn div(self, other: f64) -> Vec3d {
         Vec3d {
             x: self.x / other,
@@ -165,6 +193,9 @@ impl std::ops::Div<f64> for Vec3d {
 impl std::ops::Index<usize> for Vec3d {
     type Output = f64;
 
+    /// Index into a Vec3d
+    /// 0 is x, 1 is y, 2 is z
+    /// Panics if the index is out of bounds
     fn index(&self, index: usize) -> &f64 {
         match index {
             0 => &self.x,

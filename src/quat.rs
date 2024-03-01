@@ -1,5 +1,6 @@
 use crate::vec3d::Vec3d;
 
+/// A quaternion
 pub struct Quat {
     pub w: f64,
     pub x: f64,
@@ -8,14 +9,20 @@ pub struct Quat {
 }
 
 impl Quat {
+    /// Create a new quaternion
     pub fn new(w: f64, x: f64, y: f64, z: f64) -> Quat {
         Quat { w, x, y, z }
     }
 
+    /// Create a new identity quaternion
+    /// i.e. a quaternion with a real component of 1 and imaginary components of 0
     pub fn identity() -> Quat {
         Quat { w: 1.0, x: 0.0, y: 0.0, z: 0.0 }
     }
 
+    /// Create a new quaternion from an axis and an angle
+    /// representing a rotation of the given angle around the given axis
+    /// the resulting quaternion is definitionally a unit quaternion
     pub fn from_axis_angle(axis: &Vec3d, angle: f64) -> Quat {
         let half_angle = angle / 2.0;
         let s = half_angle.sin();
@@ -27,6 +34,7 @@ impl Quat {
         }
     }
 
+    /// Create a new quaternion from a rotation matrix
     pub fn from_rotation_matrix(m: &[[f64; 3]; 3]) -> Quat {
         let w = (1.0 + m[0][0] + m[1][1] + m[2][2]).sqrt() / 2.0;
         let x = (1.0 + m[0][0] - m[1][1] - m[2][2]).sqrt() / 2.0;
@@ -63,6 +71,8 @@ impl Quat {
         }
     }
 
+    /// Calculate the conjugate of the quaternion
+    /// i.e. the quaternion with the same real component and negated imaginary components
     pub fn conjugate(&self) -> Quat {
         Quat {
             w: self.w,
@@ -72,14 +82,17 @@ impl Quat {
         }
     }
 
+    /// Calculate the magnitude of the quaternion
     pub fn magnitude(&self) -> f64 {
         (self.w * self.w + self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
     }
 
+    /// Check if the quaternion is a unit quaternion
     pub fn is_unit(&self) -> bool {
         self.magnitude() == 1.0
     }
 
+    /// Convert the quaternion to an axis and an angle
     pub fn to_axis_angle(&self) -> (Vec3d, f64) {
         return if self.w == 1.0 {
             (Vec3d::i(), 0.0)
@@ -93,10 +106,14 @@ impl Quat {
         }
     }
 
+    /// Convert the quaternion to a vector
+    /// the real component of the quaternion is discarded
+    /// the imaginary components of the quaternion are used as the vector components
     pub fn to_vec(&self) -> Vec3d {
         Vec3d::new(self.x, self.y, self.z)
     }
 
+    /// Convert the quaternion to a rotation matrix
     pub fn to_rotation_matrix(&self) -> [[f64; 3]; 3] {
         [
             [
@@ -117,6 +134,8 @@ impl Quat {
         ]
     }
 
+    /// Rotate a vector by the quaternion
+    /// this is an active rotation
     pub fn rotate(&self, v: &Vec3d) -> Vec3d {
         let qv = Quat { w: 0.0, x: v.x, y: v.y, z: v.z };
         (self.conjugate() * qv * self).to_vec()
@@ -126,6 +145,7 @@ impl Quat {
 impl std::ops::Mul for Quat {
     type Output = Quat;
 
+    /// Multiply two quaternions
     fn mul(self, rhs: Quat) -> Quat {
         self.mul(&rhs)
     }
@@ -134,6 +154,8 @@ impl std::ops::Mul for Quat {
 impl std::ops::Mul<&Quat> for Quat {
     type Output = Quat;
 
+    /// Multiply two quaternions
+    /// also known as a Hamilton product
     fn mul(self, rhs: &Quat) -> Quat {
         Quat {
             w: self.w * rhs.w - self.x * rhs.x - self.y * rhs.y - self.z * rhs.z,
@@ -147,6 +169,9 @@ impl std::ops::Mul<&Quat> for Quat {
 impl std::ops::Index<usize> for Quat {
     type Output = f64;
 
+    /// Index into a quaternion
+    /// 0 is w, 1 is x, 2 is y, 3 is z
+    /// Panics if the index is out of bounds
     fn index(&self, index: usize) -> &f64 {
         match index {
             0 => &self.w,

@@ -1,10 +1,5 @@
-mod vec3d;
-mod quat;
-
-mod prelude {
-    pub use crate::vec3d::Vec3d;
-    pub use crate::quat::Quat;
-}
+pub mod vec3d;
+pub mod quat;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right

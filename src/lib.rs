@@ -15,3 +15,4 @@ pub mod quat;
 pub mod matrix;
 /// Complex number operations and functions
 pub mod complex;
+pub mod units;

@@ -6,3 +6,4 @@ authors = ["Akari Harada <akaritwo0two@gmail.com>"]
 license = "GPL-3"
 
 [dependencies]
+

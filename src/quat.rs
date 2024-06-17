@@ -187,6 +187,13 @@ impl std::ops::Index<usize> for Quat {
     }
 }
 
+impl std::fmt::Display for Quat {
+    /// Format the quaternion as a string
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "({}, {}, {}, {})", self.w, self.i, self.j, self.k)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

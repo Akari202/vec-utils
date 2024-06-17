@@ -1,6 +1,7 @@
 use crate::quat::Quat;
 
 /// A 3D vector
+#[derive(Debug, Copy, Clone)]
 pub struct Vec3d {
     /// The x component of the vector
     pub x: f64,
@@ -82,13 +83,20 @@ impl Vec3d {
         }
     }
 
-    /// Convert the Vec3d to a vector of f64
+    /// Create a new Vec3d from a Vec of f64
+    /// the Vec should have a length of 3
+    /// any additional elements will be ignored
     pub fn from_vec(v: &Vec<f64>) -> Vec3d {
         Vec3d {
             x: v[0],
             y: v[1],
             z: v[2]
         }
+    }
+
+    /// Convert the Vec3d to a Vec of f64 with length 3
+    pub fn to_vec(&self) -> Vec<f64> {
+        vec![self.x, self.y, self.z]
     }
 
     /// Calculate the dot product of two Vec3d
@@ -126,8 +134,9 @@ impl Vec3d {
     }
 
     /// Calculate the angle between two Vec3d's
+    /// the result is in radians
     pub fn angle_to(&self, other: &Vec3d) -> f64 {
-        self.dot(other).acos() / (self.magnitude() * other.magnitude())
+        (self.dot(other) / (self.magnitude() * other.magnitude())).acos()
     }
 
     /// Calculate the scalar triple product of three Vec3d's
@@ -135,10 +144,21 @@ impl Vec3d {
         a.dot(&b.cross(&c))
     }
 
+    /// Calculate the distance to another Vec3d
+    pub fn distance_to(&self, other: &Vec3d) -> f64 {
+        (self - other).magnitude()
+    }
+
     // im not sure if i want to have duplicate functions like this
     // pub fn angle_between(a: &Vec3d, b: &Vec3d) -> f64 {
     //     a.dot(b).acos() / (a.magnitude() * b.magnitude())
     // }
+
+    /// Project a Vec3d onto a plane defined by a normal vector
+    /// the normal vector should be a unit vector
+    pub fn project_onto_plane(&self, normal: &Vec3d) -> Vec3d {
+        self - normal * self.dot(normal)
+    }
 }
 
 impl std::ops::Add for Vec3d {
@@ -146,10 +166,50 @@ impl std::ops::Add for Vec3d {
 
     /// Add two Vec3d's together component-wise
     fn add(self, other: Vec3d) -> Vec3d {
+        &self + &other
+    }
+}
+
+impl std::ops::Add<&Vec3d> for Vec3d {
+    type Output = Vec3d;
+
+    /// Add two Vec3d's together component-wise
+    fn add(self, other: &Vec3d) -> Vec3d {
+        &self + other
+    }
+}
+
+impl std::ops::Add<Vec3d> for &Vec3d {
+    type Output = Vec3d;
+
+    /// Add two Vec3d's together component-wise
+    fn add(self, other: Vec3d) -> Vec3d {
+        self + &other
+    }
+}
+
+impl std::ops::Add<&Vec3d> for &Vec3d {
+    type Output = Vec3d;
+
+    /// Add two Vec3d's together component-wise
+    fn add(self, other: &Vec3d) -> Vec3d {
         Vec3d {
             x: self.x + other.x,
             y: self.y + other.y,
             z: self.z + other.z
+        }
+    }
+}
+
+impl std::ops::Sub<&Vec3d> for &Vec3d {
+    type Output = Vec3d;
+
+    /// Subtract one Vec3d from another component-wise
+    fn sub(self, other: &Vec3d) -> Vec3d {
+        Vec3d {
+            x: self.x - other.x,
+            y: self.y - other.y,
+            z: self.z - other.z
         }
     }
 }
@@ -159,15 +219,38 @@ impl std::ops::Sub for Vec3d {
 
     /// Subtract one Vec3d from another component-wise
     fn sub(self, other: Vec3d) -> Vec3d {
-        Vec3d {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z
-        }
+        &self - &other
+    }
+}
+
+impl std::ops::Sub<&Vec3d> for Vec3d {
+    type Output = Vec3d;
+
+    /// Subtract one Vec3d from another component-wise
+    fn sub(self, other: &Vec3d) -> Vec3d {
+        &self - other
+    }
+}
+
+impl std::ops::Sub<Vec3d> for &Vec3d {
+    type Output = Vec3d;
+
+    /// Subtract one Vec3d from another component-wise
+    fn sub(self, other: Vec3d) -> Vec3d {
+        self - &other
     }
 }
 
 impl std::ops::Mul<f64> for Vec3d {
+    type Output = Vec3d;
+
+    /// Multiply a Vec3d by a scalar
+    fn mul(self, other: f64) -> Vec3d {
+        &self * other
+    }
+}
+
+impl std::ops::Mul<f64> for &Vec3d {
     type Output = Vec3d;
 
     /// Multiply a Vec3d by a scalar
@@ -177,6 +260,15 @@ impl std::ops::Mul<f64> for Vec3d {
             y: self.y * other,
             z: self.z * other
         }
+    }
+}
+
+impl std::ops::Mul<Vec3d> for f64 {
+    type Output = Vec3d;
+
+    /// Multiply a Vec3d by a scalar
+    fn mul(self, other: Vec3d) -> Vec3d {
+        other * self
     }
 }
 
@@ -206,6 +298,13 @@ impl std::ops::Index<usize> for Vec3d {
             2 => &self.z,
             _ => panic!("Index out of bounds")
         }
+    }
+}
+
+impl std::fmt::Display for Vec3d {
+    /// Format the Vec3d as a string
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "({}, {}, {})", self.x, self.y, self.z)
     }
 }
 
@@ -309,6 +408,15 @@ mod tests {
     }
 
     #[test]
+    fn test_to_vec() {
+        let v = Vec3d::new(1.0, 2.0, 3.0);
+        let vec = v.to_vec();
+        assert_eq!(vec[0], 1.0);
+        assert_eq!(vec[1], 2.0);
+        assert_eq!(vec[2], 3.0);
+    }
+
+    #[test]
     fn test_dot() {
         let v1 = Vec3d::new(1.0, 2.0, 3.0);
         let v2 = Vec3d::new(4.0, 5.0, 6.0);
@@ -359,6 +467,23 @@ mod tests {
         let v2 = Vec3d::new(4.0, 5.0, 6.0);
         let v3 = Vec3d::new(7.0, 8.0, 9.0);
         assert_eq!(Vec3d::scalar_triple_product(&v1, &v2, &v3), 0.0);
+    }
+
+    #[test]
+    fn test_distance_to() {
+        let v1 = Vec3d::new(1.0, 1.0, 1.0);
+        let v2 = Vec3d::new(1.0, 1.0, 6.0);
+        assert_eq!(v1.distance_to(&v2), 5.0);
+    }
+
+    #[test]
+    fn test_project_onto_plane() {
+        let v = Vec3d::new(1.0, 2.0, 3.0);
+        let n = Vec3d::new(0.0, 0.0, 1.0);
+        let p = v.project_onto_plane(&n);
+        assert_eq!(p.x, 1.0);
+        assert_eq!(p.y, 2.0);
+        assert_eq!(p.z, 0.0);
     }
 
     #[test]

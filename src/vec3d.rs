@@ -1,3 +1,4 @@
+use crate::angle::AngleRadians;
 use crate::quat::Quat;
 
 /// A 3D vector
@@ -135,8 +136,8 @@ impl Vec3d {
 
     /// Calculate the angle between two Vec3d's
     /// the result is in radians
-    pub fn angle_to(&self, other: &Vec3d) -> f64 {
-        (self.dot(other) / (self.magnitude() * other.magnitude())).acos()
+    pub fn angle_to(&self, other: &Vec3d) -> AngleRadians {
+        AngleRadians::new((self.dot(other) / (self.magnitude() * other.magnitude())).acos())
     }
 
     /// Calculate the scalar triple product of three Vec3d's
@@ -458,7 +459,7 @@ mod tests {
     fn test_angle_to() {
         let v1 = Vec3d::k();
         let v2 = Vec3d::i();
-        assert_eq!(v1.angle_to(&v2), 1.5707963267948966);
+        assert_eq!(v1.angle_to(&v2), std::f64::consts::FRAC_PI_2.into());
     }
 
     #[test]

@@ -48,8 +48,6 @@ pub mod matrix2x2{
 
 /// Functions for working with 3x3 matrices
 pub mod matrix3x3 {
-    use crate::complex::Complex;
-
     /// Calculate the determinant of a 3x3 matrix
     pub fn determinant(matrix: &[[f64; 3]; 3]) -> f64 {
         matrix[0][0] * matrix[1][1] * matrix[2][2] +
@@ -200,6 +198,7 @@ pub mod matrix4x4 {
 mod tests {
     mod tests2x2 {
         use super::super::matrix2x2;
+
         #[test]
         fn test_matrix2x2_determinant() {
             let matrix = [
@@ -238,6 +237,7 @@ mod tests {
 
     mod tests3x3 {
         use super::super::matrix3x3;
+
         #[test]
         fn test_matrix3x3_determinant() {
             let matrix = [
@@ -345,6 +345,7 @@ mod tests {
 
     mod tests4x4 {
         use super::super::matrix4x4;
+
         #[test]
         fn test_matrix4x4_determinant() {
             let matrix = [

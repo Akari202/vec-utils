@@ -1,6 +1,8 @@
+use crate::angle::AngleRadians;
 use crate::vec3d::Vec3d;
 
 /// A quaternion
+#[derive(Copy, Clone)]
 pub struct Quat {
     /// The real component of the quaternion
     pub w: f64,
@@ -27,8 +29,9 @@ impl Quat {
     /// Create a new quaternion from an axis and an angle
     /// representing a rotation of the given angle around the given axis
     /// the resulting quaternion is definitionally a unit quaternion
-    pub fn from_axis_angle(axis: &Vec3d, angle: f64) -> Quat {
-        let half_angle = angle / 2.0;
+    pub fn from_axis_angle(axis: &Vec3d, angle: impl Into<AngleRadians>) -> Quat {
+        let angle: AngleRadians = angle.into();
+        let half_angle: AngleRadians = angle / 2.0;
         let s = half_angle.sin();
         Quat {
             w: half_angle.cos(),
@@ -97,16 +100,16 @@ impl Quat {
     }
 
     /// Convert the quaternion to an axis and an angle
-    pub fn to_axis_angle(&self) -> (Vec3d, f64) {
+    pub fn to_axis_angle(&self) -> (Vec3d, AngleRadians) {
         return if self.w == 1.0 {
-            (Vec3d::i(), 0.0)
+            (Vec3d::i(), 0.0.into())
         } else {
             let angle = 2.0 * self.w.acos();
             let s = (angle / 2.0).sin();
             let x = self.i / s;
             let y = self.j / s;
             let z = self.k / s;
-            (Vec3d::new(x, y, z), angle)
+            (Vec3d::new(x, y, z), angle.into())
         }
     }
 
@@ -269,7 +272,7 @@ mod tests {
         assert_eq!(axis.x, 1.0);
         assert_eq!(axis.y, 0.0);
         assert_eq!(axis.z, 0.0);
-        assert_eq!(angle, 0.0);
+        assert_eq!(angle, 0.0.into());
     }
 
     #[test]

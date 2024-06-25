@@ -17,3 +17,5 @@ pub mod matrix;
 pub mod complex;
 /// Units and unit conversions
 pub mod units;
+/// Angles and angle conversions
+pub mod angle;

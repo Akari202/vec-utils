@@ -1,13 +1,13 @@
 use std::f64::consts::PI;
 
 /// An angle in degrees
-#[derive(Debug, PartialOrd, PartialEq)]
+#[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]
 pub struct AngleDegrees {
     angle: f64
 }
 
 /// An angle in radians, f64 is assumed to be in radians
-#[derive(Debug, PartialOrd, PartialEq)]
+#[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]
 pub struct AngleRadians {
     angle: f64
 }
@@ -183,6 +183,14 @@ impl std::ops::Mul<f64> for AngleRadians {
     }
 }
 
+impl std::ops::Mul<f64> for AngleDegrees {
+    type Output = AngleDegrees;
+
+    fn mul(self, rhs: f64) -> AngleDegrees {
+        AngleDegrees::new(self.angle * rhs)
+    }
+}
+
 impl std::ops::Add<AngleRadians> for AngleRadians {
     type Output = AngleRadians;
 
@@ -196,6 +204,42 @@ impl std::ops::Sub<AngleRadians> for AngleRadians {
 
     fn sub(self, rhs: AngleRadians) -> AngleRadians {
         (self.angle - rhs.angle).into()
+    }
+}
+
+impl std::ops::Neg for AngleRadians {
+    type Output = AngleRadians;
+
+    fn neg(self) -> AngleRadians {
+        (-self.angle).into()
+    }
+}
+
+impl std::ops::Neg for AngleDegrees {
+    type Output = AngleDegrees;
+
+    fn neg(self) -> AngleDegrees {
+        AngleDegrees::new(-self.angle)
+    }
+}
+
+impl std::fmt::Display for AngleRadians {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        if let Some(precision) = f.precision() {
+            write!(f, "{:.1$} radians", self.angle, precision)
+        } else {
+            write!(f, "{} radians", self.angle)
+        }
+    }
+}
+
+impl std::fmt::Display for AngleDegrees {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        if let Some(precision) = f.precision() {
+            write!(f, "{:.1$}°", self.angle, precision)
+        } else {
+            write!(f, "{}°", self.angle)
+        }
     }
 }
 

@@ -2,7 +2,7 @@ use crate::angle::AngleRadians;
 use crate::quat::Quat;
 
 /// A 3D vector
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec3d {
     /// The x component of the vector
     pub x: f64,
@@ -150,6 +150,18 @@ impl Vec3d {
         (self - other).magnitude()
     }
 
+    /// Calculate the distance from a point to a line
+    /// the line is defined by two points
+    /// the result is the shortest distance from the point to the line as a positive scalar
+    /// the line is treated as infinite
+    pub fn distance_to_line(&self, a: &Vec3d, b: &Vec3d) -> f64 {
+        let ab = b - a;
+        let ap = self - a;
+        let t = ap.dot(&ab) / ab.dot(&ab);
+        let projection = a + ab * t;
+        (self - projection).magnitude()
+    }
+
     // im not sure if i want to have duplicate functions like this
     // pub fn angle_between(a: &Vec3d, b: &Vec3d) -> f64 {
     //     a.dot(b).acos() / (a.magnitude() * b.magnitude())
@@ -283,6 +295,18 @@ impl std::ops::Div<f64> for Vec3d {
             y: self.y / other,
             z: self.z / other
         }
+    }
+}
+
+impl std::ops::Neg for Vec3d {
+    type Output = Vec3d;
+
+    fn neg(self) -> Vec3d {
+        Vec3d::new(
+            -self.x,
+            -self.y,
+            -self.z
+        )
     }
 }
 
@@ -475,6 +499,14 @@ mod tests {
         let v1 = Vec3d::new(1.0, 1.0, 1.0);
         let v2 = Vec3d::new(1.0, 1.0, 6.0);
         assert_eq!(v1.distance_to(&v2), 5.0);
+    }
+
+    #[test]
+    fn test_distance_to_line() {
+        let v1 = Vec3d::new(1.0, 1.0, 0.0);
+        let v2 = Vec3d::new(1.0, 1.0, 6.0);
+        let v3 = Vec3d::new(1.0, 0.0, 3.0);
+        assert_eq!(v3.distance_to_line(&v1, &v2), 1.0);
     }
 
     #[test]

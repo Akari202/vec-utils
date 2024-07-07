@@ -19,3 +19,5 @@ pub mod complex;
 pub mod units;
 /// Angles and angle conversions
 pub mod angle;
+/// 3d geometry operations and functions
+pub mod geometry;

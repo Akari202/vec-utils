@@ -29,8 +29,9 @@ impl Quat {
     /// Create a new quaternion from an axis and an angle
     /// representing a rotation of the given angle around the given axis
     /// the resulting quaternion is definitionally a unit quaternion
+    /// the angle is positive for a counter-clockwise rotation
     pub fn from_axis_angle(axis: &Vec3d, angle: impl Into<AngleRadians>) -> Quat {
-        let angle: AngleRadians = angle.into();
+        let angle: AngleRadians = -angle.into();
         let half_angle: AngleRadians = angle / 2.0;
         let s = half_angle.sin();
         Quat {

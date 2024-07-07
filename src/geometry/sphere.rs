@@ -13,7 +13,7 @@ impl Sphere {
     /// Create a new sphere
     pub fn new(center: &Vec3d, radius: f64) -> Sphere {
         Sphere {
-            center: center.clone(),
+            center: *center,
             radius: radius.abs()
         }
     }

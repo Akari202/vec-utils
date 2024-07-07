@@ -58,15 +58,6 @@ impl Vec3d {
         }
     }
 
-    /// Create a new Vec3d from an array
-    pub fn from_array(arr: &[f64; 3]) -> Vec3d {
-        Vec3d {
-            x: arr[0],
-            y: arr[1],
-            z: arr[2]
-        }
-    }
-
     /// Convert the Vec3d to an array
     pub fn to_array(&self) -> [f64; 3] {
         [self.x, self.y, self.z]
@@ -84,10 +75,10 @@ impl Vec3d {
         }
     }
 
-    /// Create a new Vec3d from a Vec of f64
-    /// the Vec should have a length of 3
+    /// Create a new Vec3d from a slice of f64s
+    /// the slice should have a length of 3
     /// any additional elements will be ignored
-    pub fn from_vec(v: &Vec<f64>) -> Vec3d {
+    pub fn from_slice(v: &[f64]) -> Vec3d {
         Vec3d {
             x: v[0],
             y: v[1],
@@ -121,7 +112,7 @@ impl Vec3d {
 
     /// Check if the Vec3d is a unit vector
     pub fn is_unit(&self) -> bool {
-        self.magnitude() == 1.0
+        (self.magnitude() - 1.0).abs() < f64::EPSILON
     }
 
     /// Return a new Vec3d of the normalized vector
@@ -142,7 +133,7 @@ impl Vec3d {
 
     /// Calculate the scalar triple product of three Vec3d's
     pub fn scalar_triple_product(a: &Vec3d, b: &Vec3d, c: &Vec3d) -> f64 {
-        a.dot(&b.cross(&c))
+        a.dot(&b.cross(c))
     }
 
     /// Calculate the distance to another Vec3d
@@ -397,15 +388,6 @@ mod tests {
     }
 
     #[test]
-    fn test_from_array() {
-        let arr = [1.0, 2.0, 3.0];
-        let v = Vec3d::from_array(&arr);
-        assert_eq!(v.x, 1.0);
-        assert_eq!(v.y, 2.0);
-        assert_eq!(v.z, 3.0);
-    }
-
-    #[test]
     fn test_to_array() {
         let v = Vec3d::new(1.0, 2.0, 3.0);
         let arr = v.to_array();
@@ -425,8 +407,13 @@ mod tests {
     }
 
     #[test]
-    fn test_from_vec() {
-        let v = Vec3d::from_vec(&vec![1.0, 2.0, 3.0]);
+    fn test_from_slice() {
+        let v = Vec3d::from_slice(&vec![1.0, 2.0, 3.0]);
+        assert_eq!(v.x, 1.0);
+        assert_eq!(v.y, 2.0);
+        assert_eq!(v.z, 3.0);
+        let arr = [1.0, 2.0, 3.0];
+        let v = Vec3d::from_slice(&arr);
         assert_eq!(v.x, 1.0);
         assert_eq!(v.y, 2.0);
         assert_eq!(v.z, 3.0);

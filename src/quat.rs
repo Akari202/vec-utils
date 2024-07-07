@@ -97,12 +97,12 @@ impl Quat {
 
     /// Check if the quaternion is a unit quaternion
     pub fn is_unit(&self) -> bool {
-        self.magnitude() == 1.0
+        (self.magnitude() - 1.0).abs() < f64::EPSILON
     }
 
     /// Convert the quaternion to an axis and an angle
     pub fn to_axis_angle(&self) -> (Vec3d, AngleRadians) {
-        return if self.w == 1.0 {
+        if (self.w - 1.0).abs() < f64::EPSILON {
             (Vec3d::i(), 0.0.into())
         } else {
             let angle = 2.0 * self.w.acos();

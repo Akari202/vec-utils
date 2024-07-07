@@ -20,7 +20,7 @@ impl Plane {
 
     /// Create a new plane from a normal and a point on the plane
     pub fn from_point(normal: &Vec3d, point: &Vec3d) -> Plane {
-        let distance = -normal.dot(&point);
+        let distance = -normal.dot(point);
         Plane {
             normal: normal.normalize(),
             distance

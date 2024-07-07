@@ -1,9 +1,11 @@
 #![deny(missing_docs)]
 #![warn(clippy::pedantic)]
+#![allow(clippy::must_use_candidate, clippy::many_single_char_names, clippy::return_self_not_must_use)]
 //! A library for 3D vector, quaternion, and matrix operations
 //! this library was created because i kept reusing the same code in multiple projects
 //! and i wanted to have a single place to maintain and update the code
-//! making new projects much easier to start
+//! this library is not focused on performance
+//! I have since added geometry stuff too!
 
 /// 3D vector operations and functions
 pub mod vec3d;

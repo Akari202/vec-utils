@@ -8,7 +8,7 @@ use crate::vec3d::Vec3d;
 /// if the spheres are identical None is returned
 /// or None if the spheres do not intersect either because they are too far apart or one is contained within the other
 /// if the circles touch at a single point a degenerate circle is returned
-pub fn sphere_sphere_intersection(sphere1: &Sphere, sphere2: &Sphere) -> Option<Circle> {
+pub fn sphere_sphere(sphere1: &Sphere, sphere2: &Sphere) -> Option<Circle> {
     if sphere1 == sphere2 {
         return None;
     }
@@ -34,13 +34,12 @@ pub fn sphere_sphere_intersection(sphere1: &Sphere, sphere2: &Sphere) -> Option<
 /// Calculate the intersection of a sphere and a plane
 /// Returns the circle of intersection
 /// or None if the sphere does not intersect the plane
-pub fn sphere_plane_intersection(sphere: &Sphere, plane: &Plane) -> Option<Circle> {
+pub fn sphere_plane(sphere: &Sphere, plane: &Plane) -> Option<Circle> {
     let distance = plane.distance_to_point(&sphere.center);
     if distance.abs() > sphere.radius {
-        println!("distance: {}", distance);
         return None;
     }
-    if distance.abs() == sphere.radius {
+    if (distance.abs() - sphere.radius).abs() < f64::EPSILON {
         let circle_center = sphere.center - plane.normal * distance;
         return Some(Circle::new(&circle_center, 0.0, &plane.normal));
     }
@@ -57,7 +56,7 @@ pub fn sphere_plane_intersection(sphere: &Sphere, plane: &Plane) -> Option<Circl
 /// If the circles intersect at one point, the same point is returned twice
 /// If the circles intersect at two points,
 /// if the circles are identical and have infinite points of intersection, None is returned
-pub fn circle_circle_intersection(circle1: &Circle, circle2: &Circle) -> Option<(Vec3d, Vec3d)> {
+pub fn circle_circle(circle1: &Circle, circle2: &Circle) -> Option<(Vec3d, Vec3d)> {
     if circle1 == circle2 {
         return None;
     }
@@ -85,18 +84,18 @@ pub fn circle_circle_intersection(circle1: &Circle, circle2: &Circle) -> Option<
 /// Calculate the intersection of a sphere and a circle
 /// Returns none if there is no intersection or the intersection is the entire circle
 /// if there is one point of intersection it is returned twice
-pub fn sphere_circle_intersection(sphere: &Sphere, circle: &Circle) -> Option<(Vec3d, Vec3d)> {
+pub fn sphere_circle(sphere: &Sphere, circle: &Circle) -> Option<(Vec3d, Vec3d)> {
     let circle_plane = circle.get_plane();
-    let sphere_circle = sphere_plane_intersection(sphere, &circle_plane)?;
+    let sphere_circle = sphere_plane(sphere, &circle_plane)?;
     if sphere_circle.is_degenerate() {
         let intersection_distance = circle.center.distance_to(&sphere_circle.center);
-        return if intersection_distance == circle.radius {
+        return if (intersection_distance - circle.radius).abs() < f64::EPSILON {
             Some((sphere_circle.center, sphere_circle.center))
         } else {
             None
         }
     }
-    circle_circle_intersection(&sphere_circle, circle)
+    circle_circle(&sphere_circle, circle)
 }
 
 #[cfg(test)]
@@ -118,7 +117,7 @@ mod tests {
         let sphere4 = Sphere::new(&-center3, 2.0);
         let floating_point_error = 0.0000000000000002;
         assert_eq!(
-            sphere_sphere_intersection(&sphere1, &sphere2).unwrap(),
+            sphere_sphere(&sphere1, &sphere2).unwrap(),
             Circle::new(
                 &Vec3d::new(0.0, 1.0, 1.0),
                 0.0,
@@ -126,7 +125,7 @@ mod tests {
             )
         );
         assert_eq!(
-            sphere_sphere_intersection(&sphere3, &sphere4).unwrap(),
+            sphere_sphere(&sphere3, &sphere4).unwrap(),
             Circle::new(
                 &Vec3d::zero(),
                 2.0 * AngleRadians::sixth_pi().cos() - floating_point_error,
@@ -142,7 +141,7 @@ mod tests {
         let plane1 = Plane::new(&Vec3d::k(), 0.0);
         let plane2 = Plane::new(&Vec3d::k(), 1.0);
         assert_eq!(
-            sphere_plane_intersection(&sphere, &plane1).unwrap(),
+            sphere_plane(&sphere, &plane1).unwrap(),
             Circle::new(
                 &Vec3d::new(0.0, 0.0, 0.0),
                 0.0,
@@ -150,7 +149,7 @@ mod tests {
             )
         );
         assert_eq!(
-            sphere_plane_intersection(&sphere, &plane2).unwrap(),
+            sphere_plane(&sphere, &plane2).unwrap(),
             Circle::new(
                 &Vec3d::new(0.0, 0.0, 1.0),
                 1.0,
@@ -167,14 +166,14 @@ mod tests {
         let circle2 = Circle::new(&center2, 1.0, &Vec3d::i());
         let circle3 = Circle::new(&center2, 1.0, &Vec3d::j());
         assert_eq!(
-            circle_circle_intersection(&circle1, &circle2).unwrap(),
+            circle_circle(&circle1, &circle2).unwrap(),
             (
                 Vec3d::new(0.0, 3.0_f64.sqrt() / -2.0, 0.5),
                 Vec3d::new(0.0, 3.0_f64.sqrt() / 2.0, 0.5)
             )
         );
         assert_eq!(
-            circle_circle_intersection(&circle1, &circle3),
+            circle_circle(&circle1, &circle3),
             None
         );
     }
@@ -186,14 +185,14 @@ mod tests {
         let circle1 = Circle::new(&Vec3d::new(1.0, 0.0, 0.0), 1.0, &Vec3d::k());
         let circle2 = Circle::new(&Vec3d::new(1.0, 0.0, 1.0), 1.0, &Vec3d::k());
         assert_eq!(
-            sphere_circle_intersection(&sphere, &circle1).unwrap(),
+            sphere_circle(&sphere, &circle1).unwrap(),
             (
                 Vec3d::new(0.0, 0.0, 0.0),
                 Vec3d::new(0.0, 0.0, 0.0)
             )
         );
         assert_eq!(
-            sphere_circle_intersection(&sphere, &circle2),
+            sphere_circle(&sphere, &circle2),
             None
         );
     }

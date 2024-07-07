@@ -16,7 +16,7 @@ impl Circle {
     /// Create a new circle
     pub fn new(center: &Vec3d, radius: f64, normal: &Vec3d) -> Circle {
         Circle {
-            center: center.clone(),
+            center: *center,
             radius: radius.abs(),
             normal: normal.normalize()
         }
@@ -32,7 +32,7 @@ impl Circle {
         if self.normal == other.normal || self.normal == -other.normal {
             let self_distance = -self.normal.dot(&self.center);
             let other_distance = -other.normal.dot(&other.center);
-            if self_distance == other_distance {
+            if (self_distance - other_distance).abs() < f64::EPSILON {
                 return true;
             }
         }

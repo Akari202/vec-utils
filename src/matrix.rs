@@ -48,6 +48,8 @@ pub mod matrix2x2{
 
 /// Functions for working with 3x3 matrices
 pub mod matrix3x3 {
+    use crate::vec3d::Vec3d;
+
     /// Calculate the determinant of a 3x3 matrix
     pub fn determinant(matrix: &[[f64; 3]; 3]) -> f64 {
         matrix[0][0] * matrix[1][1] * matrix[2][2] +
@@ -121,6 +123,16 @@ pub mod matrix3x3 {
         dbg!(cofactor_matrix);
         dbg!(transpose_matrix);
         transpose_matrix
+    }
+
+    /// Vector multiplication of a matrix with a Vec3d
+    pub fn mul(matrix: &[[f64; 3]; 3], vector: &Vec3d) -> Vec3d {
+        let mut result: [f64; 3] = [0.0; 3];
+        for (i, j) in matrix.iter().enumerate() {
+            // result[i] = vector.dot(Vec3d::from_slice(j));
+            result[i] = Vec3d::from_slice(j).dot(vector);
+        }
+        Vec3d::from_slice(&result)
     }
 
     // Calculate the eigenvalues of a 3x3 matrix

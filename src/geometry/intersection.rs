@@ -44,7 +44,9 @@ pub fn sphere_plane(sphere: &Sphere, plane: &Plane) -> Option<Circle> {
         return Some(Circle::new(&circle_center, 0.0, &plane.normal));
     }
     let circle_radius = (sphere.radius.powi(2) - distance.powi(2)).sqrt();
-    let circle_center = sphere.center + plane.normal * distance;
+    // WARN: idk why this needs to be the way it is
+    let circle_center = sphere.center - plane.normal * distance;
+    // dbg!(sphere, circle_radius, circle_center, plane.normal * distance, plane, distance);
     Some(Circle::new(&circle_center, circle_radius, &plane.normal))
 }
 
@@ -57,6 +59,8 @@ pub fn sphere_plane(sphere: &Sphere, plane: &Plane) -> Option<Circle> {
 /// If the circles intersect at two points,
 /// if the circles are identical and have infinite points of intersection, None is returned
 pub fn circle_circle(circle1: &Circle, circle2: &Circle) -> Option<(Vec3d, Vec3d)> {
+    // dbg!(circle1);
+    // dbg!(circle2);
     if circle1 == circle2 {
         return None;
     }
@@ -96,6 +100,16 @@ pub fn sphere_circle(sphere: &Sphere, circle: &Circle) -> Option<(Vec3d, Vec3d)>
         }
     }
     circle_circle(&sphere_circle, circle)
+}
+
+/// Calculate the intersection of a line and a plane
+/// Returns none if there is no intersection or the line is in the plane
+/// Line is defined by two points
+pub fn plane_line(plane: &Plane, a: &Vec3d, b: &Vec3d) -> Option<Vec3d> {
+    let ba = b - a;
+    let t = (plane.distance - plane.normal.x * a.x + plane.normal.y * a.y + plane.normal.z * a.z) /
+        (plane.normal.x * ba.x + plane.normal.y * ba.y + plane.normal.z * ba.z);
+    Some(a + t * (b - a))
 }
 
 #[cfg(test)]

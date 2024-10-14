@@ -153,15 +153,18 @@ impl Vec3d {
         (self - projection).magnitude()
     }
 
-    // im not sure if i want to have duplicate functions like this
-    // pub fn angle_between(a: &Vec3d, b: &Vec3d) -> f64 {
-    //     a.dot(b).acos() / (a.magnitude() * b.magnitude())
-    // }
-
     /// Project a Vec3d onto a plane defined by a normal vector
     /// the normal vector should be a unit vector
     pub fn project_onto_plane(&self, normal: &Vec3d) -> Vec3d {
         self - normal * self.dot(normal)
+    }
+
+    /// Project a Vec3d onto a line
+    /// returns the closest point on the line defined by two points
+    /// to the point
+    pub fn project_onto_line(&self, line_r: &Vec3d, line_q: &Vec3d) -> Vec3d {
+        let t = (line_r - line_q).dot(&(line_q - self)) / (line_r - line_q).dot(&(line_r - line_q));
+        line_q - t * (line_r - line_q)
     }
 }
 

@@ -50,6 +50,6 @@ impl Plane {
 
     /// Get the unsigned distance from a point to the plane
     pub fn distance_to_point(&self, point: &Vec3d) -> f64 {
-        self.normal.x * point.x + self.normal.y * point.y + self.normal.z * point.z - self.distance
+        self.normal.x * point.x + self.normal.y * point.y + self.normal.z * point.z + self.distance
     }
 }

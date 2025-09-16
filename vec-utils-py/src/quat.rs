@@ -47,6 +47,32 @@ impl Quat {
         (v.x, v.y, v.z)
     }
 
+    fn is_unit(&self) -> bool {
+        self.inner.is_unit()
+    }
+
+    fn to_axis_angle(&self) -> (Vec3d, AngleRadians) {
+        let result = self.inner.to_axis_angle();
+        (
+            Vec3d {
+                inner: result.0
+            },
+            AngleRadians {
+                inner: result.1
+            }
+        )
+    }
+
+    fn to_rotation_matrix(&self) -> [[f64; 3]; 3] {
+        self.inner.to_rotation_matrix()
+    }
+
+    fn rotate(&self, v: &Vec3d) -> Vec3d {
+        Vec3d {
+            inner: self.inner.rotate(&v.inner)
+        }
+    }
+
     fn __repr__(&self) -> String {
         format!(
             "Quat({}, {}, {}, {})",

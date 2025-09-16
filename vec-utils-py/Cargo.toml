@@ -1,0 +1,14 @@
+[package]
+name = "vec-utils-py"
+version = "0.1.2"
+edition = "2024"
+authors = ["Akari Harada <akaritwo0two@gmail.com>"]
+license = "GPL-3"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "vec_utils_py"
+
+[dependencies]
+pyo3 = { version = "0.26.0", features = ["extension-module"] }
+vec-utils = { path = "../vec-utils" }

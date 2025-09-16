@@ -4,7 +4,7 @@ use pyo3::prelude::*;
 use vec_utils::*;
 
 #[pyclass]
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Quat {
     pub inner: quat::Quat
 }

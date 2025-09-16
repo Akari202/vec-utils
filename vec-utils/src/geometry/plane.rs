@@ -1,7 +1,7 @@
 use crate::vec3d::Vec3d;
 
 /// A plane in 3D space
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub struct Plane {
     /// The normal vector of the plane
     pub normal: Vec3d,

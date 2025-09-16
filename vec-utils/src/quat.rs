@@ -2,7 +2,7 @@ use crate::angle::AngleRadians;
 use crate::vec3d::Vec3d;
 
 /// A quaternion
-#[derive(Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Quat {
     /// The real component of the quaternion
     pub w: f64,

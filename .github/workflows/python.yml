@@ -18,11 +18,12 @@ on:
 permissions:
   contents: read
 
+defaults:
+ run:
+  working-directory: ./vec-utils-py/
+
 jobs:
   linux:
-    defaults:
-      run:
-        working-directory: ./vec-utils-py/
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -58,9 +59,6 @@ jobs:
           path: dist
 
   musllinux:
-    defaults:
-      run:
-        working-directory: ./vec-utils-py/
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -92,9 +90,6 @@ jobs:
           path: dist
 
   windows:
-    defaults:
-      run:
-        working-directory: ./vec-utils-py/
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -122,9 +117,6 @@ jobs:
           path: dist
 
   macos:
-    defaults:
-      run:
-        working-directory: ./vec-utils-py/
     runs-on: ${{ matrix.platform.runner }}
     strategy:
       matrix:
@@ -151,9 +143,6 @@ jobs:
           path: dist
 
   sdist:
-    defaults:
-      run:
-        working-directory: ./vec-utils-py/
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -169,9 +158,6 @@ jobs:
           path: dist
 
   release:
-    defaults:
-      run:
-        working-directory: ./vec-utils-py/
     name: Release
     runs-on: ubuntu-latest
     if: ${{ startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch' }}

@@ -19,6 +19,36 @@ impl Circle {
         }
     }
 
+    #[getter]
+    pub fn center(&self) -> Vec3d {
+        Vec3d { inner: self.inner.center }
+    }
+
+    #[getter]
+    pub fn normal(&self) -> Vec3d {
+        Vec3d { inner: self.inner.normal }
+    }
+
+    #[getter]
+    pub fn radius(&self) -> f64 {
+        self.inner.radius
+    }
+
+    #[setter]
+    pub fn set_radius(&mut self, value: f64) {
+        self.inner.radius = value;
+    }
+
+    #[setter]
+    pub fn set_center(&mut self, value: Vec3d) {
+        self.inner.center = value.inner;
+    }
+
+    #[setter]
+    pub fn set_normal(&mut self, value: Vec3d) {
+        self.inner.normal = value.inner;
+    }
+
     fn get_plane(&self) -> Plane {
         Plane {
             inner: self.inner.get_plane()

@@ -53,6 +53,26 @@ impl Plane {
         }
     }
 
+    #[getter]
+    pub fn normal(&self) -> Vec3d {
+        Vec3d { inner: self.inner.normal }
+    }
+
+    #[getter]
+    pub fn distance(&self) -> f64 {
+        self.inner.distance
+    }
+
+    #[setter]
+    pub fn set_distance(&mut self, value: f64) {
+        self.inner.distance = value;
+    }
+
+    #[setter]
+    pub fn set_normal(&mut self, value: Vec3d) {
+        self.inner.normal = value.inner;
+    }
+
     fn distance_to_point(&self, point: &Vec3d) -> f64 {
         self.inner.distance_to_point(&point.inner)
     }

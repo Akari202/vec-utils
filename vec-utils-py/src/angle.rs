@@ -53,6 +53,16 @@ impl AngleRadians {
         }
     }
 
+    #[getter]
+    pub fn angle(&self) -> f64 {
+        self.inner.angle
+    }
+
+    #[setter]
+    pub fn set_angle(&mut self, value: f64) {
+        self.inner.angle = value;
+    }
+
     pub fn sin(&self) -> f64 {
         self.inner.sin()
     }

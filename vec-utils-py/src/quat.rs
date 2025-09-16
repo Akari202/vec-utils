@@ -32,6 +32,40 @@ impl Quat {
         }
     }
 
+    #[getter]
+    pub fn w(&self) -> f64 {
+        self.inner.w
+    }
+    #[getter]
+    pub fn i(&self) -> f64 {
+        self.inner.i
+    }
+    #[getter]
+    pub fn j(&self) -> f64 {
+        self.inner.j
+    }
+    #[getter]
+    pub fn k(&self) -> f64 {
+        self.inner.k
+    }
+
+    #[setter]
+    pub fn set_w(&mut self, value: f64) {
+        self.inner.w = value;
+    }
+    #[setter]
+    pub fn set_i(&mut self, value: f64) {
+        self.inner.i = value;
+    }
+    #[setter]
+    pub fn set_j(&mut self, value: f64) {
+        self.inner.j = value;
+    }
+    #[setter]
+    pub fn set_k(&mut self, value: f64) {
+        self.inner.k = value;
+    }
+
     fn conjugate(&self) -> Self {
         Quat {
             inner: self.inner.conjugate()

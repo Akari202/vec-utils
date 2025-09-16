@@ -9,7 +9,8 @@ pub struct AngleDegrees {
 /// An angle in radians, f64 is assumed to be in radians
 #[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]
 pub struct AngleRadians {
-    angle: f64
+    /// The angle in radians
+    pub angle: f64
 }
 
 impl AngleRadians {

@@ -4,3 +4,6 @@ version = "0.1.2"
 edition = "2024"
 authors = ["Akari Harada <akaritwo0two@gmail.com>"]
 license = "GPL-3"
+
+[lib]
+name = "vec_utils"

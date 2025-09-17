@@ -13,5 +13,6 @@ name = "vec_utils_py"
 pyo3 = { version = "0.26.0", features = [
   "extension-module",
   "generate-import-lib",
+  "experimental-inspect"
 ] }
 vec-utils = { path = "../vec-utils" }

@@ -1,4 +1,3 @@
-use super::super::angle::AngleRadians;
 use super::super::vec3d::Vec3d;
 use super::plane::Plane;
 use pyo3::prelude::*;
@@ -21,12 +20,16 @@ impl Circle {
 
     #[getter]
     pub fn center(&self) -> Vec3d {
-        Vec3d { inner: self.inner.center }
+        Vec3d {
+            inner: self.inner.center
+        }
     }
 
     #[getter]
     pub fn normal(&self) -> Vec3d {
-        Vec3d { inner: self.inner.normal }
+        Vec3d {
+            inner: self.inner.normal
+        }
     }
 
     #[getter]

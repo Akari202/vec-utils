@@ -1,3 +1,5 @@
+use core::f64;
+
 use crate::vec3d::Vec3d;
 
 /// A plane in 3D space
@@ -51,5 +53,10 @@ impl Plane {
     /// Get the unsigned distance from a point to the plane
     pub fn distance_to_point(&self, point: &Vec3d) -> f64 {
         self.normal.x * point.x + self.normal.y * point.y + self.normal.z * point.z + self.distance
+    }
+
+    /// Calculate if a point lies on the plane
+    pub fn contains_point(&self, point: &Vec3d) -> bool {
+        self.distance_to_point(point) < f64::EPSILON
     }
 }

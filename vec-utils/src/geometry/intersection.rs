@@ -24,11 +24,17 @@ pub fn sphere_sphere(sphere1: &Sphere, sphere2: &Sphere) -> Option<Circle> {
     // let circle_radius = (sphere1.radius.powi(2) - sphere2.radius.powi(2) + center_distance.powi(2)) / (2.0 * center_distance);
     // let circle_center = sphere1.center + (sphere2.center - sphere1.center) * (circle_radius / center_distance);
 
-    let h = 0.5 + (sphere1.radius.powi(2) - sphere2.radius.powi(2)) / (2.0 * center_distance.powi(2));
-    let radius_of_intersection = (sphere1.radius.powi(2) - h.powi(2) * center_distance.powi(2)).sqrt();
+    let h =
+        0.5 + (sphere1.radius.powi(2) - sphere2.radius.powi(2)) / (2.0 * center_distance.powi(2));
+    let radius_of_intersection =
+        (sphere1.radius.powi(2) - h.powi(2) * center_distance.powi(2)).sqrt();
     let center_of_intersection = sphere1.center + h * (sphere2.center - sphere1.center);
     let circle_normal = (sphere2.center - sphere1.center).normalize();
-    Some(Circle::new(&center_of_intersection, radius_of_intersection, &circle_normal))
+    Some(Circle::new(
+        &center_of_intersection,
+        radius_of_intersection,
+        &circle_normal
+    ))
 }
 
 /// Calculate the intersection of a sphere and a plane
@@ -76,9 +82,13 @@ pub fn circle_circle(circle1: &Circle, circle2: &Circle) -> Option<(Vec3d, Vec3d
     if center_distance < radius_diff {
         return None;
     }
-    let h = 0.5 + (circle1.radius.powi(2) - circle2.radius.powi(2)) / (2.0 * center_distance.powi(2));
-    let radius_of_intersection = (circle1.radius.powi(2) - h.powi(2) * center_distance.powi(2)).sqrt();
-    let t = (circle2.center - circle1.center).cross(&circle2.normal).normalize();
+    let h =
+        0.5 + (circle1.radius.powi(2) - circle2.radius.powi(2)) / (2.0 * center_distance.powi(2));
+    let radius_of_intersection =
+        (circle1.radius.powi(2) - h.powi(2) * center_distance.powi(2)).sqrt();
+    let t = (circle2.center - circle1.center)
+        .cross(&circle2.normal)
+        .normalize();
     let center_of_intersection = circle1.center + h * (circle2.center - circle1.center);
     let point1 = center_of_intersection + t * radius_of_intersection;
     let point2 = center_of_intersection - t * radius_of_intersection;
@@ -97,7 +107,7 @@ pub fn sphere_circle(sphere: &Sphere, circle: &Circle) -> Option<(Vec3d, Vec3d)>
             Some((sphere_circle.center, sphere_circle.center))
         } else {
             None
-        }
+        };
     }
     circle_circle(&sphere_circle, circle)
 }
@@ -107,18 +117,49 @@ pub fn sphere_circle(sphere: &Sphere, circle: &Circle) -> Option<(Vec3d, Vec3d)>
 /// Line is defined by two points
 pub fn plane_line(plane: &Plane, a: &Vec3d, b: &Vec3d) -> Option<Vec3d> {
     let ba = b - a;
-    let t = (plane.distance - plane.normal.x * a.x + plane.normal.y * a.y + plane.normal.z * a.z) /
-        (plane.normal.x * ba.x + plane.normal.y * ba.y + plane.normal.z * ba.z);
+    let t = (plane.distance - plane.normal.x * a.x + plane.normal.y * a.y + plane.normal.z * a.z)
+        / (plane.normal.x * ba.x + plane.normal.y * ba.y + plane.normal.z * ba.z);
     Some(a + t * (b - a))
+}
+
+/// Calculate if a point intersects a circle
+/// if inner is set to true then points inside the circle are true
+/// if inner is set to false then points must lie on the circle edge
+/// this function checks if the point and circle lie in the same plane
+/// use `circle_point_unchecked()` if this is not needed
+pub fn circle_point(circle: &Circle, point: &Vec3d, inner: bool) -> bool {
+    let plane = circle.get_plane();
+    if !plane.contains_point(point) {
+        return false;
+    }
+    circle_point_unchecked(circle, point, inner)
+}
+
+/// Calculate if a point intersects a circle
+/// if inner is set to true then points inside the circle are true
+/// if inner is set to false then points must lie on the circle edge
+/// this function does not check if the point and circle lie in the same plane
+/// because the radius and point distance are compared this is effectively a sphere
+pub fn circle_point_unchecked(circle: &Circle, point: &Vec3d, inner: bool) -> bool {
+    let distance = point.distance_to(&circle.center);
+    (inner && distance < circle.radius) || (distance - circle.radius).abs() < f64::EPSILON
+}
+
+/// Calculate if a point intersects a plane
+/// if inner is set to true then points inside the sphere are true
+/// if inner is set to false then points must lie on the sphere edge
+pub fn sphere_point(sphere: &Sphere, point: &Vec3d, inner: bool) -> bool {
+    let distance = point.distance_to(&sphere.center);
+    (inner && distance < sphere.radius) || (distance - sphere.radius).abs() < f64::EPSILON
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use crate::angle::AngleRadians;
     use crate::geometry::circle::Circle;
     use crate::geometry::sphere::Sphere;
     use crate::vec3d::Vec3d;
-    use super::*;
 
     #[test]
     fn test_sphere_sphere_intersection() {
@@ -129,14 +170,10 @@ mod tests {
         let sphere2 = Sphere::new(&center2, 1.0);
         let sphere3 = Sphere::new(&center3, 2.0);
         let sphere4 = Sphere::new(&-center3, 2.0);
-        let floating_point_error = 0.0000000000000002;
+        let floating_point_error = 0.000_000_000_000_000_2;
         assert_eq!(
             sphere_sphere(&sphere1, &sphere2).unwrap(),
-            Circle::new(
-                &Vec3d::new(0.0, 1.0, 1.0),
-                0.0,
-                &Vec3d::i()
-            )
+            Circle::new(&Vec3d::new(0.0, 1.0, 1.0), 0.0, &Vec3d::i())
         );
         assert_eq!(
             sphere_sphere(&sphere3, &sphere4).unwrap(),
@@ -156,19 +193,11 @@ mod tests {
         let plane2 = Plane::new(&Vec3d::k(), 1.0);
         assert_eq!(
             sphere_plane(&sphere, &plane1).unwrap(),
-            Circle::new(
-                &Vec3d::new(0.0, 0.0, 0.0),
-                0.0,
-                &Vec3d::k()
-            )
+            Circle::new(&Vec3d::new(0.0, 0.0, 0.0), 0.0, &Vec3d::k())
         );
         assert_eq!(
             sphere_plane(&sphere, &plane2).unwrap(),
-            Circle::new(
-                &Vec3d::new(0.0, 0.0, 1.0),
-                1.0,
-                &Vec3d::k()
-            )
+            Circle::new(&Vec3d::new(0.0, 0.0, 1.0), 1.0, &Vec3d::k())
         );
     }
 
@@ -186,10 +215,7 @@ mod tests {
                 Vec3d::new(0.0, 3.0_f64.sqrt() / 2.0, 0.5)
             )
         );
-        assert_eq!(
-            circle_circle(&circle1, &circle3),
-            None
-        );
+        assert_eq!(circle_circle(&circle1, &circle3), None);
     }
 
     #[test]
@@ -200,14 +226,8 @@ mod tests {
         let circle2 = Circle::new(&Vec3d::new(1.0, 0.0, 1.0), 1.0, &Vec3d::k());
         assert_eq!(
             sphere_circle(&sphere, &circle1).unwrap(),
-            (
-                Vec3d::new(0.0, 0.0, 0.0),
-                Vec3d::new(0.0, 0.0, 0.0)
-            )
+            (Vec3d::new(0.0, 0.0, 0.0), Vec3d::new(0.0, 0.0, 0.0))
         );
-        assert_eq!(
-            sphere_circle(&sphere, &circle2),
-            None
-        );
+        assert_eq!(sphere_circle(&sphere, &circle2), None);
     }
 }

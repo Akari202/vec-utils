@@ -87,14 +87,7 @@ impl Quat {
 
     fn to_axis_angle(&self) -> (Vec3d, AngleRadians) {
         let result = self.inner.to_axis_angle();
-        (
-            Vec3d {
-                inner: result.0
-            },
-            AngleRadians {
-                inner: result.1
-            }
-        )
+        (Vec3d { inner: result.0 }, AngleRadians { inner: result.1 })
     }
 
     fn to_rotation_matrix(&self) -> [[f64; 3]; 3] {

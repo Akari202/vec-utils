@@ -1,4 +1,3 @@
-use super::super::angle::AngleRadians;
 use super::super::vec3d::Vec3d;
 use pyo3::prelude::*;
 use vec_utils::*;
@@ -55,7 +54,9 @@ impl Plane {
 
     #[getter]
     pub fn normal(&self) -> Vec3d {
-        Vec3d { inner: self.inner.normal }
+        Vec3d {
+            inner: self.inner.normal
+        }
     }
 
     #[getter]
@@ -75,5 +76,9 @@ impl Plane {
 
     fn distance_to_point(&self, point: &Vec3d) -> f64 {
         self.inner.distance_to_point(&point.inner)
+    }
+
+    fn contains_point(&self, point: &Vec3d) -> bool {
+        self.inner.contains_point(&point.inner)
     }
 }

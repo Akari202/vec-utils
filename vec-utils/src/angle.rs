@@ -19,6 +19,11 @@ impl AngleRadians {
         Self { angle }
     }
 
+    /// Get 0
+    pub fn zero() -> Self {
+        Self::new(0.0)
+    }
+
     /// Get 2pi
     pub fn two_pi() -> Self {
         Self::new(2.0 * PI)

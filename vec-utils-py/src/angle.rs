@@ -17,6 +17,13 @@ impl AngleRadians {
     }
 
     #[staticmethod]
+    pub fn zero() -> Self {
+        AngleRadians {
+            inner: angle::AngleRadians::zero()
+        }
+    }
+
+    #[staticmethod]
     pub fn pi() -> Self {
         AngleRadians {
             inner: angle::AngleRadians::pi()

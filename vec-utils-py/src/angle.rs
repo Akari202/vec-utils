@@ -117,6 +117,26 @@ impl AngleRadians {
         AngleRadians { inner: -self.inner }
     }
 
+    pub fn __lt__(&self, other: &AngleRadians) -> bool {
+        self.inner < other.inner
+    }
+
+    pub fn __le__(&self, other: &AngleRadians) -> bool {
+        self.inner <= other.inner
+    }
+
+    pub fn __gt__(&self, other: &AngleRadians) -> bool {
+        self.inner > other.inner
+    }
+
+    pub fn __ge__(&self, other: &AngleRadians) -> bool {
+        self.inner >= other.inner
+    }
+
+    pub fn __eq__(&self, other: &AngleRadians) -> bool {
+        self.inner == other.inner
+    }
+
     pub fn __repr__(&self) -> String {
         format!("{}", self.inner)
     }

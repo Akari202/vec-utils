@@ -76,6 +76,12 @@ impl Quat {
         self.inner.magnitude()
     }
 
+    fn normalize(&self) -> Quat {
+        Quat {
+            inner: self.inner.normalize()
+        }
+    }
+
     fn to_vec(&self) -> (f64, f64, f64) {
         let v = self.inner.to_vec();
         (v.x, v.y, v.z)

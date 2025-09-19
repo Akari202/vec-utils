@@ -142,6 +142,7 @@ impl Vec3d {
             inner: self.inner.project_onto_line(&line_r.inner, &line_q.inner)
         }
     }
+
     pub fn __add__(&self, other: &Vec3d) -> Self {
         Vec3d {
             inner: self.inner + &other.inner

@@ -166,6 +166,39 @@ impl Vec3d {
         let t = (line_r - line_q).dot(&(line_q - self)) / (line_r - line_q).dot(&(line_r - line_q));
         line_q - t * (line_r - line_q)
     }
+
+    // TODO: Benchmark this
+    /// Collapse the vector
+    /// sets the axis to zero
+    /// similar to `project_onto_plane` but might be faster
+    pub fn collapse(&self, axis: &usize) -> Vec3d {
+        match axis {
+            0 => {
+                Vec3d {
+                    x: 0.0,
+                    y: self.y,
+                    z: self.z
+                }
+            }
+            1 => {
+                Vec3d {
+                    x: self.x,
+                    y: 0.0,
+                    z: self.z
+                }
+            }
+            2 => {
+                Vec3d {
+                    x: self.x,
+                    y: self.y,
+                    z: 0.0
+                }
+            }
+            _ => {
+                panic!()
+            }
+        }
+    }
 }
 
 impl std::ops::Add for Vec3d {

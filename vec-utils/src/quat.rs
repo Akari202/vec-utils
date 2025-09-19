@@ -95,6 +95,17 @@ impl Quat {
         (self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k).sqrt()
     }
 
+    /// Return a new Quat of the normalized quaternion
+    pub fn normalize(&self) -> Quat {
+        let magnitude = self.magnitude();
+        Quat {
+            w: self.w / magnitude,
+            i: self.i / magnitude,
+            j: self.j / magnitude,
+            k: self.k / magnitude
+        }
+    }
+
     /// Check if the quaternion is a unit quaternion
     pub fn is_unit(&self) -> bool {
         (self.magnitude() - 1.0).abs() < f64::EPSILON

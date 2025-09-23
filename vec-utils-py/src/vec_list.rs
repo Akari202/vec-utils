@@ -67,6 +67,10 @@ impl VecList {
         self.list.extend(other.list.clone())
     }
 
+    pub fn append(&mut self, vec: Vec3d) {
+        self.list.push(vec.inner);
+    }
+
     pub fn is_unit(&self) -> Vec<bool> {
         self
             .list
@@ -151,6 +155,8 @@ impl VecList {
     pub fn distance_to(&self, other: &Vec3d) -> Vec<f64> {
         self
             .list
+            // .chunks(50)
+            // .collect::<Vec<&vec3d::Vec3d>>()
             .par_iter()
             .map(|i| {
                 i.distance_to(&other.inner)

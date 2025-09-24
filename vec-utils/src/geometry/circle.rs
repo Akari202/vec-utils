@@ -1,4 +1,5 @@
 use crate::geometry::plane::Plane;
+use std::f64::consts::PI;
 use crate::vec3d::Vec3d;
 
 /// A circle in 3d space
@@ -25,6 +26,11 @@ impl Circle {
     /// Get the plane the circle is in
     pub fn get_plane(&self) -> Plane {
         Plane::from_point(&self.normal, &self.center)
+    }
+
+    /// Get the area of the circle
+    pub fn get_area(&self) -> f64 {
+        PI * self.radius.powi(2)
     }
 
     /// Check if the circle is in the same plane as a second circle

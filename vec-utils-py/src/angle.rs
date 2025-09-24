@@ -7,6 +7,42 @@ pub struct AngleRadians {
     pub inner: angle::AngleRadians
 }
 
+#[pyclass]
+#[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]
+pub struct AngleDegrees {
+    pub inner: angle::AngleDegrees
+}
+
+#[pymethods]
+impl AngleDegrees {
+    #[new]
+    pub fn new(angle: f64) -> Self {
+        AngleDegrees {
+            inner: angle::AngleDegrees::new(angle)
+        }
+    }
+
+    pub fn __repr__(&self) -> String {
+        format!("{}", self.inner)
+    }
+
+    #[getter]
+    pub fn angle(&self) -> f64 {
+        self.inner.angle
+    }
+
+    #[setter]
+    pub fn set_angle(&mut self, value: f64) {
+        self.inner.angle = value;
+    }
+
+    pub fn to_radians(&self) -> AngleRadians {
+        AngleRadians {
+            inner: self.inner.to_radians()
+        }
+    }
+}
+
 #[pymethods]
 impl AngleRadians {
     #[new]
@@ -68,6 +104,12 @@ impl AngleRadians {
     #[setter]
     pub fn set_angle(&mut self, value: f64) {
         self.inner.angle = value;
+    }
+
+    pub fn to_degrees(&self) -> AngleDegrees {
+        AngleDegrees {
+            inner: self.inner.to_degrees()
+        }
     }
 
     pub fn sin(&self) -> f64 {

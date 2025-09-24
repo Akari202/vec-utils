@@ -18,6 +18,17 @@ impl Circle {
         }
     }
 
+    #[staticmethod]
+    pub fn none() -> Self {
+        Circle {
+            inner: geometry::circle::Circle::new(
+                       &vec3d::Vec3d::zero(),
+                       0.0,
+                       &vec3d::Vec3d::zero()
+                       )
+        }
+    }
+
     #[getter]
     pub fn center(&self) -> Vec3d {
         Vec3d {
@@ -50,6 +61,11 @@ impl Circle {
     #[setter]
     pub fn set_normal(&mut self, value: Vec3d) {
         self.inner.normal = value.inner;
+    }
+
+    #[getter]
+    pub fn area(&self) -> f64 {
+        self.inner.get_area()
     }
 
     fn get_plane(&self) -> Plane {

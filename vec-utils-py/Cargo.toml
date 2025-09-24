@@ -10,7 +10,6 @@ crate-type = ["cdylib", "rlib"]
 name = "vec_utils_py"
 
 [dependencies]
-itertools = "0.14.0"
 pyo3 = { version = "0.26.0", features = [
   "extension-module",
   "generate-import-lib",

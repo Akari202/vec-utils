@@ -13,6 +13,8 @@ mod vec_utils_py {
     #[pymodule_export]
     use crate::angle::AngleRadians;
     #[pymodule_export]
+    use crate::angle::AngleDegrees;
+    #[pymodule_export]
     use crate::quat::Quat;
     #[pymodule_export]
     use crate::vec3d::Vec3d;

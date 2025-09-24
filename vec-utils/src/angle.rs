@@ -3,7 +3,8 @@ use std::f64::consts::PI;
 /// An angle in degrees
 #[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]
 pub struct AngleDegrees {
-    angle: f64
+    /// The angle in degrees
+    pub angle: f64
 }
 
 /// An angle in radians, f64 is assumed to be in radians

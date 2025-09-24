@@ -1,10 +1,8 @@
-use super::angle::AngleRadians;
 use super::quat::Quat;
 use super::vec3d::Vec3d;
 use pyo3::prelude::*;
 use rayon::prelude::*;
 use vec_utils::*;
-use itertools::Itertools;
 
 #[pyclass]
 pub struct VecList {
@@ -162,6 +160,47 @@ impl VecList {
                 i.distance_to(&other.inner)
             })
         .collect()
+    }
+
+    pub fn minimum_distance_to(&self, other: &Vec3d, stride: usize) -> (usize, f64) {
+        assert!(stride != 0);
+        let (close, _) = self
+            .list
+            .par_iter()
+            .enumerate()
+            .step_by(stride)
+            .map(|(j, i)| {
+                (j, i.distance_to(&other.inner))
+            })
+            .min_by(|a, b| {
+                a.1.total_cmp(&b.1)
+            })
+            .unwrap();
+        let window: &[vec3d::Vec3d];
+        let offset: usize;
+        if close < stride {
+            window = &self.list[..(close + stride)];
+            offset = 0;
+        }
+        else if close + stride > self.list.len() {
+            window = &self.list[(close - stride)..];
+            offset = close - stride;
+        }
+        else {
+            window = &self.list[(close - stride)..(close + stride)];
+            offset = close - stride;
+        }
+        let (index, distance) = window
+            .par_iter()
+            .enumerate()
+            .map(|(j, i)| {
+                (j, i.distance_to(&other.inner))
+            })
+            .min_by(|a, b| {
+                a.1.total_cmp(&b.1)
+            })
+            .unwrap();
+        (index + offset, distance)
     }
 
     // pub fn distance_to_line(&self, a: &Vec3d, b: &Vec3d) -> f64 {

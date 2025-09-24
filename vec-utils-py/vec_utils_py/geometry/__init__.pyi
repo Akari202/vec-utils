@@ -1,5 +1,5 @@
 from typing import overload, Any, List, Optional, Tuple
-from ..vec3d import Vec3d
+from .. import Vec3d
 
 class Plane:
     """
@@ -132,6 +132,15 @@ class Circle:
         """
         ...
 
+    @staticmethod
+    def none() -> "Circle":
+        """
+        Creates an 'empty' Circle instance with all values zeroed
+
+        :return: The empty Circle instance.
+        """
+        ...
+
     @property
     def center(self) -> "Vec3d":
         """
@@ -169,6 +178,15 @@ class Circle:
 
     @radius.setter
     def radius(self, value: float) -> None:
+        ...
+
+    @property
+    def area(self) -> float:
+        """
+        Get the area of the circle.
+
+        :return: The area as a float.
+        """
         ...
 
     def get_plane(self) -> "Plane":

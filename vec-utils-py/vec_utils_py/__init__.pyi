@@ -1,5 +1,3 @@
-from .vec_utils_py import *
-from . import geometry
 from typing import overload, Any, Iterator
 
 class Vec3d:
@@ -573,6 +571,14 @@ class AngleRadians:
     def angle(self, value: float) -> None:
         ...
 
+    def to_degrees(self) -> "AngleDegrees":
+        """
+        Converts the angle to degrees.
+
+        :return: The angle as an AngleDegrees instance.
+        """
+        ...
+
     def sin(self) -> float:
         """
         Calculates the sine of the angle.
@@ -714,7 +720,7 @@ class AngleRadians:
         ...
 
     @overload
-    def __eq__(self, other: "AngleRadians") -> bool:
+    def __eq__(self, other: "AngleRadians") -> bool: ...
     @overload
     def __eq__(self, rhs: Any) -> Any:
         """
@@ -733,6 +739,52 @@ class AngleRadians:
         """
         ...
 
+
+class AngleDegrees:
+    """
+    A class representing an angle in degrees.
+
+    Attributes:
+        angle (float): The angle value in degrees.
+    """
+    def __init__(self, angle: float) -> None:
+        """
+        Creates a new AngleDegrees instance.
+
+        :param angle: The initial angle value in degrees.
+        """
+        ...
+
+    def to_radians(self) -> "AngleRadians":
+        """
+        Converts the angle to radians.
+
+        :return: The angle as an AngleRadians instance.
+        """
+        ...
+
+    @property
+    def angle(self) -> float:
+        """
+        Get or set the angle value in degrees.
+
+        :return: The angle value.
+        """
+        ...
+
+    @angle.setter
+    def angle(self, value: float) -> None:
+        ...
+
+    def __repr__(self) -> str:
+        """
+        Provides a string representation of the angle.
+
+        :return: A string like "360°".
+        """
+        ...
+
+
 class VecList:
     """
     A class for managing a list of 3D vectors.
@@ -740,7 +792,7 @@ class VecList:
     Attributes:
         list (list[Vec3d]): The internal list of Vec3d objects.
     """
-    def __init__(self, list: List[Vec3d]) -> None:
+    def __init__(self, list: list[Vec3d]) -> None:
         """
         Creates a new VecList instance.
 
@@ -856,6 +908,14 @@ class VecList:
         :return: A list of distances.
         """
         ...
+
+    def minimum_distance_to(self, other: "Vec3d", stride: int) -> tuple[int, float]:
+        """
+        Calculates the vector with the minimum distance to another vector.
+
+        :param stride: The stride size to take, if stride is 1 all points are checked
+        :return: A tuple of the index of the closest point and its corresponding distance
+        """
 
     @overload
     def __add__(self, other: "Vec3d") -> "VecList": ...

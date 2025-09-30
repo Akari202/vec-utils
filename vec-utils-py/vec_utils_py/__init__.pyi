@@ -431,11 +431,11 @@ class Quat:
         """
         ...
 
-    def to_vec(self) -> tuple[float, float, float]:
+    def to_vec3d(self) -> "Vec3d":
         """
-        Converts the vector part of the quaternion to a tuple.
+        Converts the vector part of the quaternion to a Vec3d
 
-        :return: A tuple of the (i, j, k) components.
+        :return: A Vec3d of the (i, j, k) components.
         """
         ...
 

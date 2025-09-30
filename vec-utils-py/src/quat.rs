@@ -82,8 +82,8 @@ impl Quat {
         }
     }
 
-    fn to_vec(&self) -> (f64, f64, f64) {
-        let v = self.inner.to_vec();
+    fn to_vec3d(&self) -> (f64, f64, f64) {
+        let v = self.inner.to_vec3d();
         (v.x, v.y, v.z)
     }
 

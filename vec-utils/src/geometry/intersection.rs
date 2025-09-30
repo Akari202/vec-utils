@@ -1,3 +1,5 @@
+use core::f64;
+
 use crate::geometry::circle::Circle;
 use crate::geometry::plane::Plane;
 use crate::geometry::sphere::Sphere;
@@ -42,6 +44,9 @@ pub fn sphere_sphere(sphere1: &Sphere, sphere2: &Sphere) -> Option<Circle> {
 /// or None if the sphere does not intersect the plane
 pub fn sphere_plane(sphere: &Sphere, plane: &Plane) -> Option<Circle> {
     let distance = plane.distance_to_point(&sphere.center);
+    if distance.abs() < f64::EPSILON {
+        return Some(Circle::new(&sphere.center, sphere.radius, &plane.normal));
+    }
     if distance.abs() > sphere.radius {
         return None;
     }
@@ -160,6 +165,7 @@ mod tests {
     use crate::geometry::circle::Circle;
     use crate::geometry::sphere::Sphere;
     use crate::vec3d::Vec3d;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn test_sphere_sphere_intersection() {
@@ -170,18 +176,20 @@ mod tests {
         let sphere2 = Sphere::new(&center2, 1.0);
         let sphere3 = Sphere::new(&center3, 2.0);
         let sphere4 = Sphere::new(&-center3, 2.0);
-        let floating_point_error = 0.000_000_000_000_000_2;
+        let sphere5 = Sphere::new(&center3, 0.2);
+        let fudge = 0.000_000_000_000_000_2;
         assert_eq!(
-            sphere_sphere(&sphere1, &sphere2).unwrap(),
-            Circle::new(&Vec3d::new(0.0, 1.0, 1.0), 0.0, &Vec3d::i())
+            sphere_sphere(&sphere1, &sphere2),
+            Some(Circle::new(&Vec3d::new(0.0, 1.0, 1.0), 0.0, &Vec3d::i()))
         );
+        assert_eq!(sphere_sphere(&sphere5, &sphere1), None);
         assert_eq!(
-            sphere_sphere(&sphere3, &sphere4).unwrap(),
-            Circle::new(
+            sphere_sphere(&sphere3, &sphere4),
+            Some(Circle::new(
                 &Vec3d::zero(),
-                2.0 * AngleRadians::sixth_pi().cos() - floating_point_error,
+                2.0 * AngleRadians::sixth_pi().cos() - fudge,
                 &Vec3d::k()
-            )
+            ))
         );
     }
 
@@ -192,12 +200,12 @@ mod tests {
         let plane1 = Plane::new(&Vec3d::k(), 0.0);
         let plane2 = Plane::new(&Vec3d::k(), 1.0);
         assert_eq!(
-            sphere_plane(&sphere, &plane1).unwrap(),
-            Circle::new(&Vec3d::new(0.0, 0.0, 0.0), 0.0, &Vec3d::k())
+            sphere_plane(&sphere, &plane1),
+            Some(Circle::new(&Vec3d::new(0.0, 0.0, 0.0), 0.0, &Vec3d::k()))
         );
         assert_eq!(
-            sphere_plane(&sphere, &plane2).unwrap(),
-            Circle::new(&Vec3d::new(0.0, 0.0, 1.0), 1.0, &Vec3d::k())
+            sphere_plane(&sphere, &plane2),
+            Some(Circle::new(&Vec3d::new(0.0, 0.0, 1.0), 1.0, &Vec3d::k()))
         );
     }
 
@@ -209,11 +217,11 @@ mod tests {
         let circle2 = Circle::new(&center2, 1.0, &Vec3d::i());
         let circle3 = Circle::new(&center2, 1.0, &Vec3d::j());
         assert_eq!(
-            circle_circle(&circle1, &circle2).unwrap(),
-            (
+            circle_circle(&circle1, &circle2),
+            Some((
                 Vec3d::new(0.0, 3.0_f64.sqrt() / -2.0, 0.5),
                 Vec3d::new(0.0, 3.0_f64.sqrt() / 2.0, 0.5)
-            )
+            ))
         );
         assert_eq!(circle_circle(&circle1, &circle3), None);
     }
@@ -224,10 +232,25 @@ mod tests {
         let sphere = Sphere::new(&center, 1.0);
         let circle1 = Circle::new(&Vec3d::new(1.0, 0.0, 0.0), 1.0, &Vec3d::k());
         let circle2 = Circle::new(&Vec3d::new(1.0, 0.0, 1.0), 1.0, &Vec3d::k());
+        // let fudge = 0.000_000_000_000_000_1;
         assert_eq!(
-            sphere_circle(&sphere, &circle1).unwrap(),
-            (Vec3d::new(0.0, 0.0, 0.0), Vec3d::new(0.0, 0.0, 0.0))
+            sphere_circle(&sphere, &circle1),
+            Some((Vec3d::new(0.0, 0.0, 0.0), Vec3d::new(0.0, 0.0, 0.0)))
         );
-        assert_eq!(sphere_circle(&sphere, &circle2), None);
+        assert_eq!(
+            sphere_circle(&sphere, &circle2),
+            Some((
+                Vec3d::new(
+                    AngleRadians::third_pi().cos(),
+                    -AngleRadians::third_pi().sin(),
+                    1.0
+                ),
+                Vec3d::new(
+                    AngleRadians::third_pi().cos(),
+                    AngleRadians::third_pi().sin(),
+                    1.0
+                )
+            ))
+        );
     }
 }

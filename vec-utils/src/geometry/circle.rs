@@ -1,6 +1,6 @@
 use crate::geometry::plane::Plane;
-use std::f64::consts::PI;
 use crate::vec3d::Vec3d;
+use std::f64::consts::PI;
 
 /// A circle in 3d space
 #[derive(Debug, Clone, Copy)]
@@ -53,8 +53,8 @@ impl Circle {
 
 impl PartialEq for Circle {
     fn eq(&self, other: &Self) -> bool {
-        self.center == other.center &&
-            self.radius == other.radius &&
-            (self.normal == other.normal || self.normal == -other.normal)
+        self.center == other.center
+            && self.radius == other.radius
+            && (self.normal == other.normal || self.normal == -other.normal)
     }
 }

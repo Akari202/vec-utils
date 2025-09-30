@@ -1,8 +1,13 @@
 use crate::angle::AngleRadians;
 use crate::vec3d::Vec3d;
+use crate::{
+    impl_dual_op_variants, impl_single_op_comm, impl_single_op_variants,
+    impl_single_op_variants_comm
+};
+use std::ops::{Add, Div, Mul, Sub};
 
 /// A quaternion
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone)]
 pub struct Quat {
     /// The real component of the quaternion
     pub w: f64,
@@ -23,7 +28,12 @@ impl Quat {
     /// Create a new identity quaternion
     /// i.e. a quaternion with a real component of 1 and imaginary components of 0
     pub fn identity() -> Quat {
-        Quat { w: 1.0, i: 0.0, j: 0.0, k: 0.0 }
+        Quat {
+            w: 1.0,
+            i: 0.0,
+            j: 0.0,
+            k: 0.0
+        }
     }
 
     /// Create a new quaternion from an axis and an angle
@@ -128,7 +138,7 @@ impl Quat {
     /// Convert the quaternion to a vector
     /// the real component of the quaternion is discarded
     /// the imaginary components of the quaternion are used as the vector components
-    pub fn to_vec(&self) -> Vec3d {
+    pub fn to_vec3d(&self) -> Vec3d {
         Vec3d::new(self.i, self.j, self.k)
     }
 
@@ -156,34 +166,81 @@ impl Quat {
     /// Rotate a vector by the quaternion
     /// this is an active rotation
     pub fn rotate(&self, v: &Vec3d) -> Vec3d {
-        let qv = Quat { w: 0.0, i: v.x, j: v.y, k: v.z };
-        (self.conjugate() * qv * self).to_vec()
+        let qv = Quat {
+            w: 0.0,
+            i: v.x,
+            j: v.y,
+            k: v.z
+        };
+        (self.conjugate() * qv * self).to_vec3d()
+    }
+
+    /// Convert the Quat to a Vec of f64 with length 4
+    pub fn to_vec(&self) -> Vec<f64> {
+        vec![self.w, self.i, self.j, self.k]
     }
 }
 
-impl std::ops::Mul for Quat {
-    type Output = Quat;
+macro_rules! impl_dual_op {
+    ($trait:ident, $method:ident, $op:tt, $T:ty, $description:literal) => {
+        impl $trait for $T {
+            type Output = $T;
 
-    /// Multiply two quaternions
-    fn mul(self, rhs: Quat) -> Quat {
-        self.mul(&rhs)
+            #[doc = $description]
+            fn $method(self, other: $T) -> $T {
+                Self { w: self.w $op other.w, i: self.i $op other.i, j: self.j $op other.j, k: self.k $op other.k }
+            }
+        }
+
+        impl_dual_op_variants!($trait, $method, $T, $description);
     }
 }
 
-impl std::ops::Mul<&Quat> for Quat {
+macro_rules! impl_single_op {
+    ($trait:ident, $method:ident, $op:tt, $T:ty, $W:ty, $description:literal) => {
+        impl $trait<$W> for $T {
+            type Output = $T;
+
+            #[doc = $description]
+            fn $method(self, other: $W) -> $T {
+                Self { w: self.w $op other, i: self.i $op other, j: self.j $op other, k: self.k $op other }
+            }
+        }
+
+        impl_single_op_variants!($trait, $method, $T, $W, $description);
+    }
+}
+
+impl_dual_op!(Add, add, +, Quat, "Add two Quats together comonent-wise");
+impl_dual_op!(Sub, sub, -, Quat, "Subtract one Quat from another component-wise");
+
+// NOTE: I cant decide if it makes sense for addition to be communicative
+impl_single_op!(Add, add, +, Quat, f64, "Add a scalar to each component of a Quat");
+impl_single_op!(Sub, sub, -, Quat, f64, "Subtract a scalar from each component of a Quat");
+impl_single_op_comm!(Mul, mul, *, Quat, f64, "Multiply a Quat by a scalar");
+impl_single_op!(Div, div, /, Quat, f64, "Divide a Quat by a scalar");
+
+impl std::ops::Mul<Quat> for Quat {
     type Output = Quat;
 
     /// Multiply two quaternions
     /// also known as a Hamilton product
-    fn mul(self, rhs: &Quat) -> Quat {
+    fn mul(self, other: Quat) -> Quat {
         Quat {
-            w: self.w * rhs.w - self.i * rhs.i - self.j * rhs.j - self.k * rhs.k,
-            i: self.w * rhs.i + self.i * rhs.w + self.j * rhs.k - self.k * rhs.j,
-            j: self.w * rhs.j + self.j * rhs.w + self.k * rhs.i - self.i * rhs.k,
-            k: self.w * rhs.k + self.k * rhs.w + self.i * rhs.j - self.j * rhs.i
+            w: self.w * other.w - self.i * other.i - self.j * other.j - self.k * other.k,
+            i: self.w * other.i + self.i * other.w + self.j * other.k - self.k * other.j,
+            j: self.w * other.j + self.j * other.w + self.k * other.i - self.i * other.k,
+            k: self.w * other.k + self.k * other.w + self.i * other.j - self.j * other.i
         }
     }
 }
+
+impl_dual_op_variants!(
+    Mul,
+    mul,
+    Quat,
+    "Multiply two quaternions, also known as a Hamilton product"
+);
 
 impl std::ops::Index<usize> for Quat {
     type Output = f64;
@@ -209,66 +266,65 @@ impl std::fmt::Display for Quat {
     }
 }
 
+impl PartialEq for Quat {
+    fn eq(&self, other: &Self) -> bool {
+        (self.w - other.w).abs() < f64::EPSILON
+            && (self.i - other.i).abs() < f64::EPSILON
+            && (self.j - other.j).abs() < f64::EPSILON
+            && (self.k - other.k).abs() < f64::EPSILON
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use assert_float_eq::assert_f64_near;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn test_new() {
         let q = Quat::new(1.0, 2.0, 3.0, 4.0);
-        assert_eq!(q.w, 1.0);
-        assert_eq!(q.i, 2.0);
-        assert_eq!(q.j, 3.0);
-        assert_eq!(q.k, 4.0);
+        assert_f64_near!(q.w, 1.0);
+        assert_f64_near!(q.i, 2.0);
+        assert_f64_near!(q.j, 3.0);
+        assert_f64_near!(q.k, 4.0);
     }
 
     #[test]
     fn test_identity() {
         let q = Quat::identity();
-        assert_eq!(q.w, 1.0);
-        assert_eq!(q.i, 0.0);
-        assert_eq!(q.j, 0.0);
-        assert_eq!(q.k, 0.0);
+        let good = Quat::new(1.0, 0.0, 0.0, 0.0);
+        assert_eq!(q, good);
     }
 
     #[test]
     fn test_from_axis_angle() {
         let axis = Vec3d::i();
         let q = Quat::from_axis_angle(&axis, 0.0);
-        assert_eq!(q.w, 1.0);
-        assert_eq!(q.i, 0.0);
-        assert_eq!(q.j, 0.0);
-        assert_eq!(q.k, 0.0);
+        let good = Quat::new(1.0, 0.0, 0.0, 0.0);
+        assert_eq!(q, good);
     }
 
     #[test]
     fn test_from_rotation_matrix() {
-        let m = [
-            [1.0, 0.0, 0.0],
-            [0.0, 1.0, 0.0],
-            [0.0, 0.0, 1.0]
-        ];
+        let m = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]];
         let q = Quat::from_rotation_matrix(&m);
-        assert_eq!(q.w, 1.0);
-        assert_eq!(q.i, 0.0);
-        assert_eq!(q.j, 0.0);
-        assert_eq!(q.k, 0.0);
+        let good = Quat::new(1.0, 0.0, 0.0, 0.0);
+        assert_eq!(q, good);
     }
 
     #[test]
     fn test_conjugate() {
         let q = Quat::new(1.0, 2.0, 3.0, 4.0);
         let c = q.conjugate();
-        assert_eq!(c.w, 1.0);
-        assert_eq!(c.i, -2.0);
-        assert_eq!(c.j, -3.0);
-        assert_eq!(c.k, -4.0);
+        let good = Quat::new(1.0, -2.0, -3.0, -4.0);
+        assert_eq!(c, good);
     }
 
     #[test]
     fn test_magnitude() {
         let q = Quat::new(1.0, 2.0, 3.0, 4.0);
-        assert_eq!(q.magnitude(), 5.477225575051661);
+        assert_f64_near!(q.magnitude(), 5.477_225_575_051_661);
     }
 
     #[test]
@@ -281,34 +337,32 @@ mod tests {
     fn test_to_axis_angle() {
         let q = Quat::new(1.0, 0.0, 0.0, 0.0);
         let (axis, angle) = q.to_axis_angle();
-        assert_eq!(axis.x, 1.0);
-        assert_eq!(axis.y, 0.0);
-        assert_eq!(axis.z, 0.0);
+        let good = Vec3d::new(1.0, 0.0, 0.0);
+        assert_eq!(axis, good);
         assert_eq!(angle, 0.0.into());
     }
 
     #[test]
-    fn test_to_vec() {
+    fn test_to_vec3d() {
         let q = Quat::new(1.0, 2.0, 3.0, 4.0);
-        let v = q.to_vec();
-        assert_eq!(v.x, 2.0);
-        assert_eq!(v.y, 3.0);
-        assert_eq!(v.z, 4.0);
+        let v = q.to_vec3d();
+        let good = Vec3d::new(2.0, 3.0, 4.0);
+        assert_eq!(v, good);
     }
 
     #[test]
     fn test_to_rotation_matrix() {
         let q = Quat::new(1.0, 0.0, 0.0, 0.0);
         let m = q.to_rotation_matrix();
-        assert_eq!(m[0][0], 1.0);
-        assert_eq!(m[0][1], 0.0);
-        assert_eq!(m[0][2], 0.0);
-        assert_eq!(m[1][0], 0.0);
-        assert_eq!(m[1][1], 1.0);
-        assert_eq!(m[1][2], 0.0);
-        assert_eq!(m[2][0], 0.0);
-        assert_eq!(m[2][1], 0.0);
-        assert_eq!(m[2][2], 1.0);
+        assert_f64_near!(m[0][0], 1.0);
+        assert_f64_near!(m[0][1], 0.0);
+        assert_f64_near!(m[0][2], 0.0);
+        assert_f64_near!(m[1][0], 0.0);
+        assert_f64_near!(m[1][1], 1.0);
+        assert_f64_near!(m[1][2], 0.0);
+        assert_f64_near!(m[2][0], 0.0);
+        assert_f64_near!(m[2][1], 0.0);
+        assert_f64_near!(m[2][2], 1.0);
     }
 
     #[test]
@@ -316,9 +370,8 @@ mod tests {
         let q = Quat::new(1.0, 0.0, 0.0, 0.0);
         let v = Vec3d::new(1.0, 0.0, 0.0);
         let r = q.rotate(&v);
-        assert_eq!(r.x, 1.0);
-        assert_eq!(r.y, 0.0);
-        assert_eq!(r.z, 0.0);
+        let good = Vec3d::new(1.0, 0.0, 0.0);
+        assert_eq!(r, good);
     }
 
     #[test]
@@ -326,21 +379,16 @@ mod tests {
         let q1 = Quat::new(1.0, 2.0, 3.0, 4.0);
         let q2 = Quat::new(5.0, 6.0, 7.0, 8.0);
         let q = q1 * q2;
-        assert_eq!(q.w, -60.0);
-        assert_eq!(q.i, 12.0);
-        assert_eq!(q.j, 30.0);
-        assert_eq!(q.k, 24.0);
+        let good = Quat::new(-60.0, 12.0, 30.0, 24.0);
+        assert_eq!(q, good);
     }
 
     #[test]
     fn test_index() {
         let q = Quat::new(1.0, 2.0, 3.0, 4.0);
-        assert_eq!(q[0], 1.0);
-        assert_eq!(q[1], 2.0);
-        assert_eq!(q[2], 3.0);
-        assert_eq!(q[3], 4.0);
+        assert_f64_near!(q[0], 1.0);
+        assert_f64_near!(q[1], 2.0);
+        assert_f64_near!(q[2], 3.0);
+        assert_f64_near!(q[3], 4.0);
     }
 }
-
-
-

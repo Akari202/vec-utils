@@ -167,7 +167,6 @@ impl From<AngleRadians> for AngleDegrees {
     }
 }
 
-
 impl From<&AngleRadians> for AngleDegrees {
     fn from(value: &AngleRadians) -> Self {
         AngleDegrees::new(value.angle * 180.0 / PI)
@@ -242,21 +241,21 @@ impl std::ops::Neg for AngleDegrees {
     }
 }
 
-impl std::cmp::Ord for AngleRadians {
-    fn cmp(&self, rhs: &AngleRadians) -> std::cmp::Ordering {
-        self.partial_cmp(rhs).unwrap()
-    }
-}
-
-impl std::cmp::Ord for AngleDegrees {
-    fn cmp(&self, rhs: &AngleDegrees) -> std::cmp::Ordering {
-        self.partial_cmp(rhs).unwrap()
-    }
-}
-
-impl std::cmp::Eq for AngleRadians {}
-
-impl std::cmp::Eq for AngleDegrees {}
+// impl std::cmp::Ord for AngleRadians {
+//     fn cmp(&self, rhs: &AngleRadians) -> std::cmp::Ordering {
+//         self.partial_cmp(rhs).unwrap()
+//     }
+// }
+//
+// impl std::cmp::Ord for AngleDegrees {
+//     fn cmp(&self, rhs: &AngleDegrees) -> std::cmp::Ordering {
+//         self.partial_cmp(rhs).unwrap()
+//     }
+// }
+//
+// impl std::cmp::Eq for AngleRadians {}
+//
+// impl std::cmp::Eq for AngleDegrees {}
 
 impl std::fmt::Display for AngleRadians {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -280,5 +279,5 @@ impl std::fmt::Display for AngleDegrees {
 
 #[cfg(test)]
 mod tests {
-// TODO
+    // TODO
 }

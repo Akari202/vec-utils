@@ -1,9 +1,13 @@
 [package]
 name = "vec-utils"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 authors = ["Akari Harada <akaritwo0two@gmail.com>"]
 license = "GPL-3"
 
 [lib]
 name = "vec_utils"
+
+[dev-dependencies]
+pretty_assertions = "1.4.1"
+assert_float_eq = "1.2.0"

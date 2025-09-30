@@ -14,7 +14,7 @@ impl VecList {
     #[new]
     pub fn new(list: Vec<Vec3d>) -> Self {
         VecList {
-            list: list.par_iter().map(|i| {i.inner}).collect()
+            list: list.par_iter().map(|i| i.inner).collect()
         }
     }
 
@@ -32,33 +32,15 @@ impl VecList {
 
     pub fn rotate(&mut self, quat: &Quat) {
         let quat: quat::Quat = quat.inner;
-        self.list = self
-            .list
-            .par_iter()
-            .map(|i| {
-                quat.rotate(i)
-            })
-        .collect();
+        self.list = self.list.par_iter().map(|i| quat.rotate(i)).collect();
     }
 
     pub fn to_array(&self) -> Vec<[f64; 3]> {
-        self
-            .list
-            .par_iter()
-            .map(|i| {
-                i.to_array()
-            })
-        .collect()
+        self.list.par_iter().map(|i| i.to_array()).collect()
     }
 
     pub fn magnitude(&self) -> Vec<f64> {
-        self
-            .list
-            .par_iter()
-            .map(|i| {
-                i.magnitude()
-            })
-        .collect()
+        self.list.par_iter().map(|i| i.magnitude()).collect()
     }
 
     pub fn extend(&mut self, other: &VecList) {
@@ -70,35 +52,17 @@ impl VecList {
     }
 
     pub fn is_unit(&self) -> Vec<bool> {
-        self
-            .list
-            .par_iter()
-            .map(|i| {
-                i.is_unit()
-            })
-        .collect()
+        self.list.par_iter().map(|i| i.is_unit()).collect()
     }
 
     pub fn normalize(&self) -> Self {
         VecList {
-            list: self
-                .list
-                .par_iter()
-                .map(|i| {
-                    i.normalize()
-                })
-            .collect()
+            list: self.list.par_iter().map(|i| i.normalize()).collect()
         }
     }
 
     pub fn dot(&self, other: &Vec3d) -> Vec<f64> {
-        self
-            .list
-            .par_iter()
-            .map(|i| {
-                i.dot(&other.inner)
-            })
-        .collect()
+        self.list.par_iter().map(|i| i.dot(&other.inner)).collect()
     }
 
     pub fn cross(&self, other: &Vec3d) -> Self {
@@ -106,22 +70,19 @@ impl VecList {
             list: self
                 .list
                 .par_iter()
-                .map(|i| {
-                    i.cross(&other.inner)
-                })
-            .collect()
+                .map(|i| i.cross(&other.inner))
+                .collect()
         }
     }
 
     pub fn collapse(&self, axis: usize) -> Self {
+        assert!(axis <= 2);
         VecList {
             list: self
                 .list
                 .par_iter()
-                .map(|i| {
-                    i.collapse(&axis)
-                })
-            .collect()
+                .map(|i| i.collapse(axis).unwrap())
+                .collect()
         }
     }
 
@@ -151,15 +112,12 @@ impl VecList {
     // }
 
     pub fn distance_to(&self, other: &Vec3d) -> Vec<f64> {
-        self
-            .list
+        self.list
             // .chunks(50)
             // .collect::<Vec<&vec3d::Vec3d>>()
             .par_iter()
-            .map(|i| {
-                i.distance_to(&other.inner)
-            })
-        .collect()
+            .map(|i| i.distance_to(&other.inner))
+            .collect()
     }
 
     pub fn minimum_distance_to(&self, other: &Vec3d, stride: usize) -> (usize, f64) {
@@ -169,36 +127,26 @@ impl VecList {
             .par_iter()
             .enumerate()
             .step_by(stride)
-            .map(|(j, i)| {
-                (j, i.distance_to(&other.inner))
-            })
-            .min_by(|a, b| {
-                a.1.total_cmp(&b.1)
-            })
+            .map(|(j, i)| (j, i.distance_to(&other.inner)))
+            .min_by(|a, b| a.1.total_cmp(&b.1))
             .unwrap();
         let window: &[vec3d::Vec3d];
         let offset: usize;
         if close < stride {
             window = &self.list[..(close + stride)];
             offset = 0;
-        }
-        else if close + stride > self.list.len() {
+        } else if close + stride > self.list.len() {
             window = &self.list[(close - stride)..];
             offset = close - stride;
-        }
-        else {
+        } else {
             window = &self.list[(close - stride)..(close + stride)];
             offset = close - stride;
         }
         let (index, distance) = window
             .par_iter()
             .enumerate()
-            .map(|(j, i)| {
-                (j, i.distance_to(&other.inner))
-            })
-            .min_by(|a, b| {
-                a.1.total_cmp(&b.1)
-            })
+            .map(|(j, i)| (j, i.distance_to(&other.inner)))
+            .min_by(|a, b| a.1.total_cmp(&b.1))
             .unwrap();
         (index + offset, distance)
     }
@@ -221,61 +169,31 @@ impl VecList {
 
     pub fn __add__(&self, other: &Vec3d) -> Self {
         VecList {
-            list: self
-                .list
-                .par_iter()
-                .map(|i| {
-                    i + other.inner
-                })
-            .collect()
+            list: self.list.par_iter().map(|i| i + other.inner).collect()
         }
     }
 
     pub fn __sub__(&self, other: &Vec3d) -> Self {
         VecList {
-            list: self
-                .list
-                .par_iter()
-                .map(|i| {
-                    i - other.inner
-                })
-            .collect()
+            list: self.list.par_iter().map(|i| i - other.inner).collect()
         }
     }
 
     pub fn __mul__(&self, rhs: f64) -> Self {
         VecList {
-            list: self
-                .list
-                .par_iter()
-                .map(|i| {
-                    i * rhs
-                })
-            .collect()
+            list: self.list.par_iter().map(|i| i * rhs).collect()
         }
     }
 
     pub fn __rmul__(&self, lhs: f64) -> Self {
         VecList {
-            list: self
-                .list
-                .par_iter()
-                .map(|i| {
-                    i * lhs
-                })
-            .collect()
+            list: self.list.par_iter().map(|i| i * lhs).collect()
         }
     }
 
     pub fn __truediv__(&self, rhs: f64) -> Self {
         VecList {
-            list: self
-                .list
-                .par_iter()
-                .map(|i| {
-                    *i / rhs
-                })
-            .collect()
+            list: self.list.par_iter().map(|i| *i / rhs).collect()
         }
     }
 
@@ -295,33 +213,27 @@ impl VecList {
                 "Index out of bounds"
             ))
         } else {
-            Ok(Vec3d { inner: self.list[index] })
+            Ok(Vec3d {
+                inner: self.list[index]
+            })
         }
     }
 
     fn __repr__(&self) -> String {
         format!(
             "[{}]",
-            self
-            .list
-            .par_iter()
-            .map(|i| {
-                format!(
-                    "Vec3d({}, {}, {})",
-                    i.x, i.y, i.z
-                )
-            })
-            .intersperse("\n".to_string())
-            .collect::<String>()
+            self.list
+                .par_iter()
+                .map(|i| { format!("Vec3d({}, {}, {})", i.x, i.y, i.z) })
+                .intersperse("\n".to_string())
+                .collect::<String>()
         )
-
     }
 }
 
-
 #[pyclass]
 pub struct VecListIterator {
-    iter: std::vec::IntoIter<vec3d::Vec3d>,
+    iter: std::vec::IntoIter<vec3d::Vec3d>
 }
 
 #[pymethods]

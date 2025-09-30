@@ -1,5 +1,5 @@
 /// Functions for working with 2x2 matrices
-pub mod matrix2x2{
+pub mod matrix2x2 {
     use crate::complex::Complex;
 
     /// Calculate the determinant of a 2x2 matrix
@@ -10,7 +10,7 @@ pub mod matrix2x2{
     /// Calculate the eigenvalues of a 2x2 matrix
     /// returns a tuple of the eigenvalues as complex numbers
     pub fn eigenvalues(matrix: &[[f64; 2]; 2]) -> (Complex, Complex) {
-        let mean = (matrix[0][0] + matrix[1][1]) / 2.0;
+        let mean = f64::midpoint(matrix[0][0], matrix[1][1]);
         let determinant = determinant(matrix);
         let discriminant = mean.powi(2) - determinant;
         let eigenvalue1 = Complex::new(mean, 0.0) + Complex::sqrt(discriminant);
@@ -52,12 +52,12 @@ pub mod matrix3x3 {
 
     /// Calculate the determinant of a 3x3 matrix
     pub fn determinant(matrix: &[[f64; 3]; 3]) -> f64 {
-        matrix[0][0] * matrix[1][1] * matrix[2][2] +
-            matrix[0][1] * matrix[1][2] * matrix[2][0] +
-            matrix[0][2] * matrix[1][0] * matrix[2][1] -
-            matrix[0][2] * matrix[1][1] * matrix[2][0] -
-            matrix[0][1] * matrix[1][0] * matrix[2][2] -
-            matrix[0][0] * matrix[1][2] * matrix[2][1]
+        matrix[0][0] * matrix[1][1] * matrix[2][2]
+            + matrix[0][1] * matrix[1][2] * matrix[2][0]
+            + matrix[0][2] * matrix[1][0] * matrix[2][1]
+            - matrix[0][2] * matrix[1][1] * matrix[2][0]
+            - matrix[0][1] * matrix[1][0] * matrix[2][2]
+            - matrix[0][0] * matrix[1][2] * matrix[2][1]
     }
 
     /// Calculate the minor of a 3x3 matrix given a row and column index
@@ -84,11 +84,7 @@ pub mod matrix3x3 {
     /// Calculate the cofactor of a 3x3 matrix given a row and column index
     pub fn cofactor(matrix: &[[f64; 3]; 3], row: usize, col: usize) -> f64 {
         let minor = minor(matrix, row, col);
-        let factor = [
-            [1.0, -1.0, 1.0],
-            [-1.0, 1.0, -1.0],
-            [1.0, -1.0, 1.0]
-        ];
+        let factor = [[1.0, -1.0, 1.0], [-1.0, 1.0, -1.0], [1.0, -1.0, 1.0]];
         factor[row][col] * minor
     }
 
@@ -146,30 +142,30 @@ pub mod matrix3x3 {
 pub mod matrix4x4 {
     /// Calculate the determinant of a 4x4 matrix
     pub fn determinant(matrix: &[[f64; 4]; 4]) -> f64 {
-        matrix[0][0] * matrix[1][1] * matrix[2][2] * matrix[3][3] +
-            matrix[0][0] * matrix[1][2] * matrix[2][3] * matrix[3][1] +
-            matrix[0][0] * matrix[1][3] * matrix[2][1] * matrix[3][2] +
-            matrix[0][1] * matrix[1][0] * matrix[2][3] * matrix[3][2] +
-            matrix[0][1] * matrix[1][2] * matrix[2][0] * matrix[3][3] +
-            matrix[0][1] * matrix[1][3] * matrix[2][2] * matrix[3][0] +
-            matrix[0][2] * matrix[1][0] * matrix[2][1] * matrix[3][3] +
-            matrix[0][2] * matrix[1][1] * matrix[2][3] * matrix[3][0] +
-            matrix[0][2] * matrix[1][3] * matrix[2][0] * matrix[3][1] +
-            matrix[0][3] * matrix[1][0] * matrix[2][2] * matrix[3][1] +
-            matrix[0][3] * matrix[1][1] * matrix[2][0] * matrix[3][2] +
-            matrix[0][3] * matrix[1][2] * matrix[2][1] * matrix[3][0] -
-            matrix[0][0] * matrix[1][1] * matrix[2][3] * matrix[3][2] -
-            matrix[0][0] * matrix[1][2] * matrix[2][1] * matrix[3][3] -
-            matrix[0][0] * matrix[1][3] * matrix[2][2] * matrix[3][1] -
-            matrix[0][1] * matrix[1][0] * matrix[2][2] * matrix[3][3] -
-            matrix[0][1] * matrix[1][2] * matrix[2][3] * matrix[3][0] -
-            matrix[0][1] * matrix[1][3] * matrix[2][0] * matrix[3][2] -
-            matrix[0][2] * matrix[1][0] * matrix[2][3] * matrix[3][1] -
-            matrix[0][2] * matrix[1][1] * matrix[2][0] * matrix[3][3] -
-            matrix[0][2] * matrix[1][3] * matrix[2][1] * matrix[3][0] -
-            matrix[0][3] * matrix[1][0] * matrix[2][1] * matrix[3][2] -
-            matrix[0][3] * matrix[1][1] * matrix[2][2] * matrix[3][0] -
-            matrix[0][3] * matrix[1][2] * matrix[2][0] * matrix[3][1]
+        matrix[0][0] * matrix[1][1] * matrix[2][2] * matrix[3][3]
+            + matrix[0][0] * matrix[1][2] * matrix[2][3] * matrix[3][1]
+            + matrix[0][0] * matrix[1][3] * matrix[2][1] * matrix[3][2]
+            + matrix[0][1] * matrix[1][0] * matrix[2][3] * matrix[3][2]
+            + matrix[0][1] * matrix[1][2] * matrix[2][0] * matrix[3][3]
+            + matrix[0][1] * matrix[1][3] * matrix[2][2] * matrix[3][0]
+            + matrix[0][2] * matrix[1][0] * matrix[2][1] * matrix[3][3]
+            + matrix[0][2] * matrix[1][1] * matrix[2][3] * matrix[3][0]
+            + matrix[0][2] * matrix[1][3] * matrix[2][0] * matrix[3][1]
+            + matrix[0][3] * matrix[1][0] * matrix[2][2] * matrix[3][1]
+            + matrix[0][3] * matrix[1][1] * matrix[2][0] * matrix[3][2]
+            + matrix[0][3] * matrix[1][2] * matrix[2][1] * matrix[3][0]
+            - matrix[0][0] * matrix[1][1] * matrix[2][3] * matrix[3][2]
+            - matrix[0][0] * matrix[1][2] * matrix[2][1] * matrix[3][3]
+            - matrix[0][0] * matrix[1][3] * matrix[2][2] * matrix[3][1]
+            - matrix[0][1] * matrix[1][0] * matrix[2][2] * matrix[3][3]
+            - matrix[0][1] * matrix[1][2] * matrix[2][3] * matrix[3][0]
+            - matrix[0][1] * matrix[1][3] * matrix[2][0] * matrix[3][2]
+            - matrix[0][2] * matrix[1][0] * matrix[2][3] * matrix[3][1]
+            - matrix[0][2] * matrix[1][1] * matrix[2][0] * matrix[3][3]
+            - matrix[0][2] * matrix[1][3] * matrix[2][1] * matrix[3][0]
+            - matrix[0][3] * matrix[1][0] * matrix[2][1] * matrix[3][2]
+            - matrix[0][3] * matrix[1][1] * matrix[2][2] * matrix[3][0]
+            - matrix[0][3] * matrix[1][2] * matrix[2][0] * matrix[3][1]
     }
 
     /// Calculate the minor of a 4x4 matrix given a row and column index
@@ -213,19 +209,13 @@ mod tests {
 
         #[test]
         fn test_matrix2x2_determinant() {
-            let matrix = [
-                [1.0, 2.0],
-                [3.0, 4.0]
-            ];
+            let matrix = [[1.0, 2.0], [3.0, 4.0]];
             assert_eq!(matrix2x2::determinant(&matrix), -2.0);
         }
 
         #[test]
         fn test_matrix2x2_eigenvalues() {
-            let matrix = [
-                [8.0, 4.0],
-                [4.0, 8.0]
-            ];
+            let matrix = [[8.0, 4.0], [4.0, 8.0]];
             let (eigenvalue1, eigenvalue2) = matrix2x2::eigenvalues(&matrix);
             assert_eq!(eigenvalue1.real, 12.0);
             assert_eq!(eigenvalue1.imaginary, 0.0);
@@ -235,10 +225,7 @@ mod tests {
 
         #[test]
         fn test_matrix2x2_eigenvectors() {
-            let matrix = [
-                [8.0, 4.0],
-                [4.0, 8.0]
-            ];
+            let matrix = [[8.0, 4.0], [4.0, 8.0]];
             let (eigenvector1, eigenvector2) = matrix2x2::eigenvectors(&matrix);
             assert_eq!(eigenvector1[0], -1.0);
             assert_eq!(eigenvector1[1], 1.0);
@@ -252,42 +239,26 @@ mod tests {
 
         #[test]
         fn test_matrix3x3_determinant() {
-            let matrix = [
-                [1.0, 2.0, 3.0],
-                [4.0, 5.0, 6.0],
-                [7.0, 8.0, 9.0]
-            ];
+            let matrix = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]];
             assert_eq!(matrix3x3::determinant(&matrix), 0.0);
         }
 
         #[test]
         fn test_matrix3x3_minor() {
-            let matrix = [
-                [1.0, 2.0, 3.0],
-                [4.0, 5.0, 6.0],
-                [7.0, 8.0, 9.0]
-            ];
+            let matrix = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]];
             assert_eq!(matrix3x3::minor(&matrix, 0, 0), -3.0);
         }
 
         #[test]
         fn test_matrix3x3_cofactor() {
-            let matrix = [
-                [1.0, 4.0, 7.0],
-                [3.0, 0.0, 5.0],
-                [-1.0, 9.0, 11.0]
-            ];
+            let matrix = [[1.0, 4.0, 7.0], [3.0, 0.0, 5.0], [-1.0, 9.0, 11.0]];
             assert_eq!(matrix3x3::cofactor(&matrix, 1, 2), -13.0);
             assert_eq!(matrix3x3::cofactor(&matrix, 2, 0), 20.0);
         }
 
         #[test]
         fn test_matrix3x3_cofactor_matrix() {
-            let matrix = [
-                [1.0, 4.0, 7.0],
-                [3.0, 0.0, 5.0],
-                [-1.0, 9.0, 11.0]
-            ];
+            let matrix = [[1.0, 4.0, 7.0], [3.0, 0.0, 5.0], [-1.0, 9.0, 11.0]];
             let cofactor = [
                 [-45.0, -38.0, 27.0],
                 [19.0, 18.0, -13.0],
@@ -307,16 +278,8 @@ mod tests {
 
         #[test]
         fn test_matrix3x3_transpose() {
-            let matrix = [
-                [1.0, 4.0, 7.0],
-                [3.0, 0.0, 5.0],
-                [-1.0, 9.0, 11.0]
-            ];
-            let transpose = [
-                [1.0, 3.0, -1.0],
-                [4.0, 0.0, 9.0],
-                [7.0, 5.0, 11.0]
-            ];
+            let matrix = [[1.0, 4.0, 7.0], [3.0, 0.0, 5.0], [-1.0, 9.0, 11.0]];
+            let transpose = [[1.0, 3.0, -1.0], [4.0, 0.0, 9.0], [7.0, 5.0, 11.0]];
             let transpose_matrix = matrix3x3::transpose(&matrix);
             assert_eq!(transpose_matrix[0][0], transpose[0][0]);
             assert_eq!(transpose_matrix[0][1], transpose[0][1]);
@@ -331,12 +294,8 @@ mod tests {
 
         #[test]
         fn test_matrix3x3_adjoint() {
-            let matrix = [
-                [1.0, 4.0, 7.0],
-                [3.0, 0.0, 5.0],
-                [-1.0, 9.0, 11.0]
-            ];
-            let adjoint  = [
+            let matrix = [[1.0, 4.0, 7.0], [3.0, 0.0, 5.0], [-1.0, 9.0, 11.0]];
+            let adjoint = [
                 [-45.0, 19.0, 20.0],
                 [-38.0, 18.0, 16.0],
                 [27.0, -13.0, -12.0]

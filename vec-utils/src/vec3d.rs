@@ -1,8 +1,14 @@
 use crate::angle::AngleRadians;
 use crate::quat::Quat;
+use crate::{
+    impl_dual_op_variants, impl_single_op_comm, impl_single_op_variants,
+    impl_single_op_variants_comm
+};
+use core::f64;
+use std::ops::{Add, Div, Mul, Sub};
 
 /// A 3D vector
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone)]
 pub struct Vec3d {
     /// The x component of the vector
     pub x: f64,
@@ -29,22 +35,38 @@ impl Vec3d {
 
     /// Create a new Vec3d with all components set to 0
     pub fn zero() -> Vec3d {
-        Vec3d { x: 0.0, y: 0.0, z: 0.0 }
+        Vec3d {
+            x: 0.0,
+            y: 0.0,
+            z: 0.0
+        }
     }
 
     /// Create a new Vec3d of the i unit vector
     pub fn i() -> Vec3d {
-        Vec3d { x: 1.0, y: 0.0, z: 0.0 }
+        Vec3d {
+            x: 1.0,
+            y: 0.0,
+            z: 0.0
+        }
     }
 
     /// Create a new Vec3d of the j unit vector
     pub fn j() -> Vec3d {
-        Vec3d { x: 0.0, y: 1.0, z: 0.0 }
+        Vec3d {
+            x: 0.0,
+            y: 1.0,
+            z: 0.0
+        }
     }
 
     /// Create a new Vec3d of the k unit vector
     pub fn k() -> Vec3d {
-        Vec3d { x: 0.0, y: 0.0, z: 1.0 }
+        Vec3d {
+            x: 0.0,
+            y: 0.0,
+            z: 1.0
+        }
     }
 
     /// Create a new Vec3d from a quaternion
@@ -171,169 +193,80 @@ impl Vec3d {
     /// Collapse the vector
     /// sets the axis to zero
     /// similar to `project_onto_plane` but might be faster
-    pub fn collapse(&self, axis: &usize) -> Vec3d {
+    pub fn collapse(&self, axis: usize) -> Option<Vec3d> {
         match axis {
-            0 => {
-                Vec3d {
-                    x: 0.0,
-                    y: self.y,
-                    z: self.z
-                }
+            0 => Some(Vec3d {
+                x: 0.0,
+                y: self.y,
+                z: self.z
+            }),
+            1 => Some(Vec3d {
+                x: self.x,
+                y: 0.0,
+                z: self.z
+            }),
+            2 => Some(Vec3d {
+                x: self.x,
+                y: self.y,
+                z: 0.0
+            }),
+            _ => None
+        }
+    }
+}
+
+macro_rules! impl_dual_op {
+    ($trait:ident, $method:ident, $op:tt, $T:ty, $description:literal) => {
+        impl $trait for $T {
+            type Output = $T;
+
+            #[doc = $description]
+            fn $method(self, other: $T) -> $T {
+                Self { x: self.x $op other.x, y: self.y $op other.y, z: self.z $op other.z }
             }
-            1 => {
-                Vec3d {
-                    x: self.x,
-                    y: 0.0,
-                    z: self.z
-                }
-            }
-            2 => {
-                Vec3d {
-                    x: self.x,
-                    y: self.y,
-                    z: 0.0
-                }
-            }
-            _ => {
-                panic!()
+        }
+
+        impl_dual_op_variants!($trait, $method, $T, $description);
+    }
+}
+
+macro_rules! impl_single_op {
+    ($trait:ident, $method:ident, $op:tt, $T:ty, $W:ty, $description:literal) => {
+        impl $trait<$W> for $T {
+            type Output = $T;
+
+            #[doc = $description]
+            fn $method(self, other: $W) -> $T {
+                Self { x: self.x $op other, y: self.y $op other, z: self.z $op other }
             }
         }
+
+        impl_single_op_variants!($trait, $method, $T, $W, $description);
     }
 }
 
-impl std::ops::Add for Vec3d {
-    type Output = Vec3d;
+impl_dual_op!(Add, add, +, Vec3d, "Add two Ved3ds together comonent-wise");
+impl_dual_op!(Sub, sub, -, Vec3d, "Subtract one Vec3d from another component-wise");
 
-    /// Add two Vec3d's together component-wise
-    fn add(self, other: Vec3d) -> Vec3d {
-        &self + &other
-    }
-}
-
-impl std::ops::Add<&Vec3d> for Vec3d {
-    type Output = Vec3d;
-
-    /// Add two Vec3d's together component-wise
-    fn add(self, other: &Vec3d) -> Vec3d {
-        &self + other
-    }
-}
-
-impl std::ops::Add<Vec3d> for &Vec3d {
-    type Output = Vec3d;
-
-    /// Add two Vec3d's together component-wise
-    fn add(self, other: Vec3d) -> Vec3d {
-        self + &other
-    }
-}
-
-impl std::ops::Add<&Vec3d> for &Vec3d {
-    type Output = Vec3d;
-
-    /// Add two Vec3d's together component-wise
-    fn add(self, other: &Vec3d) -> Vec3d {
-        Vec3d {
-            x: self.x + other.x,
-            y: self.y + other.y,
-            z: self.z + other.z
-        }
-    }
-}
-
-impl std::ops::Sub<&Vec3d> for &Vec3d {
-    type Output = Vec3d;
-
-    /// Subtract one Vec3d from another component-wise
-    fn sub(self, other: &Vec3d) -> Vec3d {
-        Vec3d {
-            x: self.x - other.x,
-            y: self.y - other.y,
-            z: self.z - other.z
-        }
-    }
-}
-
-impl std::ops::Sub for Vec3d {
-    type Output = Vec3d;
-
-    /// Subtract one Vec3d from another component-wise
-    fn sub(self, other: Vec3d) -> Vec3d {
-        &self - &other
-    }
-}
-
-impl std::ops::Sub<&Vec3d> for Vec3d {
-    type Output = Vec3d;
-
-    /// Subtract one Vec3d from another component-wise
-    fn sub(self, other: &Vec3d) -> Vec3d {
-        &self - other
-    }
-}
-
-impl std::ops::Sub<Vec3d> for &Vec3d {
-    type Output = Vec3d;
-
-    /// Subtract one Vec3d from another component-wise
-    fn sub(self, other: Vec3d) -> Vec3d {
-        self - &other
-    }
-}
-
-impl std::ops::Mul<f64> for Vec3d {
-    type Output = Vec3d;
-
-    /// Multiply a Vec3d by a scalar
-    fn mul(self, other: f64) -> Vec3d {
-        &self * other
-    }
-}
-
-impl std::ops::Mul<f64> for &Vec3d {
-    type Output = Vec3d;
-
-    /// Multiply a Vec3d by a scalar
-    fn mul(self, other: f64) -> Vec3d {
-        Vec3d {
-            x: self.x * other,
-            y: self.y * other,
-            z: self.z * other
-        }
-    }
-}
-
-impl std::ops::Mul<Vec3d> for f64 {
-    type Output = Vec3d;
-
-    /// Multiply a Vec3d by a scalar
-    fn mul(self, other: Vec3d) -> Vec3d {
-        other * self
-    }
-}
-
-impl std::ops::Div<f64> for Vec3d {
-    type Output = Vec3d;
-
-    /// Divide a Vec3d by a scalar
-    fn div(self, other: f64) -> Vec3d {
-        Vec3d {
-            x: self.x / other,
-            y: self.y / other,
-            z: self.z / other
-        }
-    }
-}
+// NOTE: I cant decide if it makes sense for addition to be communicative
+impl_single_op!(Add, add, +, Vec3d, f64, "Add a scalar to each component of a Vec3d");
+impl_single_op!(Sub, sub, -, Vec3d, f64, "Subtract a scalar from each component of a Vec3d");
+impl_single_op_comm!(Mul, mul, *, Vec3d, f64, "Multiply a Vec3d by a scalar");
+impl_single_op!(Div, div, /, Vec3d, f64, "Divide a Vec3d by a scalar");
 
 impl std::ops::Neg for Vec3d {
     type Output = Vec3d;
 
     fn neg(self) -> Vec3d {
-        Vec3d::new(
-            -self.x,
-            -self.y,
-            -self.z
-        )
+        Vec3d::new(-self.x, -self.y, -self.z)
+    }
+}
+
+impl PartialEq for Vec3d {
+    fn eq(&self, other: &Self) -> bool {
+        (self.x - other.x).abs() < f64::EPSILON
+            && (self.y - other.y).abs() < f64::EPSILON
+            && (self.z - other.z).abs() < f64::EPSILON
     }
 }
 
@@ -363,45 +296,15 @@ impl std::fmt::Display for Vec3d {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use assert_float_eq::assert_f64_near;
+    use pretty_assertions::assert_eq;
 
     #[test]
     fn test_new() {
         let v = Vec3d::new(1.0, 2.0, 3.0);
-        assert_eq!(v.x, 1.0);
-        assert_eq!(v.y, 2.0);
-        assert_eq!(v.z, 3.0);
-    }
-
-    #[test]
-    fn test_zero() {
-        let v = Vec3d::zero();
-        assert_eq!(v.x, 0.0);
-        assert_eq!(v.y, 0.0);
-        assert_eq!(v.z, 0.0);
-    }
-
-    #[test]
-    fn test_i() {
-        let v = Vec3d::i();
-        assert_eq!(v.x, 1.0);
-        assert_eq!(v.y, 0.0);
-        assert_eq!(v.z, 0.0);
-    }
-
-    #[test]
-    fn test_j() {
-        let v = Vec3d::j();
-        assert_eq!(v.x, 0.0);
-        assert_eq!(v.y, 1.0);
-        assert_eq!(v.z, 0.0);
-    }
-
-    #[test]
-    fn test_k() {
-        let v = Vec3d::k();
-        assert_eq!(v.x, 0.0);
-        assert_eq!(v.y, 0.0);
-        assert_eq!(v.z, 1.0);
+        assert_f64_near!(v.x, 1.0);
+        assert_f64_near!(v.y, 2.0);
+        assert_f64_near!(v.z, 3.0);
     }
 
     #[test]
@@ -409,66 +312,87 @@ mod tests {
         let from = Vec3d::new(1.0, 1.0, 1.0);
         let to = Vec3d::new(2.0, 2.0, 2.0);
         let v = Vec3d::new_from_to(&from, &to);
-        assert_eq!(v.x, 1.0);
-        assert_eq!(v.y, 1.0);
-        assert_eq!(v.z, 1.0);
+        let good = Vec3d::new(1.0, 1.0, 1.0);
+        assert_eq!(v, good);
+    }
+
+    #[test]
+    fn test_zero() {
+        let v = Vec3d::zero();
+        let zero = Vec3d::new(0.0, 0.0, 0.0);
+        assert_eq!(v, zero);
+    }
+
+    #[test]
+    fn test_i() {
+        let v = Vec3d::i();
+        let i = Vec3d::new(1.0, 0.0, 0.0);
+        assert_eq!(v, i);
+    }
+
+    #[test]
+    fn test_j() {
+        let v = Vec3d::j();
+        let j = Vec3d::new(0.0, 1.0, 0.0);
+        assert_eq!(v, j);
+    }
+
+    #[test]
+    fn test_k() {
+        let v = Vec3d::k();
+        let k = Vec3d::new(0.0, 0.0, 1.0);
+        assert_eq!(v, k);
     }
 
     #[test]
     fn test_from_quat() {
         let q = Quat::new(1.0, 2.0, 3.0, 4.0);
         let v = Vec3d::from_quat(&q);
-        assert_eq!(v.x, 2.0);
-        assert_eq!(v.y, 3.0);
-        assert_eq!(v.z, 4.0);
+        let good = Vec3d::new(2.0, 3.0, 4.0);
+        assert_eq!(v, good);
     }
 
     #[test]
     fn test_to_array() {
         let v = Vec3d::new(1.0, 2.0, 3.0);
         let arr = v.to_array();
-        assert_eq!(arr[0], 1.0);
-        assert_eq!(arr[1], 2.0);
-        assert_eq!(arr[2], 3.0);
+        let good = [1.0, 2.0, 3.0];
+        assert_f64_near!(arr[0], good[0]);
+        assert_f64_near!(arr[1], good[1]);
+        assert_f64_near!(arr[2], good[2]);
     }
 
     #[test]
     fn test_to_quat() {
         let v = Vec3d::new(1.0, 2.0, 3.0);
         let q = v.to_quat();
-        assert_eq!(q.w, 0.0);
-        assert_eq!(q.i, 1.0);
-        assert_eq!(q.j, 2.0);
-        assert_eq!(q.k, 3.0);
+        let good = Quat::new(0.0, 1.0, 2.0, 3.0);
+        assert_eq!(q, good);
     }
 
     #[test]
     fn test_from_slice() {
-        let v = Vec3d::from_slice(&vec![1.0, 2.0, 3.0]);
-        assert_eq!(v.x, 1.0);
-        assert_eq!(v.y, 2.0);
-        assert_eq!(v.z, 3.0);
+        let v = Vec3d::from_slice(&[1.0, 2.0, 3.0]);
+        let good = Vec3d::new(1.0, 2.0, 3.0);
+        assert_eq!(v, good);
         let arr = [1.0, 2.0, 3.0];
         let v = Vec3d::from_slice(&arr);
-        assert_eq!(v.x, 1.0);
-        assert_eq!(v.y, 2.0);
-        assert_eq!(v.z, 3.0);
+        assert_eq!(v, good);
     }
 
     #[test]
     fn test_to_vec() {
         let v = Vec3d::new(1.0, 2.0, 3.0);
         let vec = v.to_vec();
-        assert_eq!(vec[0], 1.0);
-        assert_eq!(vec[1], 2.0);
-        assert_eq!(vec[2], 3.0);
+        let good = vec![1.0, 2.0, 3.0];
+        assert_eq!(vec, good);
     }
 
     #[test]
     fn test_dot() {
         let v1 = Vec3d::new(1.0, 2.0, 3.0);
         let v2 = Vec3d::new(4.0, 5.0, 6.0);
-        assert_eq!(v1.dot(&v2), 32.0);
+        assert_f64_near!(v1.dot(&v2), 32.0);
     }
 
     #[test]
@@ -476,15 +400,14 @@ mod tests {
         let v1 = Vec3d::new(1.0, 2.0, 3.0);
         let v2 = Vec3d::new(4.0, 5.0, 6.0);
         let v = v1.cross(&v2);
-        assert_eq!(v.x, -3.0);
-        assert_eq!(v.y, 6.0);
-        assert_eq!(v.z, -3.0);
+        let good = Vec3d::new(-3.0, 6.0, -3.0);
+        assert_eq!(v, good);
     }
 
     #[test]
     fn test_magnitude() {
         let v = Vec3d::new(1.0, 2.0, 3.0);
-        assert_eq!(v.magnitude(), 3.7416573867739413);
+        assert_f64_near!(v.magnitude(), 3.741_657_386_773_941_3);
     }
 
     #[test]
@@ -497,9 +420,12 @@ mod tests {
     fn test_normalize() {
         let v = Vec3d::new(1.0, 2.0, 3.0);
         let n = v.normalize();
-        assert_eq!(n.x, 0.2672612419124244);
-        assert_eq!(n.y, 0.5345224838248488);
-        assert_eq!(n.z, 0.8017837257372732);
+        let good = Vec3d::new(
+            0.267_261_241_912_424_4,
+            0.534_522_483_824_848_8,
+            0.801_783_725_737_273_2
+        );
+        assert_eq!(n, good);
     }
 
     #[test]
@@ -511,17 +437,17 @@ mod tests {
 
     #[test]
     fn test_scalar_triple_product() {
-        let v1 = Vec3d::new(1.0, 2.0, 3.0);
-        let v2 = Vec3d::new(4.0, 5.0, 6.0);
-        let v3 = Vec3d::new(7.0, 8.0, 9.0);
-        assert_eq!(Vec3d::scalar_triple_product(&v1, &v2, &v3), 0.0);
+        let v1 = Vec3d::new(1.0, 2.0, 9.0);
+        let v2 = Vec3d::new(7.0, 8.0, 9.0);
+        let v3 = Vec3d::new(4.0, 5.0, 6.0);
+        assert_f64_near!(Vec3d::scalar_triple_product(&v1, &v2, &v3), 18.0);
     }
 
     #[test]
     fn test_distance_to() {
         let v1 = Vec3d::new(1.0, 1.0, 1.0);
         let v2 = Vec3d::new(1.0, 1.0, 6.0);
-        assert_eq!(v1.distance_to(&v2), 5.0);
+        assert_f64_near!(v1.distance_to(&v2), 5.0);
     }
 
     #[test]
@@ -529,7 +455,7 @@ mod tests {
         let v1 = Vec3d::new(1.0, 1.0, 0.0);
         let v2 = Vec3d::new(1.0, 1.0, 6.0);
         let v3 = Vec3d::new(1.0, 0.0, 3.0);
-        assert_eq!(v3.distance_to_line(&v1, &v2), 1.0);
+        assert_f64_near!(v3.distance_to_line(&v1, &v2), 1.0);
     }
 
     #[test]
@@ -537,54 +463,104 @@ mod tests {
         let v = Vec3d::new(1.0, 2.0, 3.0);
         let n = Vec3d::new(0.0, 0.0, 1.0);
         let p = v.project_onto_plane(&n);
-        assert_eq!(p.x, 1.0);
-        assert_eq!(p.y, 2.0);
-        assert_eq!(p.z, 0.0);
+        let good = Vec3d::new(1.0, 2.0, 0.0);
+        assert_eq!(p, good);
     }
 
     #[test]
+    fn collapse() {
+        let v = Vec3d::new(1.0, 2.0, 3.0);
+        let p = v.collapse(2).unwrap();
+        let good = Vec3d::new(1.0, 2.0, 0.0);
+        assert_eq!(p, good);
+        assert_eq!(v.collapse(13), None);
+    }
+
+    #[test]
+    #[allow(clippy::op_ref)]
     fn test_add() {
         let v1 = Vec3d::new(1.0, 2.0, 3.0);
         let v2 = Vec3d::new(4.0, 5.0, 6.0);
         let v = v1 + v2;
-        assert_eq!(v.x, 5.0);
-        assert_eq!(v.y, 7.0);
-        assert_eq!(v.z, 9.0);
+        let good = Vec3d::new(5.0, 7.0, 9.0);
+        assert_eq!(v, good);
+        let v = &v1 + v2;
+        assert_eq!(v, good);
+        let v = v1 + &v2;
+        assert_eq!(v, good);
+        let v = &v1 + &v2;
+        assert_eq!(v, good);
+        let good = Vec3d::new(5.0, 6.0, 7.0);
+        let v = v1 + 4.0;
+        assert_eq!(v, good);
+        let v = &v1 + 4.0;
+        assert_eq!(v, good);
+        let v = v1 + &4.0;
+        assert_eq!(v, good);
+        let v = &v1 + &4.0;
+        assert_eq!(v, good);
     }
 
     #[test]
+    #[allow(clippy::op_ref)]
     fn test_sub() {
         let v1 = Vec3d::new(1.0, 2.0, 3.0);
         let v2 = Vec3d::new(4.0, 5.0, 6.0);
         let v = v1 - v2;
-        assert_eq!(v.x, -3.0);
-        assert_eq!(v.y, -3.0);
-        assert_eq!(v.z, -3.0);
+        let good = Vec3d::new(-3.0, -3.0, -3.0);
+        assert_eq!(v, good);
+        let v = &v1 - v2;
+        assert_eq!(v, good);
+        let v = v1 - &v2;
+        assert_eq!(v, good);
+        let v = &v1 - &v2;
+        assert_eq!(v, good);
+        let good = Vec3d::new(-3.0, -2.0, -1.0);
+        let v = v1 - 4.0;
+        assert_eq!(v, good);
+        let v = &v1 - 4.0;
+        assert_eq!(v, good);
+        let v = v1 - &4.0;
+        assert_eq!(v, good);
+        let v = &v1 - &4.0;
+        assert_eq!(v, good);
     }
 
     #[test]
+    #[allow(clippy::op_ref)]
     fn test_mul() {
         let v1 = Vec3d::new(1.0, 2.0, 3.0);
         let v = v1 * 2.0;
-        assert_eq!(v.x, 2.0);
-        assert_eq!(v.y, 4.0);
-        assert_eq!(v.z, 6.0);
+        let good = Vec3d::new(2.0, 4.0, 6.0);
+        assert_eq!(v, good);
+        let v = &v1 * 2.0;
+        assert_eq!(v, good);
+        let v = v1 * &2.0;
+        assert_eq!(v, good);
+        let v = &v1 * &2.0;
+        assert_eq!(v, good);
     }
 
     #[test]
+    #[allow(clippy::op_ref)]
     fn test_div() {
         let v1 = Vec3d::new(1.0, 2.0, 3.0);
         let v = v1 / 2.0;
-        assert_eq!(v.x, 0.5);
-        assert_eq!(v.y, 1.0);
-        assert_eq!(v.z, 1.5);
+        let good = Vec3d::new(0.5, 1.0, 1.5);
+        assert_eq!(v, good);
+        let v = &v1 / 2.0;
+        assert_eq!(v, good);
+        let v = v1 / &2.0;
+        assert_eq!(v, good);
+        let v = &v1 / &2.0;
+        assert_eq!(v, good);
     }
 
     #[test]
     fn test_index() {
         let v = Vec3d::new(1.0, 2.0, 3.0);
-        assert_eq!(v[0], 1.0);
-        assert_eq!(v[1], 2.0);
-        assert_eq!(v[2], 3.0);
+        assert_f64_near!(v[0], 1.0);
+        assert_f64_near!(v[1], 2.0);
+        assert_f64_near!(v[2], 3.0);
     }
 }

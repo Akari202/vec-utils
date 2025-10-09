@@ -10,4 +10,11 @@ https://eater.net/quaternions
 https://ulissigroup.cheme.cmu.edu/math-methods-chemical-engineering/notes/linear_algebra/7b-numerical-eigenvalues.html
 https://stackoverflow.com/questions/6684238/whats-the-fastest-way-to-find-eigenvalues-vectors-in-python
 https://patrickwalls.github.io/mathematicalpython/linear-algebra/eigenvalues-eigenvectors/
+https://math.stackexchange.com/questions/2377980/book-recommendations-for-linear-algebra
+https://github.com/NeilStrickland/linear_maths
+https://www.cs.ox.ac.uk/files/12921/book.pdf
+https://www.cis.upenn.edu/~cis5150/linalg-I-f.pdf
+https://la4cs.com/files/LA4CS-Free.pdf
+Linear Algebra for Computational Sciences and Engineering
+https://stackoverflow.com/questions/79631106/whats-the-difference-between-reprrust-reprc-and-reprpacked
 

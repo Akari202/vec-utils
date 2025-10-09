@@ -1,8 +1,9 @@
-use super::quat::Quat;
-use super::vec3d::Vec3d;
 use pyo3::prelude::*;
 use rayon::prelude::*;
 use vec_utils::*;
+
+use super::quat::Quat;
+use super::vec3d::Vec3d;
 
 #[pyclass]
 pub struct VecList {

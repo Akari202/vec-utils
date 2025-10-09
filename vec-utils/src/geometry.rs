@@ -1,6 +1,5 @@
 //! Geometry module
 //! This module contains geometric shapes and operations on them.
-//!
 
 /// Circles
 pub mod circle;

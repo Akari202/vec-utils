@@ -1,8 +1,9 @@
+use pyo3::prelude::*;
+use vec_utils::*;
+
 use super::super::vec3d::Vec3d;
 use super::circle::Circle;
 use super::plane::Plane;
-use pyo3::prelude::*;
-use vec_utils::*;
 
 #[pyfunction]
 pub fn circle_circle(circle1: &Circle, circle2: &Circle) -> Option<(Vec3d, Vec3d)> {

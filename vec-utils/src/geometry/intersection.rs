@@ -160,12 +160,13 @@ pub fn sphere_point(sphere: &Sphere, point: &Vec3d, inner: bool) -> bool {
 
 #[cfg(test)]
 mod tests {
+    use pretty_assertions::assert_eq;
+
     use super::*;
     use crate::angle::AngleRadians;
     use crate::geometry::circle::Circle;
     use crate::geometry::sphere::Sphere;
     use crate::vec3d::Vec3d;
-    use pretty_assertions::assert_eq;
 
     #[test]
     fn test_sphere_sphere_intersection() {

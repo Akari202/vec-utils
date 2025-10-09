@@ -11,15 +11,15 @@ mod vec_list;
 mod vec_utils_py {
     use super::*;
     #[pymodule_export]
-    use crate::angle::AngleRadians;
-    #[pymodule_export]
     use crate::angle::AngleDegrees;
+    #[pymodule_export]
+    use crate::angle::AngleRadians;
     #[pymodule_export]
     use crate::quat::Quat;
     #[pymodule_export]
-    use crate::vec3d::Vec3d;
-    #[pymodule_export]
     use crate::vec_list::VecList;
+    #[pymodule_export]
+    use crate::vec3d::Vec3d;
     #[pymodule]
     mod geometry {
         #[pymodule_export]

@@ -65,30 +65,35 @@ impl AngleRadians {
             inner: angle::AngleRadians::pi()
         }
     }
+
     #[staticmethod]
     pub fn two_pi() -> Self {
         AngleRadians {
             inner: angle::AngleRadians::two_pi()
         }
     }
+
     #[staticmethod]
     pub fn half_pi() -> Self {
         AngleRadians {
             inner: angle::AngleRadians::half_pi()
         }
     }
+
     #[staticmethod]
     pub fn quarter_pi() -> Self {
         AngleRadians {
             inner: angle::AngleRadians::quarter_pi()
         }
     }
+
     #[staticmethod]
     pub fn third_pi() -> Self {
         AngleRadians {
             inner: angle::AngleRadians::third_pi()
         }
     }
+
     #[staticmethod]
     pub fn sixth_pi() -> Self {
         AngleRadians {
@@ -115,18 +120,23 @@ impl AngleRadians {
     pub fn sin(&self) -> f64 {
         self.inner.sin()
     }
+
     pub fn cos(&self) -> f64 {
         self.inner.cos()
     }
+
     pub fn tan(&self) -> f64 {
         self.inner.tan()
     }
+
     pub fn sec(&self) -> f64 {
         self.inner.sec()
     }
+
     pub fn csc(&self) -> f64 {
         self.inner.csc()
     }
+
     pub fn cot(&self) -> f64 {
         self.inner.cot()
     }

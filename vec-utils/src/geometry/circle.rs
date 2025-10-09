@@ -1,6 +1,7 @@
+use std::f64::consts::PI;
+
 use crate::geometry::plane::Plane;
 use crate::vec3d::Vec3d;
-use std::f64::consts::PI;
 
 /// A circle in 3d space
 #[derive(Debug, Clone, Copy)]

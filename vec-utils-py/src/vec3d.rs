@@ -1,7 +1,8 @@
-use super::angle::AngleRadians;
-use super::quat::Quat;
 use pyo3::prelude::*;
 use vec_utils::*;
+
+use super::angle::AngleRadians;
+use super::quat::Quat;
 
 #[pyclass]
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -57,10 +58,12 @@ impl Vec3d {
     pub fn x(&self) -> f64 {
         self.inner.x
     }
+
     #[getter]
     pub fn y(&self) -> f64 {
         self.inner.y
     }
+
     #[getter]
     pub fn z(&self) -> f64 {
         self.inner.z
@@ -70,10 +73,12 @@ impl Vec3d {
     pub fn set_x(&mut self, value: f64) {
         self.inner.x = value;
     }
+
     #[setter]
     pub fn set_y(&mut self, value: f64) {
         self.inner.y = value;
     }
+
     #[setter]
     pub fn set_z(&mut self, value: f64) {
         self.inner.z = value;

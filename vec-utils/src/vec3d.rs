@@ -1,11 +1,12 @@
+use core::f64;
+use std::ops::{Add, Div, Mul, Sub};
+
 use crate::angle::AngleRadians;
 use crate::quat::Quat;
 use crate::{
     impl_dual_op_variants, impl_single_op_comm, impl_single_op_variants,
     impl_single_op_variants_comm
 };
-use core::f64;
-use std::ops::{Add, Div, Mul, Sub};
 
 /// A 3D vector
 #[derive(Debug, Copy, Clone)]
@@ -295,9 +296,10 @@ impl std::fmt::Display for Vec3d {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use assert_float_eq::assert_f64_near;
     use pretty_assertions::assert_eq;
+
+    use super::*;
 
     #[test]
     fn test_new() {

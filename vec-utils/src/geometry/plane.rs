@@ -87,11 +87,12 @@ impl PartialEq for Plane {
 
 #[cfg(test)]
 mod tests {
+    use assert_float_eq::assert_f64_near;
+    use pretty_assertions::assert_eq;
+
     use super::*;
     use crate::angle::AngleRadians;
     use crate::vec3d::Vec3d;
-    use assert_float_eq::assert_f64_near;
-    use pretty_assertions::assert_eq;
 
     #[test]
     fn test_new() {

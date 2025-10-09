@@ -1,16 +1,19 @@
-# DONT USE
-
 VERSION = "0.2.1"
 
 locations = [
-    ("./vec-utils/Cargo.toml", "package"),
-    ("./vec-utils-py/Cargo.toml", "package"),
-    ("./vec-utils-py/pyproject.toml", "project"),
+    "./vec-utils/Cargo.toml",
+    "./vec-utils-py/Cargo.toml",
+    "./vec-utils-py/pyproject.toml",
 ]
 
 for i in locations:
-    with open(i[0], "r") as file:
-        data = toml.load(file)
-    data[i[1]]["version"] = VERSION
-    # with open(i[0], "w") as file:
-    #     toml.dump(data, file)
+    with open(i, "r") as file:
+        data = file.readlines()
+    data[2] = f'version = "{VERSION}"\n'
+    # for i in data:
+    #     print(i, end="")
+    # Avoid writing a CLRF
+    # https://stackoverflow.com/questions/76382887/how-to-fix-the-line-ending-style-either-crlf-or-lf-in-python-when-written-a-te
+    with open(i, "w", encoding="utf-8", newline="\n") as file:
+        file.writelines(data)
+    print(f"{i} version updated")

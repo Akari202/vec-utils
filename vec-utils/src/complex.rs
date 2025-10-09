@@ -1,8 +1,9 @@
+use std::ops::{Add, Div, Mul, Sub};
+
 use crate::{
     impl_dual_op_variants, impl_single_op_comm, impl_single_op_variants,
     impl_single_op_variants_comm, impl_single_op_variants_other
 };
-use std::ops::{Add, Div, Mul, Sub};
 
 /// A complex number
 #[derive(Debug, Copy, Clone, PartialEq)]
@@ -224,8 +225,9 @@ impl std::fmt::Display for Complex {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use assert_float_eq::assert_f64_near;
+
+    use super::*;
 
     #[test]
     fn test_new() {

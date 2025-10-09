@@ -1,7 +1,8 @@
-use super::super::vec3d::Vec3d;
-use super::plane::Plane;
 use pyo3::prelude::*;
 use vec_utils::*;
+
+use super::super::vec3d::Vec3d;
+use super::plane::Plane;
 
 #[pyclass]
 #[derive(Debug, Clone, Copy)]
@@ -21,11 +22,7 @@ impl Circle {
     #[staticmethod]
     pub fn none() -> Self {
         Circle {
-            inner: geometry::circle::Circle::new(
-                       &vec3d::Vec3d::zero(),
-                       0.0,
-                       &vec3d::Vec3d::zero()
-                       )
+            inner: geometry::circle::Circle::new(&vec3d::Vec3d::zero(), 0.0, &vec3d::Vec3d::zero())
         }
     }
 

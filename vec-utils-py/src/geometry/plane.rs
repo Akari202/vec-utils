@@ -1,6 +1,7 @@
-use super::super::vec3d::Vec3d;
 use pyo3::prelude::*;
 use vec_utils::*;
+
+use super::super::vec3d::Vec3d;
 
 #[pyclass]
 #[derive(Debug, Clone, Copy, PartialEq)]

@@ -1,10 +1,11 @@
+use std::ops::{Add, Div, Mul, Sub};
+
 use crate::angle::AngleRadians;
 use crate::vec3d::Vec3d;
 use crate::{
     impl_dual_op_variants, impl_single_op_comm, impl_single_op_variants,
     impl_single_op_variants_comm
 };
-use std::ops::{Add, Div, Mul, Sub};
 
 /// A quaternion
 #[derive(Debug, Copy, Clone)]
@@ -277,9 +278,10 @@ impl PartialEq for Quat {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use assert_float_eq::assert_f64_near;
     use pretty_assertions::assert_eq;
+
+    use super::*;
 
     #[test]
     fn test_new() {

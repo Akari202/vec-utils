@@ -17,4 +17,8 @@ https://www.cis.upenn.edu/~cis5150/linalg-I-f.pdf
 https://la4cs.com/files/LA4CS-Free.pdf
 Linear Algebra for Computational Sciences and Engineering
 https://stackoverflow.com/questions/79631106/whats-the-difference-between-reprrust-reprc-and-reprpacked
+https://www.cs.utexas.edu/~ear/cs341/automatabook/AutomataTheoryBook.pdf
 
+https://dl.acm.org/doi/pdf/10.1145/360825.360855
+https://docs.google.com/document/d/1KkKC2-ozJkvbWQIAXeJ1MUGqxjn19c-Mmc7RtxFTA3c/edit?tab=t.0
+https://ntrs.nasa.gov/api/citations/19900013774/downloads/19900013774.pdf

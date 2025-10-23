@@ -15,6 +15,8 @@ pub mod angle;
 pub mod complex;
 /// 3d geometry operations and functions
 pub mod geometry;
+/// Hilbert curve mapping
+pub mod hilbert;
 /// Internal macros
 pub(crate) mod macros;
 /// Functions for working with matrices

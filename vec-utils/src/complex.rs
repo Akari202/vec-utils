@@ -6,6 +6,7 @@ use crate::{
 };
 
 /// A complex number
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Complex {
     /// The real part of the complex number
@@ -101,7 +102,7 @@ impl_dual_op_variants!(
 impl std::ops::Mul<f64> for Complex {
     type Output = Complex;
 
-    /// Multiply a complex by a real numer
+    /// Multiply a complex by a real number
     fn mul(self, other: f64) -> Complex {
         Complex {
             real: self.real * other,
@@ -121,7 +122,7 @@ impl_single_op_variants!(
 impl std::ops::Mul<Complex> for f64 {
     type Output = Complex;
 
-    /// Multiply a real numer by a complex number
+    /// Multiply a real number by a complex number
     fn mul(self, other: Complex) -> Complex {
         Complex {
             real: self * other.real,
@@ -135,7 +136,7 @@ impl_single_op_variants_other!(
     mul,
     f64,
     Complex,
-    "Multiply a real numer by a complex number"
+    "Multiply a real number by a complex number"
 );
 
 impl std::ops::Div<Complex> for Complex {
@@ -162,7 +163,7 @@ impl_dual_op_variants!(
 impl std::ops::Div<f64> for Complex {
     type Output = Complex;
 
-    /// Divide a complex number by a real numer
+    /// Divide a complex number by a real number
     fn div(self, other: f64) -> Complex {
         Complex {
             real: self.real * other / other.powi(2),
@@ -182,7 +183,7 @@ impl_single_op_variants!(
 impl std::ops::Div<Complex> for f64 {
     type Output = Complex;
 
-    /// Divide a real numer by a complex number
+    /// Divide a real number by a complex number
     fn div(self, other: Complex) -> Complex {
         Complex {
             real: self * other.real / (other.real.powi(2) + other.imaginary.powi(2)),
@@ -196,7 +197,7 @@ impl_single_op_variants_other!(
     div,
     f64,
     Complex,
-    "Divide a real numer by a complex number"
+    "Divide a real number by a complex number"
 );
 
 impl std::ops::Index<usize> for Complex {

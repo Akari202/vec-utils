@@ -9,6 +9,7 @@ use crate::{
 };
 
 /// A 3D vector
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Copy, Clone)]
 pub struct Vec3d {
     /// The x component of the vector
@@ -249,7 +250,7 @@ macro_rules! impl_single_op {
 impl_dual_op!(Add, add, +, Vec3d, "Add two Ved3ds together comonent-wise");
 impl_dual_op!(Sub, sub, -, Vec3d, "Subtract one Vec3d from another component-wise");
 
-// NOTE: I cant decide if it makes sense for addition to be communicative
+// NOTE: I can't decide if it makes sense for addition to be communicative
 impl_single_op!(Add, add, +, Vec3d, f64, "Add a scalar to each component of a Vec3d");
 impl_single_op!(Sub, sub, -, Vec3d, f64, "Subtract a scalar from each component of a Vec3d");
 impl_single_op_comm!(Mul, mul, *, Vec3d, f64, "Multiply a Vec3d by a scalar");

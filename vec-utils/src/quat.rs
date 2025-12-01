@@ -8,6 +8,7 @@ use crate::{
 };
 
 /// A quaternion
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Copy, Clone)]
 pub struct Quat {
     /// The real component of the quaternion
@@ -215,7 +216,7 @@ macro_rules! impl_single_op {
 impl_dual_op!(Add, add, +, Quat, "Add two Quats together comonent-wise");
 impl_dual_op!(Sub, sub, -, Quat, "Subtract one Quat from another component-wise");
 
-// NOTE: I cant decide if it makes sense for addition to be communicative
+// NOTE: I can't decide if it makes sense for addition to be communicative
 impl_single_op!(Add, add, +, Quat, f64, "Add a scalar to each component of a Quat");
 impl_single_op!(Sub, sub, -, Quat, f64, "Subtract a scalar from each component of a Quat");
 impl_single_op_comm!(Mul, mul, *, Quat, f64, "Multiply a Quat by a scalar");

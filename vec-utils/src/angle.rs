@@ -1,6 +1,7 @@
 use std::f64::consts::PI;
 
 /// An angle in degrees
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]
 pub struct AngleDegrees {
     /// The angle in degrees
@@ -8,6 +9,7 @@ pub struct AngleDegrees {
 }
 
 /// An angle in radians, f64 is assumed to be in radians
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]
 pub struct AngleRadians {
     /// The angle in radians
@@ -241,21 +243,21 @@ impl std::ops::Neg for AngleDegrees {
     }
 }
 
-// impl std::cmp::Ord for AngleRadians {
-//     fn cmp(&self, rhs: &AngleRadians) -> std::cmp::Ordering {
-//         self.partial_cmp(rhs).unwrap()
-//     }
-// }
-//
-// impl std::cmp::Ord for AngleDegrees {
-//     fn cmp(&self, rhs: &AngleDegrees) -> std::cmp::Ordering {
-//         self.partial_cmp(rhs).unwrap()
-//     }
-// }
-//
-// impl std::cmp::Eq for AngleRadians {}
-//
-// impl std::cmp::Eq for AngleDegrees {}
+impl std::cmp::Ord for AngleRadians {
+    fn cmp(&self, rhs: &AngleRadians) -> std::cmp::Ordering {
+        self.partial_cmp(rhs).unwrap()
+    }
+}
+
+impl std::cmp::Ord for AngleDegrees {
+    fn cmp(&self, rhs: &AngleDegrees) -> std::cmp::Ordering {
+        self.partial_cmp(rhs).unwrap()
+    }
+}
+
+impl std::cmp::Eq for AngleRadians {}
+
+impl std::cmp::Eq for AngleDegrees {}
 
 impl std::fmt::Display for AngleRadians {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {

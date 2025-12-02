@@ -1,4 +1,5 @@
-use std::f64::consts::PI;
+use core::f64::consts::PI;
+use core::{cmp, fmt, ops};
 
 /// An angle in degrees
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -59,17 +60,26 @@ impl AngleRadians {
 
     /// Get the sine of the angle
     pub fn sin(&self) -> f64 {
-        self.angle.sin()
+        #[cfg(not(feature = "std"))]
+        return libm::sin(self.angle);
+        #[cfg(feature = "std")]
+        return self.angle.sin();
     }
 
     /// Get the cosine of the angle
     pub fn cos(&self) -> f64 {
-        self.angle.cos()
+        #[cfg(not(feature = "std"))]
+        return libm::cos(self.angle);
+        #[cfg(feature = "std")]
+        return self.angle.cos();
     }
 
     /// Get the tangent of the angle
     pub fn tan(&self) -> f64 {
-        self.angle.tan()
+        #[cfg(not(feature = "std"))]
+        return libm::tan(self.angle);
+        #[cfg(feature = "std")]
+        return self.angle.tan();
     }
 
     /// Get the secant of the angle
@@ -187,7 +197,7 @@ impl From<&AngleRadians> for f64 {
     }
 }
 
-impl std::ops::Div<f64> for AngleRadians {
+impl ops::Div<f64> for AngleRadians {
     type Output = AngleRadians;
 
     fn div(self, rhs: f64) -> AngleRadians {
@@ -195,7 +205,7 @@ impl std::ops::Div<f64> for AngleRadians {
     }
 }
 
-impl std::ops::Mul<f64> for AngleRadians {
+impl ops::Mul<f64> for AngleRadians {
     type Output = AngleRadians;
 
     fn mul(self, rhs: f64) -> AngleRadians {
@@ -203,7 +213,7 @@ impl std::ops::Mul<f64> for AngleRadians {
     }
 }
 
-impl std::ops::Mul<f64> for AngleDegrees {
+impl ops::Mul<f64> for AngleDegrees {
     type Output = AngleDegrees;
 
     fn mul(self, rhs: f64) -> AngleDegrees {
@@ -211,7 +221,7 @@ impl std::ops::Mul<f64> for AngleDegrees {
     }
 }
 
-impl std::ops::Add<AngleRadians> for AngleRadians {
+impl ops::Add<AngleRadians> for AngleRadians {
     type Output = AngleRadians;
 
     fn add(self, rhs: AngleRadians) -> AngleRadians {
@@ -219,7 +229,7 @@ impl std::ops::Add<AngleRadians> for AngleRadians {
     }
 }
 
-impl std::ops::Sub<AngleRadians> for AngleRadians {
+impl ops::Sub<AngleRadians> for AngleRadians {
     type Output = AngleRadians;
 
     fn sub(self, rhs: AngleRadians) -> AngleRadians {
@@ -227,7 +237,7 @@ impl std::ops::Sub<AngleRadians> for AngleRadians {
     }
 }
 
-impl std::ops::Neg for AngleRadians {
+impl ops::Neg for AngleRadians {
     type Output = AngleRadians;
 
     fn neg(self) -> AngleRadians {
@@ -235,7 +245,7 @@ impl std::ops::Neg for AngleRadians {
     }
 }
 
-impl std::ops::Neg for AngleDegrees {
+impl ops::Neg for AngleDegrees {
     type Output = AngleDegrees;
 
     fn neg(self) -> AngleDegrees {
@@ -243,24 +253,24 @@ impl std::ops::Neg for AngleDegrees {
     }
 }
 
-impl std::cmp::Ord for AngleRadians {
-    fn cmp(&self, rhs: &AngleRadians) -> std::cmp::Ordering {
+impl cmp::Ord for AngleRadians {
+    fn cmp(&self, rhs: &AngleRadians) -> cmp::Ordering {
         self.partial_cmp(rhs).unwrap()
     }
 }
 
-impl std::cmp::Ord for AngleDegrees {
-    fn cmp(&self, rhs: &AngleDegrees) -> std::cmp::Ordering {
+impl cmp::Ord for AngleDegrees {
+    fn cmp(&self, rhs: &AngleDegrees) -> cmp::Ordering {
         self.partial_cmp(rhs).unwrap()
     }
 }
 
-impl std::cmp::Eq for AngleRadians {}
+impl cmp::Eq for AngleRadians {}
 
-impl std::cmp::Eq for AngleDegrees {}
+impl cmp::Eq for AngleDegrees {}
 
-impl std::fmt::Display for AngleRadians {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Display for AngleRadians {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(precision) = f.precision() {
             write!(f, "{:.1$} radians", self.angle, precision)
         } else {
@@ -269,8 +279,8 @@ impl std::fmt::Display for AngleRadians {
     }
 }
 
-impl std::fmt::Display for AngleDegrees {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Display for AngleDegrees {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Some(precision) = f.precision() {
             write!(f, "{:.1$}°", self.angle, precision)
         } else {

@@ -1,3 +1,5 @@
+use core::f64::consts::PI;
+
 use crate::vec3d::Vec3d;
 
 /// A sphere in space
@@ -20,6 +22,9 @@ impl Sphere {
 
     /// Get the volume of the sphere
     pub fn volume(&self) -> f64 {
-        4.0 / 3.0 * std::f64::consts::PI * self.radius.powi(3)
+        #[cfg(not(feature = "std"))]
+        return 4.0 / 3.0 * PI * core::f64::math::powi(self.radius, 3);
+        #[cfg(feature = "std")]
+        return 4.0 / 3.0 * PI * self.radius.powi(3);
     }
 }

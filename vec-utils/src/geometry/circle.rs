@@ -1,4 +1,4 @@
-use std::f64::consts::PI;
+use core::f64::consts::PI;
 
 use crate::geometry::plane::Plane;
 use crate::vec3d::Vec3d;
@@ -31,7 +31,10 @@ impl Circle {
 
     /// Get the area of the circle
     pub fn get_area(&self) -> f64 {
-        PI * self.radius.powi(2)
+        #[cfg(not(feature = "std"))]
+        return PI * core::f64::math::powi(self.radius, 2);
+        #[cfg(feature = "std")]
+        return PI * self.radius.powi(2);
     }
 
     /// Check if the circle is in the same plane as a second circle

@@ -1,5 +1,7 @@
-use core::f64;
-use std::ops::{Add, Div, Mul, Sub};
+use core::ops::{Add, Div, Index, Mul, Neg, Sub};
+use core::{f64, fmt};
+#[cfg(feature = "std")]
+use std::vec::Vec;
 
 use crate::angle::AngleRadians;
 use crate::quat::Quat;
@@ -111,6 +113,7 @@ impl Vec3d {
     }
 
     /// Convert the Vec3d to a Vec of f64 with length 3
+    #[cfg(feature = "std")]
     pub fn to_vec(&self) -> Vec<f64> {
         vec![self.x, self.y, self.z]
     }
@@ -131,7 +134,10 @@ impl Vec3d {
 
     /// Calculate the magnitude of the Vec3d
     pub fn magnitude(&self) -> f64 {
-        (self.x * self.x + self.y * self.y + self.z * self.z).sqrt()
+        #[cfg(not(feature = "std"))]
+        return core::f64::math::sqrt(self.x * self.x + self.y * self.y + self.z * self.z);
+        #[cfg(feature = "std")]
+        return (self.x * self.x + self.y * self.y + self.z * self.z).sqrt();
     }
 
     /// Check if the Vec3d is a unit vector
@@ -152,7 +158,14 @@ impl Vec3d {
     /// Calculate the angle between two Vec3d's
     /// the result is in radians
     pub fn angle_to(&self, other: &Vec3d) -> AngleRadians {
-        AngleRadians::new((self.dot(other) / (self.magnitude() * other.magnitude())).acos())
+        #[cfg(not(feature = "std"))]
+        return AngleRadians::new(libm::acos(
+            self.dot(other) / (self.magnitude() * other.magnitude())
+        ));
+        #[cfg(feature = "std")]
+        return AngleRadians::new(
+            (self.dot(other) / (self.magnitude() * other.magnitude())).acos()
+        );
     }
 
     /// Calculate the scalar triple product of three Vec3d's
@@ -256,7 +269,7 @@ impl_single_op!(Sub, sub, -, Vec3d, f64, "Subtract a scalar from each component 
 impl_single_op_comm!(Mul, mul, *, Vec3d, f64, "Multiply a Vec3d by a scalar");
 impl_single_op!(Div, div, /, Vec3d, f64, "Divide a Vec3d by a scalar");
 
-impl std::ops::Neg for Vec3d {
+impl Neg for Vec3d {
     type Output = Vec3d;
 
     fn neg(self) -> Vec3d {
@@ -272,7 +285,7 @@ impl PartialEq for Vec3d {
     }
 }
 
-impl std::ops::Index<usize> for Vec3d {
+impl Index<usize> for Vec3d {
     type Output = f64;
 
     /// Index into a Vec3d
@@ -288,9 +301,9 @@ impl std::ops::Index<usize> for Vec3d {
     }
 }
 
-impl std::fmt::Display for Vec3d {
+impl fmt::Display for Vec3d {
     /// Format the Vec3d as a string
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({}, {}, {})", self.x, self.y, self.z)
     }
 }
@@ -384,6 +397,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "std")]
     fn test_to_vec() {
         let v = Vec3d::new(1.0, 2.0, 3.0);
         let vec = v.to_vec();
@@ -435,7 +449,7 @@ mod tests {
     fn test_angle_to() {
         let v1 = Vec3d::k();
         let v2 = Vec3d::i();
-        assert_eq!(v1.angle_to(&v2), std::f64::consts::FRAC_PI_2.into());
+        assert_eq!(v1.angle_to(&v2), core::f64::consts::FRAC_PI_2.into());
     }
 
     #[test]

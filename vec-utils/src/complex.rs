@@ -1,4 +1,5 @@
-use std::ops::{Add, Div, Mul, Sub};
+use core::fmt;
+use core::ops::{Add, Div, Index, Mul, Sub};
 
 use crate::{
     impl_dual_op_variants, impl_single_op_comm, impl_single_op_variants,
@@ -24,15 +25,25 @@ impl Complex {
     /// Create a new complex number from the square root of a real number
     pub fn sqrt(num: f64) -> Complex {
         if num < 0.0 {
-            Complex::new(0.0, num.abs().sqrt())
-        } else {
-            Complex::new(num.sqrt(), 0.0)
+            #[cfg(not(feature = "std"))]
+            return Complex::new(0.0, core::f64::math::sqrt(num.abs()));
+            #[cfg(feature = "std")]
+            return Complex::new(0.0, num.abs().sqrt());
         }
+        #[cfg(not(feature = "std"))]
+        return Complex::new(core::f64::math::sqrt(num), 0.0);
+        #[cfg(feature = "std")]
+        return Complex::new(num.sqrt(), 0.0);
     }
 
     /// Get the magnitude of the complex number
     pub fn magnitude(&self) -> f64 {
-        (self.real.powi(2) + self.imaginary.powi(2)).sqrt()
+        #[cfg(not(feature = "std"))]
+        return core::f64::math::sqrt(
+            core::f64::math::powi(self.real, 2) + core::f64::math::powi(self.imaginary, 2)
+        );
+        #[cfg(feature = "std")]
+        return (self.real.powi(2) + self.imaginary.powi(2)).sqrt();
     }
 
     /// Get the conjugate of the complex number
@@ -80,7 +91,7 @@ impl_dual_op!(Sub, sub, -, Complex, "Subtract one complex number from another");
 impl_single_op_comm!(Add, add, +, Complex, f64, "Add a scalar to a complex number");
 impl_single_op!(Sub, sub, -, Complex, f64, "Subtract a scalar from a complex number");
 
-impl std::ops::Mul<Complex> for Complex {
+impl Mul<Complex> for Complex {
     type Output = Complex;
 
     /// Multiply a complex number by another complex number
@@ -99,7 +110,7 @@ impl_dual_op_variants!(
     "Multiply a complex number by another complex number"
 );
 
-impl std::ops::Mul<f64> for Complex {
+impl Mul<f64> for Complex {
     type Output = Complex;
 
     /// Multiply a complex by a real number
@@ -119,7 +130,7 @@ impl_single_op_variants!(
     "Multiply a complex number by a real number"
 );
 
-impl std::ops::Mul<Complex> for f64 {
+impl Mul<Complex> for f64 {
     type Output = Complex;
 
     /// Multiply a real number by a complex number
@@ -139,17 +150,27 @@ impl_single_op_variants_other!(
     "Multiply a real number by a complex number"
 );
 
-impl std::ops::Div<Complex> for Complex {
+impl Div<Complex> for Complex {
     type Output = Complex;
 
     /// Divide a complex number by another complex number
     fn div(self, other: Complex) -> Complex {
-        Complex {
+        #[cfg(not(feature = "std"))]
+        return Complex {
+            real: (self.real * other.real + self.imaginary * other.imaginary)
+                / (core::f64::math::powi(other.real, 2)
+                    + core::f64::math::powi(other.imaginary, 2)),
+            imaginary: (self.imaginary * other.real - self.real * other.imaginary)
+                / (core::f64::math::powi(other.real, 2)
+                    + core::f64::math::powi(other.imaginary, 2))
+        };
+        #[cfg(feature = "std")]
+        return Complex {
             real: (self.real * other.real + self.imaginary * other.imaginary)
                 / (other.real.powi(2) + other.imaginary.powi(2)),
             imaginary: (self.imaginary * other.real - self.real * other.imaginary)
                 / (other.real.powi(2) + other.imaginary.powi(2))
-        }
+        };
     }
 }
 
@@ -160,15 +181,21 @@ impl_dual_op_variants!(
     "Divide a complex number by another complex number"
 );
 
-impl std::ops::Div<f64> for Complex {
+impl Div<f64> for Complex {
     type Output = Complex;
 
     /// Divide a complex number by a real number
     fn div(self, other: f64) -> Complex {
-        Complex {
+        #[cfg(not(feature = "std"))]
+        return Complex {
+            real: self.real * other / core::f64::math::powi(other, 2),
+            imaginary: self.imaginary * other / core::f64::math::powi(other, 2)
+        };
+        #[cfg(feature = "std")]
+        return Complex {
             real: self.real * other / other.powi(2),
             imaginary: self.imaginary * other / other.powi(2)
-        }
+        };
     }
 }
 
@@ -180,15 +207,25 @@ impl_single_op_variants!(
     "Divide a complex number by a real number"
 );
 
-impl std::ops::Div<Complex> for f64 {
+impl Div<Complex> for f64 {
     type Output = Complex;
 
     /// Divide a real number by a complex number
     fn div(self, other: Complex) -> Complex {
-        Complex {
+        #[cfg(not(feature = "std"))]
+        return Complex {
+            real: self * other.real
+                / (core::f64::math::powi(other.real, 2)
+                    + core::f64::math::powi(other.imaginary, 2)),
+            imaginary: -self * other.imaginary
+                / (core::f64::math::powi(other.real, 2)
+                    + core::f64::math::powi(other.imaginary, 2))
+        };
+        #[cfg(feature = "std")]
+        return Complex {
             real: self * other.real / (other.real.powi(2) + other.imaginary.powi(2)),
             imaginary: -self * other.imaginary / (other.real.powi(2) + other.imaginary.powi(2))
-        }
+        };
     }
 }
 
@@ -200,7 +237,7 @@ impl_single_op_variants_other!(
     "Divide a real number by a complex number"
 );
 
-impl std::ops::Index<usize> for Complex {
+impl Index<usize> for Complex {
     type Output = f64;
 
     fn index(&self, index: usize) -> &f64 {
@@ -212,8 +249,8 @@ impl std::ops::Index<usize> for Complex {
     }
 }
 
-impl std::fmt::Display for Complex {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Display for Complex {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.real == 0.0 {
             write!(f, "{}i", self.imaginary)
         } else if self.imaginary < 0.0 {

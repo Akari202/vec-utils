@@ -1,4 +1,7 @@
-use std::ops::{Add, Div, Mul, Sub};
+use core::fmt;
+use core::ops::{Add, Div, Index, Mul, Sub};
+#[cfg(feature = "std")]
+use std::vec::Vec;
 
 use crate::angle::AngleRadians;
 use crate::vec3d::Vec3d;
@@ -56,9 +59,21 @@ impl Quat {
 
     /// Create a new quaternion from a rotation matrix
     pub fn from_rotation_matrix(m: &[[f64; 3]; 3]) -> Quat {
+        #[cfg(not(feature = "std"))]
+        let w = core::f64::math::sqrt(1.0 + m[0][0] + m[1][1] + m[2][2]) / 2.0;
+        #[cfg(feature = "std")]
         let w = (1.0 + m[0][0] + m[1][1] + m[2][2]).sqrt() / 2.0;
+        #[cfg(not(feature = "std"))]
+        let i = core::f64::math::sqrt(1.0 + m[0][0] - m[1][1] - m[2][2]) / 2.0;
+        #[cfg(feature = "std")]
         let i = (1.0 + m[0][0] - m[1][1] - m[2][2]).sqrt() / 2.0;
+        #[cfg(not(feature = "std"))]
+        let j = core::f64::math::sqrt(1.0 - m[0][0] + m[1][1] - m[2][2]) / 2.0;
+        #[cfg(feature = "std")]
         let j = (1.0 - m[0][0] + m[1][1] - m[2][2]).sqrt() / 2.0;
+        #[cfg(not(feature = "std"))]
+        let k = core::f64::math::sqrt(1.0 - m[0][0] - m[1][1] + m[2][2]) / 2.0;
+        #[cfg(feature = "std")]
         let k = (1.0 - m[0][0] - m[1][1] + m[2][2]).sqrt() / 2.0;
         if w > i && w > j && w > k {
             Quat {
@@ -104,7 +119,12 @@ impl Quat {
 
     /// Calculate the magnitude of the quaternion
     pub fn magnitude(&self) -> f64 {
-        (self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k).sqrt()
+        #[cfg(not(feature = "std"))]
+        return core::f64::math::sqrt(
+            self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k
+        );
+        #[cfg(feature = "std")]
+        return (self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k).sqrt();
     }
 
     /// Return a new Quat of the normalized quaternion
@@ -128,7 +148,13 @@ impl Quat {
         if (self.w - 1.0).abs() < f64::EPSILON {
             (Vec3d::i(), 0.0.into())
         } else {
+            #[cfg(not(feature = "std"))]
+            let angle = 2.0 * libm::acos(self.w);
+            #[cfg(feature = "std")]
             let angle = 2.0 * self.w.acos();
+            #[cfg(not(feature = "std"))]
+            let s = libm::sin(angle / 2.0);
+            #[cfg(feature = "std")]
             let s = (angle / 2.0).sin();
             let x = self.i / s;
             let y = self.j / s;
@@ -178,6 +204,7 @@ impl Quat {
     }
 
     /// Convert the Quat to a Vec of f64 with length 4
+    #[cfg(feature = "std")]
     pub fn to_vec(&self) -> Vec<f64> {
         vec![self.w, self.i, self.j, self.k]
     }
@@ -222,7 +249,7 @@ impl_single_op!(Sub, sub, -, Quat, f64, "Subtract a scalar from each component o
 impl_single_op_comm!(Mul, mul, *, Quat, f64, "Multiply a Quat by a scalar");
 impl_single_op!(Div, div, /, Quat, f64, "Divide a Quat by a scalar");
 
-impl std::ops::Mul<Quat> for Quat {
+impl Mul<Quat> for Quat {
     type Output = Quat;
 
     /// Multiply two quaternions
@@ -244,7 +271,7 @@ impl_dual_op_variants!(
     "Multiply two quaternions, also known as a Hamilton product"
 );
 
-impl std::ops::Index<usize> for Quat {
+impl Index<usize> for Quat {
     type Output = f64;
 
     /// Index into a quaternion
@@ -261,9 +288,9 @@ impl std::ops::Index<usize> for Quat {
     }
 }
 
-impl std::fmt::Display for Quat {
+impl fmt::Display for Quat {
     /// Format the quaternion as a string
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "({}, {}, {}, {})", self.w, self.i, self.j, self.k)
     }
 }

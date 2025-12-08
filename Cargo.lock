@@ -298,7 +298,7 @@ checksum = "7264e107f553ccae879d21fbea1d6724ac785e8c3bfc762137959b5802826ef3"
 
 [[package]]
 name = "vec-utils"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "assert_float_eq",
  "libm",
@@ -308,7 +308,7 @@ dependencies = [
 
 [[package]]
 name = "vec-utils-py"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "pyo3",
  "rayon",

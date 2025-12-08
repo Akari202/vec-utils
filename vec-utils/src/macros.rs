@@ -1,9 +1,10 @@
 /// Impl for borrowed variants of an operation
+#[doc(hidden)]
 #[macro_export]
 macro_rules! impl_dual_op_variants {
     ($trait:ident, $method:ident, $T:ty, $description:literal) => {
         // Owned + Owned
-        // Must already be implimented
+        // Must already be implemented
 
         // Owned + Reference
         impl<'a> $trait<&'a $T> for $T {
@@ -38,6 +39,7 @@ macro_rules! impl_dual_op_variants {
 }
 
 /// Comunicative impl for borrowed variants of an operation
+#[doc(hidden)]
 #[macro_export]
 macro_rules! impl_single_op_variants_comm {
     ($trait:ident, $method:ident, $T:ty, $W:ty, $description:literal) => {
@@ -85,12 +87,13 @@ macro_rules! impl_single_op_variants_comm {
 }
 
 /// Impl for borrowed variants of an operation without communicative property
+#[doc(hidden)]
 #[macro_export]
 macro_rules! impl_single_op_variants {
     ($trait:ident, $method:ident, $T:ty, $W:ty, $description:literal) => {
         // T first
         // Owned + Owned
-        // Must already be implimented
+        // Must already be implemented
 
         // Owned + Reference
         impl<'a> $trait<&'a $W> for $T {
@@ -125,10 +128,11 @@ macro_rules! impl_single_op_variants {
 }
 
 /// Comunicative and normal impl for borrowed variants of an operation
+#[doc(hidden)]
 #[macro_export]
 macro_rules! impl_single_op_comm {
     ($trait:ident, $method:ident, $op:tt, $T:ty, $W:ty, $description:literal) => {
-        // Must be localy defined
+        // Must be locally defined
         impl_single_op!($trait, $method, $op, $T, $W, $description);
         impl_single_op_variants_comm!($trait, $method, $T, $W, $description);
     };
@@ -136,12 +140,13 @@ macro_rules! impl_single_op_comm {
 
 /// Impl for borrowed variants of an operation without communicative property that produces the rhs
 /// type
+#[doc(hidden)]
 #[macro_export]
 macro_rules! impl_single_op_variants_other {
     ($trait:ident, $method:ident, $T:ty, $W:ty, $description:literal) => {
         // T first
         // Owned + Owned
-        // Must already be implimented
+        // Must already be implemented
 
         // Owned + Reference
         impl<'a> $trait<&'a $W> for $T {

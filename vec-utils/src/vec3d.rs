@@ -173,6 +173,13 @@ impl Vec3d {
         a.dot(&b.cross(c))
     }
 
+    /// Calculate the squared distance to another Vec3d
+    /// This avoids a sqrt operation while being similarly useful
+    pub fn distance_squared(&self, other: &Vec3d) -> f64 {
+        let between = self - other;
+        between.x * between.x + between.y * between.y + between.z * between.z
+    }
+
     /// Calculate the distance to another Vec3d
     pub fn distance_to(&self, other: &Vec3d) -> f64 {
         (self - other).magnitude()

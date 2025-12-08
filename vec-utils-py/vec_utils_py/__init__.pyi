@@ -1,4 +1,4 @@
-from typing import overload, Any, Iterator
+from typing import Any, Iterator, overload
 
 class Vec3d:
     """
@@ -9,6 +9,7 @@ class Vec3d:
         y (float): The y-component of the vector.
         z (float): The z-component of the vector.
     """
+
     def __init__(self, x: float, y: float, z: float) -> None:
         """
         Creates a new 3D vector.
@@ -76,9 +77,7 @@ class Vec3d:
         ...
 
     @x.setter
-    def x(self, value: float) -> None:
-        ...
-
+    def x(self, value: float) -> None: ...
     @property
     def y(self) -> float:
         """
@@ -89,9 +88,7 @@ class Vec3d:
         ...
 
     @y.setter
-    def y(self, value: float) -> None:
-        ...
-
+    def y(self, value: float) -> None: ...
     @property
     def z(self) -> float:
         """
@@ -102,8 +99,7 @@ class Vec3d:
         ...
 
     @z.setter
-    def z(self, value: float) -> None:
-        ...
+    def z(self, value: float) -> None: ...
     def to_quat(self) -> "Quat":
         """
         Converts the vector to a quaternion.
@@ -191,6 +187,15 @@ class Vec3d:
 
         :param other: The other vector.
         :return: The distance.
+        """
+        ...
+
+    def distance_squared(self, other: "Vec3d") -> float:
+        """
+        Calculates the squared distance to another vector. This avoids a sqrt while being similarly useful.
+
+        :param other: The other vector.
+        :return: The distance squared.
         """
         ...
 
@@ -309,7 +314,6 @@ class Vec3d:
         """
         ...
 
-
 class Quat:
     """
     A quaternion
@@ -320,6 +324,7 @@ class Quat:
         j (float): The j-component (y part) of the quaternion.
         k (float): The k-component (z part) of the quaternion.
     """
+
     def __init__(self, w: float, i: float, j: float, k: float) -> None:
         """
         Creates a new quaternion.
@@ -365,9 +370,7 @@ class Quat:
         ...
 
     @w.setter
-    def w(self, value: float) -> None:
-        ...
-
+    def w(self, value: float) -> None: ...
     @property
     def i(self) -> float:
         """
@@ -378,9 +381,7 @@ class Quat:
         ...
 
     @i.setter
-    def i(self, value: float) -> None:
-        ...
-
+    def i(self, value: float) -> None: ...
     @property
     def j(self) -> float:
         """
@@ -391,9 +392,7 @@ class Quat:
         ...
 
     @j.setter
-    def j(self, value: float) -> None:
-        ...
-
+    def j(self, value: float) -> None: ...
     @property
     def k(self) -> float:
         """
@@ -404,9 +403,7 @@ class Quat:
         ...
 
     @k.setter
-    def k(self, value: float) -> None:
-        ...
-
+    def k(self, value: float) -> None: ...
     def conjugate(self) -> "Quat":
         """
         Returns the conjugate of the quaternion.
@@ -487,6 +484,7 @@ class AngleRadians:
     Attributes:
         angle (float): The angle value in radians.
     """
+
     def __init__(self, angle: float) -> None:
         """
         Creates a new AngleRadians instance.
@@ -568,9 +566,7 @@ class AngleRadians:
         ...
 
     @angle.setter
-    def angle(self, value: float) -> None:
-        ...
-
+    def angle(self, value: float) -> None: ...
     def to_degrees(self) -> "AngleDegrees":
         """
         Converts the angle to degrees.
@@ -739,7 +735,6 @@ class AngleRadians:
         """
         ...
 
-
 class AngleDegrees:
     """
     A class representing an angle in degrees.
@@ -747,6 +742,7 @@ class AngleDegrees:
     Attributes:
         angle (float): The angle value in degrees.
     """
+
     def __init__(self, angle: float) -> None:
         """
         Creates a new AngleDegrees instance.
@@ -773,9 +769,7 @@ class AngleDegrees:
         ...
 
     @angle.setter
-    def angle(self, value: float) -> None:
-        ...
-
+    def angle(self, value: float) -> None: ...
     def __repr__(self) -> str:
         """
         Provides a string representation of the angle.
@@ -784,7 +778,6 @@ class AngleDegrees:
         """
         ...
 
-
 class VecList:
     """
     A class for managing a list of 3D vectors.
@@ -792,6 +785,7 @@ class VecList:
     Attributes:
         list (list[Vec3d]): The internal list of Vec3d objects.
     """
+
     def __init__(self, list: list[Vec3d]) -> None:
         """
         Creates a new VecList instance.
@@ -1011,11 +1005,11 @@ class VecList:
         """
         ...
 
-
 class VecListIterator(Iterator[Vec3d]):
     """
     An iterator for a VecList instance.
     """
+
     def __iter__(self) -> "VecListIterator":
         """
         Returns the iterator itself.

@@ -132,6 +132,10 @@ impl Vec3d {
         self.inner.distance_to(&other.inner)
     }
 
+    pub fn distance_squared(&self, other: &Vec3d) -> f64 {
+        self.inner.distance_squared(&other.inner)
+    }
+
     pub fn distance_to_line(&self, a: &Vec3d, b: &Vec3d) -> f64 {
         self.inner.distance_to_line(&a.inner, &b.inner)
     }

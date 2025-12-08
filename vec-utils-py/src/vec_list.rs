@@ -128,7 +128,8 @@ impl VecList {
             .par_iter()
             .enumerate()
             .step_by(stride)
-            .map(|(j, i)| (j, i.distance_to(&other.inner)))
+            // .map(|(j, i)| (j, i.distance_to(&other.inner)))
+            .map(|(j, i)| (j, i.distance_squared(&other.inner)))
             .min_by(|a, b| a.1.total_cmp(&b.1))
             .unwrap();
         let window: &[vec3d::Vec3d];
@@ -146,10 +147,11 @@ impl VecList {
         let (index, distance) = window
             .par_iter()
             .enumerate()
-            .map(|(j, i)| (j, i.distance_to(&other.inner)))
+            // .map(|(j, i)| (j, i.distance_to(&other.inner)))
+            .map(|(j, i)| (j, i.distance_squared(&other.inner)))
             .min_by(|a, b| a.1.total_cmp(&b.1))
             .unwrap();
-        (index + offset, distance)
+        (index + offset, distance.sqrt())
     }
 
     // pub fn distance_to_line(&self, a: &Vec3d, b: &Vec3d) -> f64 {

@@ -121,6 +121,13 @@ impl VecList {
             .collect()
     }
 
+    pub fn distance_squared(&self, other: &Vec3d) -> Vec<f64> {
+        self.list
+            .par_iter()
+            .map(|i| i.distance_squared(&other.inner))
+            .collect()
+    }
+
     pub fn minimum_distance_to(&self, other: &Vec3d, stride: usize) -> (usize, f64) {
         assert!(stride != 0);
         let (close, _) = self

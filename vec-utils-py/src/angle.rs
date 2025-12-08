@@ -41,6 +41,30 @@ impl AngleDegrees {
             inner: self.inner.to_radians()
         }
     }
+
+    pub fn __neg__(&self) -> AngleDegrees {
+        AngleDegrees { inner: -self.inner }
+    }
+
+    pub fn __lt__(&self, other: &AngleDegrees) -> bool {
+        self.inner < other.inner
+    }
+
+    pub fn __le__(&self, other: &AngleDegrees) -> bool {
+        self.inner <= other.inner
+    }
+
+    pub fn __gt__(&self, other: &AngleDegrees) -> bool {
+        self.inner > other.inner
+    }
+
+    pub fn __ge__(&self, other: &AngleDegrees) -> bool {
+        self.inner >= other.inner
+    }
+
+    pub fn __eq__(&self, other: &AngleDegrees) -> bool {
+        self.inner == other.inner
+    }
 }
 
 #[pymethods]

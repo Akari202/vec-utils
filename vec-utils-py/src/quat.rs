@@ -4,7 +4,7 @@ use vec_utils::*;
 use super::angle::AngleRadians;
 use super::vec3d::Vec3d;
 
-#[pyclass]
+#[pyclass(eq)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Quat {
     pub inner: quat::Quat

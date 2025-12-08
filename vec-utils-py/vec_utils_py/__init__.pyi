@@ -314,6 +314,14 @@ class Vec3d:
         """
         ...
 
+    def __hash__(self) -> int:
+        """
+        Returns a hash value for the object.
+
+        :return: The hashed value.
+        """
+        ...
+
 class Quat:
     """
     A quaternion
@@ -768,6 +776,62 @@ class AngleDegrees:
         """
         ...
 
+    def __neg__(self) -> "AngleDegrees":
+        """
+        Negates the angle.
+
+        :return: The new negated AngleDegrees instance.
+        """
+        ...
+
+    def __lt__(self, other: "AngleDegrees") -> bool:
+        """
+        Checks if this angle is less than another.
+
+        :param other: The other AngleDegrees instance.
+        :return: True if this angle is less than `other`, False otherwise.
+        """
+        ...
+
+    def __le__(self, other: "AngleDegrees") -> bool:
+        """
+        Checks if this angle is less than or equal to another.
+
+        :param other: The other AngleDegrees instance.
+        :return: True if this angle is less than or equal to `other`, False otherwise.
+        """
+        ...
+
+    def __gt__(self, other: "AngleDegrees") -> bool:
+        """
+        Checks if this angle is greater than another.
+
+        :param other: The other AngleDegrees instance.
+        :return: True if this angle is greater than `other`, False otherwise.
+        """
+        ...
+
+    def __ge__(self, other: "AngleDegrees") -> bool:
+        """
+        Checks if this angle is greater than or equal to another.
+
+        :param other: The other AngleDegrees instance.
+        :return: True if this angle is greater than or equal to `other`, False otherwise.
+        """
+        ...
+
+    @overload
+    def __eq__(self, other: "AngleDegrees") -> bool: ...
+    @overload
+    def __eq__(self, rhs: Any) -> Any:
+        """
+        Checks if this angle is equal to another.
+
+        :param other: The other AngleDegrees instance.
+        :return: True if this angle is equal to `other`, False otherwise.
+        """
+        ...
+
     @angle.setter
     def angle(self, value: float) -> None: ...
     def __repr__(self) -> str:
@@ -900,6 +964,15 @@ class VecList:
 
         :param other: The other Vec3d instance.
         :return: A list of distances.
+        """
+        ...
+
+    def distance_squared(self, other: "Vec3d") -> list[float]:
+        """
+        Calculates the distance squared from each vector in the list to another vector.
+
+        :param other: The other Vec3d instance.
+        :return: A list of distances squared.
         """
         ...
 

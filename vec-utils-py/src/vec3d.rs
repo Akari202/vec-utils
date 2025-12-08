@@ -1,10 +1,13 @@
+use std::hash::{DefaultHasher, Hash, Hasher};
+
+use ordered_float::OrderedFloat;
 use pyo3::prelude::*;
 use vec_utils::*;
 
 use super::angle::AngleRadians;
 use super::quat::Quat;
 
-#[pyclass]
+#[pyclass(eq)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec3d {
     pub inner: vec3d::Vec3d
@@ -201,5 +204,13 @@ impl Vec3d {
             "Vec3d({}, {}, {})",
             self.inner.x, self.inner.y, self.inner.z
         )
+    }
+
+    fn __hash__(&self) -> u64 {
+        let mut hasher = DefaultHasher::new();
+        OrderedFloat(self.inner.x).hash(&mut hasher);
+        OrderedFloat(self.inner.y).hash(&mut hasher);
+        OrderedFloat(self.inner.z).hash(&mut hasher);
+        hasher.finish()
     }
 }

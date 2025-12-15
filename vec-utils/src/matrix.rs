@@ -1,353 +1,302 @@
-/// Functions for working with 2x2 matrices
-pub mod matrix2x2 {
-    use crate::complex::Complex;
+use core::ops::{Index, IndexMut, Mul};
+#[cfg(feature = "std")]
+use std::vec::Vec;
 
-    /// Calculate the determinant of a 2x2 matrix
-    pub fn determinant(matrix: &[[f64; 2]; 2]) -> f64 {
-        matrix[0][0] * matrix[1][1] - matrix[0][1] * matrix[1][0]
+use matrixmultiply::dgemm;
+
+/// A generic 2d matrix of width R and height C
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub struct Matrix<const R: usize, const C: usize>
+where
+    [f64; R * C]: Sized
+{
+    pub(crate) values: [f64; R * C]
+}
+
+/// An alias for 2x2 matracies
+pub type Matrix2x2 = Matrix<2, 2>;
+/// An alias for 3x3 matracies
+pub type Matrix3x3 = Matrix<3, 3>;
+
+impl<const R: usize, const C: usize> Matrix<R, C>
+where
+    [f64; R * C]: Sized
+{
+    /// Create a matrix from nested vectors.
+    /// # Panics
+    /// A misshapen vector, i.e. one that's not of length C or that doesnt contain vectors of exclusively length R
+    #[cfg(feature = "std")]
+    pub fn from_nested_vec(values: Vec<Vec<f64>>) -> Self {
+        let flattened: Vec<f64> = values.into_iter().flatten().collect();
+        let values: [f64; R * C] = flattened
+            .try_into()
+            .expect("Input dimensions do not match Matrix size R * C");
+        Self { values }
     }
 
-    /// Calculate the eigenvalues of a 2x2 matrix
-    /// returns a tuple of the eigenvalues as complex numbers
-    pub fn eigenvalues(matrix: &[[f64; 2]; 2]) -> (Complex, Complex) {
-        let mean = f64::midpoint(matrix[0][0], matrix[1][1]);
-        let determinant = determinant(matrix);
-        let discriminant = mean.powi(2) - determinant;
-        let eigenvalue1 = Complex::new(mean, 0.0) + Complex::sqrt(discriminant);
-        let eigenvalue2 = Complex::new(mean, 0.0) - Complex::sqrt(discriminant);
-        (eigenvalue1, eigenvalue2)
+    /// Create a matrix from nested arrays.
+    pub fn from_nested_arr(values: [[f64; C]; R]) -> Self {
+        // Safety: [[f64; C]; R] and [f64; R * C] have the exact same memory layout
+        let flat_values = unsafe {
+            let ptr = (&raw const values).cast::<[f64; R * C]>();
+            core::ptr::read(ptr)
+        };
+
+        let _ = values;
+
+        Self {
+            values: flat_values
+        }
     }
 
-    /// Calculate the eigenvectors of a 2x2 matrix
-    /// returns a tuple of the eigenvectors as 2D arrays
-    pub fn eigenvectors(matrix: &[[f64; 2]; 2]) -> ([f64; 2], [f64; 2]) {
-        let (eigenvalue1, eigenvalue2) = eigenvalues(matrix);
-        let mut eigenvector1 = [0.0; 2];
-        let mut eigenvector2 = [0.0; 2];
-        if eigenvalue1.imaginary == 0.0 {
-            if matrix[0][0] - eigenvalue1.real != 0.0 {
-                eigenvector1[0] = matrix[0][1] / (matrix[0][0] - eigenvalue1.real);
-                eigenvector1[1] = 1.0;
-            } else if matrix[1][0] != 0.0 {
-                eigenvector1[0] = 1.0;
-                eigenvector1[1] = matrix[1][1] / (matrix[1][0] - eigenvalue1.real);
-            }
+    /// Create a matrix filled with zeros
+    pub fn zeros() -> Self {
+        Self {
+            values: [0.0; R * C]
         }
-        if eigenvalue2.imaginary == 0.0 {
-            if matrix[0][0] - eigenvalue2.real != 0.0 {
-                eigenvector2[0] = matrix[0][1] / (matrix[0][0] - eigenvalue2.real);
-                eigenvector2[1] = 1.0;
-            } else if matrix[1][0] != 0.0 {
-                eigenvector2[0] = 1.0;
-                eigenvector2[1] = matrix[1][1] / (matrix[1][0] - eigenvalue2.real);
-            }
+    }
+
+    /// Create a matrix filled with ones
+    pub fn ones() -> Self {
+        Self {
+            values: [1.0; R * C]
         }
-        (eigenvector1, eigenvector2)
+    }
+
+    /// Determines if the matrix is square
+    pub fn is_square(&self) -> bool {
+        R == C
+    }
+
+    /// Counts the number of nonzero values
+    pub fn count_nonzero(&self) -> usize {
+        self.values
+            .iter()
+            .fold(0, |acc, i| if *i == 0.0 { acc } else { acc + 1 })
+    }
+
+    /// Returns the diagonal elements
+    #[cfg(feature = "std")]
+    pub fn diagonals(&self) -> Vec<f64> {
+        let min_dimm = R.min(C);
+        (0..min_dimm).map(|i| self.values[i + i * C]).collect()
+    }
+
+    /// Checks if the matrix is upper triangluar
+    /// This does not check if its strictly upper triangluar
+    pub fn is_upper_triangular(&self) -> bool {
+        todo!()
+    }
+
+    /// Checks if the matrix is a diagonal matrix
+    pub fn is_diagonal(&self) -> bool {
+        todo!()
+    }
+
+    /// Iterates over the matrix with enumerated position values
+    pub fn iter_indexed(&self) -> impl Iterator<Item = ((usize, usize), &f64)> {
+        self.values.iter().enumerate().map(|(idx, val)| {
+            let r = idx / C;
+            let c = idx % C;
+            ((r, c), val)
+        })
+    }
+
+    /// Iterates over the matrix
+    pub fn iter(&self) -> impl Iterator<Item = &f64> {
+        self.values.iter()
+    }
+
+    /// Mutably iterates over the matrix
+    pub fn iter_mut(&mut self) -> impl Iterator<Item = &mut f64> {
+        self.values.iter_mut()
+    }
+
+    /// Calculates the determinant of the matrix
+    pub fn determinant(&self) -> f64 {
+        if self.count_nonzero() == 0 {
+            0.0
+        } else {
+            todo!()
+        }
     }
 }
 
-/// Functions for working with 3x3 matrices
-pub mod matrix3x3 {
-    use crate::vec3d::Vec3d;
+impl<const R: usize, const C: usize> Index<[usize; 2]> for Matrix<R, C>
+where
+    [f64; R * C]: Sized
+{
+    type Output = f64;
 
-    /// Calculate the determinant of a 3x3 matrix
-    pub fn determinant(matrix: &[[f64; 3]; 3]) -> f64 {
-        matrix[0][0] * matrix[1][1] * matrix[2][2]
-            + matrix[0][1] * matrix[1][2] * matrix[2][0]
-            + matrix[0][2] * matrix[1][0] * matrix[2][1]
-            - matrix[0][2] * matrix[1][1] * matrix[2][0]
-            - matrix[0][1] * matrix[1][0] * matrix[2][2]
-            - matrix[0][0] * matrix[1][2] * matrix[2][1]
+    fn index(&self, idx: [usize; 2]) -> &Self::Output {
+        let [row, col] = idx;
+        assert!(
+            row < R && col < C,
+            "Index [{row}, {col}] is out of bounds for matrix of shape [{R}, {C}]"
+        );
+        &self.values[row * C + col]
     }
-
-    /// Calculate the minor of a 3x3 matrix given a row and column index
-    pub fn minor(matrix: &[[f64; 3]; 3], row: usize, col: usize) -> f64 {
-        let mut minor = [[0.0; 2]; 2];
-        for i in 0..3 {
-            for j in 0..3 {
-                if i != row && j != col {
-                    let mut m = i;
-                    let mut n = j;
-                    if i > row {
-                        m -= 1;
-                    }
-                    if j > col {
-                        n -= 1;
-                    }
-                    minor[m][n] = matrix[i][j];
-                }
-            }
-        }
-        super::matrix2x2::determinant(&minor)
-    }
-
-    /// Calculate the cofactor of a 3x3 matrix given a row and column index
-    pub fn cofactor(matrix: &[[f64; 3]; 3], row: usize, col: usize) -> f64 {
-        let minor = minor(matrix, row, col);
-        let factor = [[1.0, -1.0, 1.0], [-1.0, 1.0, -1.0], [1.0, -1.0, 1.0]];
-        factor[row][col] * minor
-    }
-
-    /// Get the cofactor matrix of a 3x3 matrix
-    pub fn cofactor_matrix(matrix: &[[f64; 3]; 3]) -> [[f64; 3]; 3] {
-        let mut cofactor_matrix = [[0.0; 3]; 3];
-        for i in 0..3 {
-            for j in 0..3 {
-                cofactor_matrix[i][j] = cofactor(matrix, i, j);
-            }
-        }
-        cofactor_matrix
-    }
-
-    /// Transpose a 3x3 matrix
-    /// i.e. swap the rows and columns
-    pub fn transpose(matrix: &[[f64; 3]; 3]) -> [[f64; 3]; 3] {
-        let mut transpose = [[0.0; 3]; 3];
-        for i in 0..3 {
-            for j in 0..3 {
-                transpose[i][j] = matrix[j][i];
-            }
-        }
-        transpose
-    }
-
-    /// Calculate the adjoint of a 3x3 matrix
-    /// i.e. the transpose of the cofactor matrix
-    pub fn adjoint(matrix: &[[f64; 3]; 3]) -> [[f64; 3]; 3] {
-        let cofactor_matrix = cofactor_matrix(matrix);
-        let transpose_matrix = transpose(&cofactor_matrix);
-        dbg!(cofactor_matrix);
-        dbg!(transpose_matrix);
-        transpose_matrix
-    }
-
-    /// Vector multiplication of a matrix with a Vec3d
-    pub fn mul(matrix: &[[f64; 3]; 3], vector: &Vec3d) -> Vec3d {
-        let mut result: [f64; 3] = [0.0; 3];
-        for (i, j) in matrix.iter().enumerate() {
-            // result[i] = vector.dot(Vec3d::from_slice(j));
-            result[i] = Vec3d::from_slice(j).dot(vector);
-        }
-        Vec3d::from_slice(&result)
-    }
-
-    // Calculate the eigenvalues of a 3x3 matrix
-    // returns a tuple of the eigenvalues as complex numbers
-    // pub fn eigenvalues(matrix: &[[f64; 3]; 3]) -> (Complex, Complex, Complex) {
-    //
-    // }
 }
 
-/// Functions for working with 4x4 matrices
-pub mod matrix4x4 {
-    /// Calculate the determinant of a 4x4 matrix
-    pub fn determinant(matrix: &[[f64; 4]; 4]) -> f64 {
-        matrix[0][0] * matrix[1][1] * matrix[2][2] * matrix[3][3]
-            + matrix[0][0] * matrix[1][2] * matrix[2][3] * matrix[3][1]
-            + matrix[0][0] * matrix[1][3] * matrix[2][1] * matrix[3][2]
-            + matrix[0][1] * matrix[1][0] * matrix[2][3] * matrix[3][2]
-            + matrix[0][1] * matrix[1][2] * matrix[2][0] * matrix[3][3]
-            + matrix[0][1] * matrix[1][3] * matrix[2][2] * matrix[3][0]
-            + matrix[0][2] * matrix[1][0] * matrix[2][1] * matrix[3][3]
-            + matrix[0][2] * matrix[1][1] * matrix[2][3] * matrix[3][0]
-            + matrix[0][2] * matrix[1][3] * matrix[2][0] * matrix[3][1]
-            + matrix[0][3] * matrix[1][0] * matrix[2][2] * matrix[3][1]
-            + matrix[0][3] * matrix[1][1] * matrix[2][0] * matrix[3][2]
-            + matrix[0][3] * matrix[1][2] * matrix[2][1] * matrix[3][0]
-            - matrix[0][0] * matrix[1][1] * matrix[2][3] * matrix[3][2]
-            - matrix[0][0] * matrix[1][2] * matrix[2][1] * matrix[3][3]
-            - matrix[0][0] * matrix[1][3] * matrix[2][2] * matrix[3][1]
-            - matrix[0][1] * matrix[1][0] * matrix[2][2] * matrix[3][3]
-            - matrix[0][1] * matrix[1][2] * matrix[2][3] * matrix[3][0]
-            - matrix[0][1] * matrix[1][3] * matrix[2][0] * matrix[3][2]
-            - matrix[0][2] * matrix[1][0] * matrix[2][3] * matrix[3][1]
-            - matrix[0][2] * matrix[1][1] * matrix[2][0] * matrix[3][3]
-            - matrix[0][2] * matrix[1][3] * matrix[2][1] * matrix[3][0]
-            - matrix[0][3] * matrix[1][0] * matrix[2][1] * matrix[3][2]
-            - matrix[0][3] * matrix[1][1] * matrix[2][2] * matrix[3][0]
-            - matrix[0][3] * matrix[1][2] * matrix[2][0] * matrix[3][1]
+impl<const R: usize, const C: usize> IndexMut<[usize; 2]> for Matrix<R, C>
+where
+    [f64; R * C]: Sized
+{
+    fn index_mut(&mut self, idx: [usize; 2]) -> &mut Self::Output {
+        let [row, col] = idx;
+        assert!(
+            row < R && col < C,
+            "Index [{row}, {col}] is out of bounds for matrix of shape [{R}, {C}]"
+        );
+        &mut self.values[row * C + col]
     }
+}
 
-    /// Calculate the minor of a 4x4 matrix given a row and column index
-    pub fn minor(matrix: &[[f64; 4]; 4], row: usize, col: usize) -> f64 {
-        let mut minor = [[0.0; 3]; 3];
-        for i in 0..4 {
-            for j in 0..4 {
-                if i != row && j != col {
-                    let mut m = i;
-                    let mut n = j;
-                    if i > row {
-                        m -= 1;
-                    }
-                    if j > col {
-                        n -= 1;
-                    }
-                    minor[m][n] = matrix[i][j];
-                }
-            }
+impl<const R: usize, const C: usize, const U: usize> Mul<Matrix<U, C>> for Matrix<R, U>
+where
+    [f64; R * C]: Sized,
+    [f64; R * U]: Sized,
+    [f64; U * C]: Sized
+{
+    type Output = Matrix<R, C>;
+
+    fn mul(self, rhs: Matrix<U, C>) -> Self::Output {
+        let mut result = Matrix::<R, C>::zeros();
+        unsafe {
+            dgemm(
+                R,
+                U,
+                C,
+                1.0,
+                self.values.as_ptr(),
+                U.cast_signed(),
+                1,
+                rhs.values.as_ptr(),
+                C.cast_signed(),
+                1,
+                0.0,
+                result.values.as_mut_ptr(),
+                C.cast_signed(),
+                1
+            );
         }
-        super::matrix3x3::determinant(&minor)
-    }
-
-    /// Calculate the cofactor of a 4x4 matrix given a row and column index
-    pub fn cofactor(matrix: &[[f64; 4]; 4], row: usize, col: usize) -> f64 {
-        let minor = minor(matrix, row, col);
-        let factor = [
-            [1.0, -1.0, 1.0, -1.0],
-            [-1.0, 1.0, -1.0, 1.0],
-            [1.0, -1.0, 1.0, -1.0],
-            [-1.0, 1.0, -1.0, 1.0]
-        ];
-        factor[row][col] * minor
+        result
     }
 }
 
 #[cfg(test)]
-mod tests {
-    mod tests2x2 {
-        use super::super::matrix2x2;
+mod tests_2x2 {
+    use assert_float_eq::assert_f64_near;
+    use pretty_assertions::assert_eq;
 
-        #[test]
-        fn test_matrix2x2_determinant() {
-            let matrix = [[1.0, 2.0], [3.0, 4.0]];
-            assert_eq!(matrix2x2::determinant(&matrix), -2.0);
+    use super::*;
+
+    #[test]
+    fn test_initialization() {
+        let arr = [[1.0, 2.0], [3.0, 4.0]];
+        let mat = Matrix2x2::from_nested_arr(arr);
+        assert_f64_near!(mat[[0, 0]], 1.0);
+        assert_f64_near!(mat[[1, 1]], 4.0);
+
+        #[cfg(feature = "std")]
+        {
+            let vec_data = vec![vec![1.0, 2.0], vec![3.0, 4.0]];
+            let mat_vec = Matrix2x2::from_nested_vec(vec_data);
+            assert_f64_near!(mat_vec[[1, 0]], 3.0);
         }
 
-        #[test]
-        fn test_matrix2x2_eigenvalues() {
-            let matrix = [[8.0, 4.0], [4.0, 8.0]];
-            let (eigenvalue1, eigenvalue2) = matrix2x2::eigenvalues(&matrix);
-            assert_eq!(eigenvalue1.real, 12.0);
-            assert_eq!(eigenvalue1.imaginary, 0.0);
-            assert_eq!(eigenvalue2.real, 4.0);
-            assert_eq!(eigenvalue2.imaginary, 0.0);
-        }
-
-        #[test]
-        fn test_matrix2x2_eigenvectors() {
-            let matrix = [[8.0, 4.0], [4.0, 8.0]];
-            let (eigenvector1, eigenvector2) = matrix2x2::eigenvectors(&matrix);
-            assert_eq!(eigenvector1[0], -1.0);
-            assert_eq!(eigenvector1[1], 1.0);
-            assert_eq!(eigenvector2[0], 1.0);
-            assert_eq!(eigenvector2[1], 1.0);
-        }
+        let z = Matrix2x2::zeros();
+        let o = Matrix2x2::ones();
+        assert!(z.iter().all(|&v| v == 0.0));
+        assert!(o.iter().all(|&v| (v - 1.0).abs() < f64::EPSILON));
     }
 
-    mod tests3x3 {
-        use super::super::matrix3x3;
-
-        #[test]
-        fn test_matrix3x3_determinant() {
-            let matrix = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]];
-            assert_eq!(matrix3x3::determinant(&matrix), 0.0);
-        }
-
-        #[test]
-        fn test_matrix3x3_minor() {
-            let matrix = [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]];
-            assert_eq!(matrix3x3::minor(&matrix, 0, 0), -3.0);
-        }
-
-        #[test]
-        fn test_matrix3x3_cofactor() {
-            let matrix = [[1.0, 4.0, 7.0], [3.0, 0.0, 5.0], [-1.0, 9.0, 11.0]];
-            assert_eq!(matrix3x3::cofactor(&matrix, 1, 2), -13.0);
-            assert_eq!(matrix3x3::cofactor(&matrix, 2, 0), 20.0);
-        }
-
-        #[test]
-        fn test_matrix3x3_cofactor_matrix() {
-            let matrix = [[1.0, 4.0, 7.0], [3.0, 0.0, 5.0], [-1.0, 9.0, 11.0]];
-            let cofactor = [
-                [-45.0, -38.0, 27.0],
-                [19.0, 18.0, -13.0],
-                [20.0, 16.0, -12.0]
-            ];
-            let cofactor_matrix = matrix3x3::cofactor_matrix(&matrix);
-            assert_eq!(cofactor_matrix[0][0], cofactor[0][0]);
-            assert_eq!(cofactor_matrix[0][1], cofactor[0][1]);
-            assert_eq!(cofactor_matrix[0][2], cofactor[0][2]);
-            assert_eq!(cofactor_matrix[1][0], cofactor[1][0]);
-            assert_eq!(cofactor_matrix[1][1], cofactor[1][1]);
-            assert_eq!(cofactor_matrix[1][2], cofactor[1][2]);
-            assert_eq!(cofactor_matrix[2][0], cofactor[2][0]);
-            assert_eq!(cofactor_matrix[2][1], cofactor[2][1]);
-            assert_eq!(cofactor_matrix[2][2], cofactor[2][2]);
-        }
-
-        #[test]
-        fn test_matrix3x3_transpose() {
-            let matrix = [[1.0, 4.0, 7.0], [3.0, 0.0, 5.0], [-1.0, 9.0, 11.0]];
-            let transpose = [[1.0, 3.0, -1.0], [4.0, 0.0, 9.0], [7.0, 5.0, 11.0]];
-            let transpose_matrix = matrix3x3::transpose(&matrix);
-            assert_eq!(transpose_matrix[0][0], transpose[0][0]);
-            assert_eq!(transpose_matrix[0][1], transpose[0][1]);
-            assert_eq!(transpose_matrix[0][2], transpose[0][2]);
-            assert_eq!(transpose_matrix[1][0], transpose[1][0]);
-            assert_eq!(transpose_matrix[1][1], transpose[1][1]);
-            assert_eq!(transpose_matrix[1][2], transpose[1][2]);
-            assert_eq!(transpose_matrix[2][0], transpose[2][0]);
-            assert_eq!(transpose_matrix[2][1], transpose[2][1]);
-            assert_eq!(transpose_matrix[2][2], transpose[2][2]);
-        }
-
-        #[test]
-        fn test_matrix3x3_adjoint() {
-            let matrix = [[1.0, 4.0, 7.0], [3.0, 0.0, 5.0], [-1.0, 9.0, 11.0]];
-            let adjoint = [
-                [-45.0, 19.0, 20.0],
-                [-38.0, 18.0, 16.0],
-                [27.0, -13.0, -12.0]
-            ];
-            let adjoint_matrix = matrix3x3::adjoint(&matrix);
-            dbg!(adjoint_matrix);
-            assert_eq!(adjoint_matrix[0][0], adjoint[0][0]);
-            assert_eq!(adjoint_matrix[0][1], adjoint[0][1]);
-            assert_eq!(adjoint_matrix[0][2], adjoint[0][2]);
-            assert_eq!(adjoint_matrix[1][0], adjoint[1][0]);
-            assert_eq!(adjoint_matrix[1][1], adjoint[1][1]);
-            assert_eq!(adjoint_matrix[1][2], adjoint[1][2]);
-            assert_eq!(adjoint_matrix[2][0], adjoint[2][0]);
-            assert_eq!(adjoint_matrix[2][1], adjoint[2][1]);
-            assert_eq!(adjoint_matrix[2][2], adjoint[2][2]);
-        }
+    #[cfg(feature = "std")]
+    #[test]
+    #[should_panic(expected = "Input dimensions do not match Matrix size R * C")]
+    fn test_from_nested_vec_panic() {
+        let bad_vec = vec![vec![1.0], vec![2.0, 3.0]];
+        let _ = Matrix2x2::from_nested_vec(bad_vec);
     }
 
-    mod tests4x4 {
-        use super::super::matrix4x4;
+    #[test]
+    fn test_properties() {
+        let square = Matrix2x2::zeros();
+        let non_square = Matrix::<2, 3>::zeros();
 
-        #[test]
-        fn test_matrix4x4_determinant() {
-            let matrix = [
-                [1.0, 2.0, 3.0, 4.0],
-                [5.0, 6.0, 7.0, 8.0],
-                [9.0, 10.0, 11.0, 12.0],
-                [13.0, 14.0, 15.0, 16.0]
-            ];
-            assert_eq!(matrix4x4::determinant(&matrix), 0.0);
+        assert!(square.is_square());
+        assert!(!non_square.is_square());
+
+        let mut mat = Matrix2x2::zeros();
+        mat[[0, 0]] = 1.0;
+        mat[[1, 1]] = 5.0;
+        assert_eq!(mat.count_nonzero(), 2);
+    }
+
+    #[test]
+    fn test_matrix_structure() {
+        let ut = Matrix2x2::from_nested_arr([[1.0, 2.0], [0.0, 3.0]]);
+        assert!(ut.is_upper_triangular());
+
+        #[cfg(feature = "std")]
+        {
+            let diag = Matrix2x2::from_nested_arr([[1.0, 0.0], [0.0, 3.0]]);
+            assert!(diag.is_diagonal());
+            assert_eq!(diag.diagonals(), vec![1.0, 3.0]);
         }
 
-        #[test]
-        fn test_matrix4x4_minor() {
-            let matrix = [
-                [1.0, 2.0, 3.0, 4.0],
-                [5.0, 6.0, 7.0, 8.0],
-                [9.0, 10.0, 11.0, 12.0],
-                [13.0, 14.0, 15.0, 16.0]
-            ];
-            assert_eq!(matrix4x4::minor(&matrix, 0, 0), 0.0);
+        assert!(!ut.is_diagonal());
+    }
+
+    #[test]
+    fn test_iterators() {
+        let mut mat = Matrix2x2::from_nested_arr([[1.0, 2.0], [3.0, 4.0]]);
+
+        #[cfg(feature = "std")]
+        {
+            let indexed: Vec<((usize, usize), f64)> =
+                mat.iter_indexed().map(|(pos, &val)| (pos, val)).collect();
+            assert_eq!(indexed[1], ((0, 1), 2.0));
+            assert_eq!(indexed[2], ((1, 0), 3.0));
         }
 
-        #[test]
-        fn test_matrix4x4_cofactor() {
-            let matrix = [
-                [1.0, 2.0, 3.0, 4.0],
-                [5.0, 6.0, 7.0, 8.0],
-                [9.0, 10.0, 11.0, 12.0],
-                [13.0, 14.0, 15.0, 16.0]
-            ];
-            assert_eq!(matrix4x4::cofactor(&matrix, 0, 0), 0.0);
+        for val in mat.iter_mut() {
+            *val *= 2.0;
         }
+        assert_f64_near!(mat[[1, 1]], 8.0);
+    }
+
+    #[test]
+    fn test_determinant() {
+        let mat2 = Matrix2x2::from_nested_arr([[4.0, 7.0], [2.0, 6.0]]);
+        assert_f64_near!(mat2.determinant(), 10.0);
+    }
+
+    #[test]
+    fn test_indexing() {
+        let mut mat = Matrix2x2::zeros();
+        mat[[0, 1]] = 42.0;
+        assert_f64_near!(mat[[0, 1]], 42.0);
+    }
+
+    #[test]
+    #[should_panic(expected = "is out of bounds")]
+    fn test_index_out_of_bounds() {
+        let mat = Matrix2x2::zeros();
+        let _ = mat[[2, 0]];
+    }
+}
+
+#[cfg(test)]
+mod tests_3x3 {
+    use super::*;
+
+    #[test]
+    fn test_mul() {
+        let lhs = Matrix3x3::from_nested_arr([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]);
+        let rhs = Matrix::<3, 1>::from_nested_arr([[10.0], [11.0], [12.0]]);
+        let result = lhs * rhs;
+        let correct = Matrix::<3, 1>::from_nested_arr([[68.0], [167.0], [266.0]]);
+        assert_eq!(result, correct);
     }
 }

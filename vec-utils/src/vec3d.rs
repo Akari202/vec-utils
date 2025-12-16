@@ -12,6 +12,10 @@ use crate::{
 
 /// A 3D vector
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(
+    feature = "rkyv",
+    derive(rkyv::Deserialize, rkyv::Serialize, rkyv::Archive)
+)]
 #[derive(Debug, Copy, Clone)]
 pub struct Vec3d {
     /// The x component of the vector

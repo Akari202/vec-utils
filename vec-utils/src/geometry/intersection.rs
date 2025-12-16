@@ -44,20 +44,27 @@ pub fn sphere_sphere(sphere1: &Sphere, sphere2: &Sphere) -> Option<Circle> {
 /// or None if the sphere does not intersect the plane
 pub fn sphere_plane(sphere: &Sphere, plane: &Plane) -> Option<Circle> {
     let distance = plane.distance_to_point(&sphere.center);
-    if distance.abs() < f64::EPSILON {
+    if distance < f64::EPSILON {
         return Some(Circle::new(&sphere.center, sphere.radius, &plane.normal));
     }
-    if distance.abs() > sphere.radius {
+    if distance > sphere.radius {
         return None;
     }
-    if (distance.abs() - sphere.radius).abs() < f64::EPSILON {
+    if (distance - sphere.radius).abs() < f64::EPSILON {
         let circle_center = sphere.center - plane.normal * distance;
         return Some(Circle::new(&circle_center, 0.0, &plane.normal));
     }
     let circle_radius = (sphere.radius.powi(2) - distance.powi(2)).sqrt();
     // WARN: idk why this needs to be the way it is
     let circle_center = sphere.center - plane.normal * distance;
-    // dbg!(sphere, circle_radius, circle_center, plane.normal * distance, plane, distance);
+    // dbg!(
+    //     sphere,
+    //     circle_radius,
+    //     circle_center,
+    //     plane.normal * distance,
+    //     plane,
+    //     distance
+    // );
     Some(Circle::new(&circle_center, circle_radius, &plane.normal))
 }
 

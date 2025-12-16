@@ -4,6 +4,11 @@ use crate::geometry::plane::Plane;
 use crate::vec3d::Vec3d;
 
 /// A circle in 3d space
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(
+    feature = "rkyv",
+    derive(rkyv::Deserialize, rkyv::Serialize, rkyv::Archive)
+)]
 #[derive(Debug, Clone, Copy)]
 pub struct Circle {
     /// The center of the circle

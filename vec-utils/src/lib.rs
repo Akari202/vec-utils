@@ -1,5 +1,9 @@
 #![no_std]
-#![deny(missing_docs)]
+#![deny(
+    missing_docs,
+    clippy::undocumented_unsafe_blocks,
+    clippy::unnecessary_safety_doc
+)]
 #![warn(clippy::pedantic)]
 #![allow(
     clippy::must_use_candidate,
@@ -27,9 +31,8 @@ pub mod complex;
 pub mod geometry;
 /// Internal macros
 pub(crate) mod macros;
-/// Functions for working with matrices
-/// currently only 2x2, 3x3, and 4x4 matrices are supported
-/// with functions for calculating the determinant, minor, and cofactor
+/// Matrix operations and functions.
+/// Requires the "matrix" feature
 #[cfg(feature = "matrix")]
 pub mod matrix;
 /// Quaternion operations and functions

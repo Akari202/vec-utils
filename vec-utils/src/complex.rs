@@ -7,6 +7,7 @@ use crate::{
 };
 
 /// A complex number
+#[repr(C)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Complex {

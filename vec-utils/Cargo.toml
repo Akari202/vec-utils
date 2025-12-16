@@ -10,7 +10,9 @@ name = "vec_utils"
 
 [dependencies]
 libm = { version = "0.2.15" }
-matrixmultiply = { version = "0.3.10", default-features = false, optional = true }
+matrixmultiply = { version = "0.3.10", default-features = false, features = [
+  "cgemm"
+], optional = true }
 serde = { version = "1.0.219", default-features = false, features = ["derive"], optional = true }
 
 [dev-dependencies]
@@ -18,7 +20,8 @@ assert_float_eq = "1.2.0"
 pretty_assertions = "1.4.1"
 
 [features]
-default = ["std"]
+# default = ["std"]
+default = ["matrix", "std"]
 matrix = ["dep:matrixmultiply"]
 serde = ["dep:serde"]
 std = ["matrixmultiply/std", "serde/std"]

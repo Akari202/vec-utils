@@ -5,7 +5,7 @@ use std::vec::Vec;
 
 use crate::angle::AngleRadians;
 #[cfg(feature = "matrix")]
-use crate::matrix::Matrix;
+use crate::matrix::real::Matrix;
 use crate::quat::Quat;
 use crate::{
     impl_dual_op_variants, impl_single_op_comm, impl_single_op_variants,
@@ -428,6 +428,18 @@ mod tests {
         let vec = v.to_vec();
         let good = vec![1.0, 2.0, 3.0];
         assert_eq!(vec, good);
+    }
+
+    #[test]
+    #[cfg(feature = "matrix")]
+    fn test_to_matrix() {
+        let vec = Vec3d::new(1.0, 2.0, 3.0);
+        let hmat = vec.to_hmatrix();
+        let vmat = vec.to_vmatrix();
+        let hgood = Matrix::<1, 3>::from_nested_arr([[1.0, 2.0, 3.0]]);
+        let vgood = hgood.transpose();
+        assert_eq!(hmat, hgood);
+        assert_eq!(vmat, vgood);
     }
 
     #[test]

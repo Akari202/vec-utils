@@ -68,6 +68,19 @@ where
         }
     }
 
+    /// Convert a matrix into nested arrays.
+    pub fn to_nested_arr(&self) -> [[T; C]; R] {
+        // Safety: [[T; C]; R] and [T; R * C] have the exact same memory layout
+        let nested_values = unsafe {
+            let ptr = (&raw const self.values).cast::<[[T; C]; R]>();
+            core::ptr::read(ptr)
+        };
+
+        let _ = self.values;
+
+        nested_values
+    }
+
     /// Create a matrix filled with zeros
     pub fn zeros() -> Self {
         Self {

@@ -23,4 +23,4 @@ pretty_assertions = "1.4.1"
 default = ["std"]
 matrix = ["dep:matrixmultiply"]
 serde = ["dep:serde"]
-std = ["matrixmultiply/std", "serde/std"]
+std = ["matrixmultiply?/std", "serde?/std"]

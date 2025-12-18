@@ -104,7 +104,7 @@ impl Quat {
     }
 
     fn to_rotation_matrix(&self) -> [[f64; 3]; 3] {
-        self.inner.to_rotation_matrix()
+        self.inner.to_rotation_matrix().to_nested_arr()
     }
 
     fn rotate(&self, v: &Vec3d) -> Vec3d {

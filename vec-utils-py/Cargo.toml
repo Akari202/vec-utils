@@ -1,6 +1,6 @@
 [package]
 name = "vec-utils-py"
-version = "0.2.5"
+version = "0.3.0"
 edition = "2024"
 authors = ["Akari Harada <akaritwo0two@gmail.com>"]
 license = "GPL-3"
@@ -17,4 +17,4 @@ pyo3 = { version = "0.27.2", features = [
   "generate-import-lib"
 ] }
 rayon = "1.11.0"
-vec-utils = { path = "../vec-utils" }
+vec-utils = { path = "../vec-utils", features = ["matrix"] }

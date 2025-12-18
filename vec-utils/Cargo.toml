@@ -1,6 +1,6 @@
 [package]
 name = "vec-utils"
-version = "0.2.5"
+version = "0.3.0"
 edition = "2024"
 authors = ["Akari Harada <akaritwo0two@gmail.com>"]
 license = "GPL-3"
@@ -10,6 +10,9 @@ name = "vec_utils"
 
 [dependencies]
 libm = { version = "0.2.15" }
+matrixmultiply = { version = "0.3.10", default-features = false, features = [
+  "cgemm"
+], optional = true }
 rkyv = { version = "0.8.12", default-features = false, features = ["bytecheck"], optional = true }
 serde = { version = "1.0.219", default-features = false, features = ["derive"], optional = true }
 
@@ -19,6 +22,7 @@ pretty_assertions = "1.4.1"
 
 [features]
 default = ["std"]
+matrix = ["dep:matrixmultiply"]
 rkyv = ["dep:rkyv"]
 serde = ["dep:serde"]
-std = ["rkyv?/std", "serde?/std"]
+std = ["matrixmultiply?/std", "rkyv?/std", "serde?/std"]

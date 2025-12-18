@@ -4,6 +4,8 @@ use core::ops::{Add, Div, Index, Mul, Sub};
 use std::vec::Vec;
 
 use crate::angle::AngleRadians;
+#[cfg(feature = "matrix")]
+use crate::matrix::real::Matrix3x3;
 use crate::vec3d::Vec3d;
 use crate::{
     impl_dual_op_variants, impl_single_op_comm, impl_single_op_variants,
@@ -62,49 +64,50 @@ impl Quat {
     }
 
     /// Create a new quaternion from a rotation matrix
-    pub fn from_rotation_matrix(m: &[[f64; 3]; 3]) -> Quat {
+    #[cfg(feature = "matrix")]
+    pub fn from_rotation_matrix(m: &Matrix3x3) -> Quat {
         #[cfg(not(feature = "std"))]
-        let w = core::f64::math::sqrt(1.0 + m[0][0] + m[1][1] + m[2][2]) / 2.0;
+        let w = core::f64::math::sqrt(1.0 + m[[0, 0]] + m[[1, 1]] + m[[2, 2]]) / 2.0;
         #[cfg(feature = "std")]
-        let w = (1.0 + m[0][0] + m[1][1] + m[2][2]).sqrt() / 2.0;
+        let w = (1.0 + m[[0, 0]] + m[[1, 1]] + m[[2, 2]]).sqrt() / 2.0;
         #[cfg(not(feature = "std"))]
-        let i = core::f64::math::sqrt(1.0 + m[0][0] - m[1][1] - m[2][2]) / 2.0;
+        let i = core::f64::math::sqrt(1.0 + m[[0, 0]] - m[[1, 1]] - m[[2, 2]]) / 2.0;
         #[cfg(feature = "std")]
-        let i = (1.0 + m[0][0] - m[1][1] - m[2][2]).sqrt() / 2.0;
+        let i = (1.0 + m[[0, 0]] - m[[1, 1]] - m[[2, 2]]).sqrt() / 2.0;
         #[cfg(not(feature = "std"))]
-        let j = core::f64::math::sqrt(1.0 - m[0][0] + m[1][1] - m[2][2]) / 2.0;
+        let j = core::f64::math::sqrt(1.0 - m[[0, 0]] + m[[1, 1]] - m[[2, 2]]) / 2.0;
         #[cfg(feature = "std")]
-        let j = (1.0 - m[0][0] + m[1][1] - m[2][2]).sqrt() / 2.0;
+        let j = (1.0 - m[[0, 0]] + m[[1, 1]] - m[[2, 2]]).sqrt() / 2.0;
         #[cfg(not(feature = "std"))]
-        let k = core::f64::math::sqrt(1.0 - m[0][0] - m[1][1] + m[2][2]) / 2.0;
+        let k = core::f64::math::sqrt(1.0 - m[[0, 0]] - m[[1, 1]] + m[[2, 2]]) / 2.0;
         #[cfg(feature = "std")]
-        let k = (1.0 - m[0][0] - m[1][1] + m[2][2]).sqrt() / 2.0;
+        let k = (1.0 - m[[0, 0]] - m[[1, 1]] + m[[2, 2]]).sqrt() / 2.0;
         if w > i && w > j && w > k {
             Quat {
                 w,
-                i: (m[2][1] - m[1][2]) / (4.0 * w),
-                j: (m[0][2] - m[2][0]) / (4.0 * w),
-                k: (m[1][0] - m[0][1]) / (4.0 * w)
+                i: (m[[2, 1]] - m[[1, 2]]) / (4.0 * w),
+                j: (m[[0, 2]] - m[[2, 0]]) / (4.0 * w),
+                k: (m[[1, 0]] - m[[0, 1]]) / (4.0 * w)
             }
         } else if i > j && i > k {
             Quat {
-                w: (m[2][1] - m[1][2]) / (4.0 * i),
+                w: (m[[2, 1]] - m[[1, 2]]) / (4.0 * i),
                 i,
-                j: (m[0][1] + m[1][0]) / (4.0 * i),
-                k: (m[0][2] + m[2][0]) / (4.0 * i)
+                j: (m[[0, 1]] + m[[1, 0]]) / (4.0 * i),
+                k: (m[[0, 2]] + m[[2, 0]]) / (4.0 * i)
             }
         } else if j > k {
             Quat {
-                w: (m[0][2] - m[2][0]) / (4.0 * j),
-                i: (m[0][1] + m[1][0]) / (4.0 * j),
+                w: (m[[0, 2]] - m[[2, 0]]) / (4.0 * j),
+                i: (m[[0, 1]] + m[[1, 0]]) / (4.0 * j),
                 j,
-                k: (m[1][2] + m[2][1]) / (4.0 * j)
+                k: (m[[1, 2]] + m[[2, 1]]) / (4.0 * j)
             }
         } else {
             Quat {
-                w: (m[1][0] - m[0][1]) / (4.0 * k),
-                i: (m[0][2] + m[2][0]) / (4.0 * k),
-                j: (m[1][2] + m[2][1]) / (4.0 * k),
+                w: (m[[1, 0]] - m[[0, 1]]) / (4.0 * k),
+                i: (m[[0, 2]] + m[[2, 0]]) / (4.0 * k),
+                j: (m[[1, 2]] + m[[2, 1]]) / (4.0 * k),
                 k
             }
         }
@@ -175,8 +178,9 @@ impl Quat {
     }
 
     /// Convert the quaternion to a rotation matrix
-    pub fn to_rotation_matrix(&self) -> [[f64; 3]; 3] {
-        [
+    #[cfg(feature = "matrix")]
+    pub fn to_rotation_matrix(&self) -> Matrix3x3 {
+        Matrix3x3::from_nested_arr([
             [
                 1.0 - 2.0 * (self.j * self.j + self.k * self.k),
                 2.0 * (self.i * self.j - self.k * self.w),
@@ -192,7 +196,7 @@ impl Quat {
                 2.0 * (self.j * self.k + self.i * self.w),
                 1.0 - 2.0 * (self.i * self.i + self.j * self.j)
             ]
-        ]
+        ])
     }
 
     /// Rotate a vector by the quaternion
@@ -340,8 +344,9 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "matrix")]
     fn test_from_rotation_matrix() {
-        let m = [[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]];
+        let m = Matrix3x3::from_nested_arr([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]);
         let q = Quat::from_rotation_matrix(&m);
         let good = Quat::new(1.0, 0.0, 0.0, 0.0);
         assert_eq!(q, good);
@@ -385,18 +390,19 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "matrix")]
     fn test_to_rotation_matrix() {
         let q = Quat::new(1.0, 0.0, 0.0, 0.0);
         let m = q.to_rotation_matrix();
-        assert_f64_near!(m[0][0], 1.0);
-        assert_f64_near!(m[0][1], 0.0);
-        assert_f64_near!(m[0][2], 0.0);
-        assert_f64_near!(m[1][0], 0.0);
-        assert_f64_near!(m[1][1], 1.0);
-        assert_f64_near!(m[1][2], 0.0);
-        assert_f64_near!(m[2][0], 0.0);
-        assert_f64_near!(m[2][1], 0.0);
-        assert_f64_near!(m[2][2], 1.0);
+        assert_f64_near!(m[[0, 0]], 1.0);
+        assert_f64_near!(m[[0, 1]], 0.0);
+        assert_f64_near!(m[[0, 2]], 0.0);
+        assert_f64_near!(m[[1, 0]], 0.0);
+        assert_f64_near!(m[[1, 1]], 1.0);
+        assert_f64_near!(m[[1, 2]], 0.0);
+        assert_f64_near!(m[[2, 0]], 0.0);
+        assert_f64_near!(m[[2, 1]], 0.0);
+        assert_f64_near!(m[[2, 2]], 1.0);
     }
 
     #[test]

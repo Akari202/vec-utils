@@ -1,12 +1,19 @@
 #![no_std]
-#![deny(missing_docs)]
 #![warn(clippy::pedantic)]
+#![deny(
+    missing_docs,
+    clippy::undocumented_unsafe_blocks,
+    clippy::unnecessary_safety_doc
+)]
 #![allow(
     clippy::must_use_candidate,
     clippy::many_single_char_names,
-    clippy::return_self_not_must_use
+    clippy::return_self_not_must_use,
+    clippy::derive_ord_xor_partial_ord,
+    incomplete_features
 )]
 #![cfg_attr(not(feature = "std"), feature(core_float_math))]
+#![cfg_attr(feature = "matrix", feature(generic_const_exprs))]
 #![doc(test(attr(deny(dead_code))))]
 //! A crate for 3D vector, quaternion, geometry, and matrix operations
 //! plus some miscellaneous other common things.
@@ -24,11 +31,9 @@ pub mod complex;
 pub mod geometry;
 /// Internal macros
 pub(crate) mod macros;
-/// Functions for working with matrices
-/// currently only 2x2, 3x3, and 4x4 matrices are supported
-/// with functions for calculating the determinant, minor, and cofactor
-/// only available on std until i get around to fixing it or <https://github.com/rust-lang/rust/issues/137578> gets merged
-#[cfg(feature = "std")]
+/// Matrix operations and functions.
+/// Requires the "matrix" feature
+#[cfg(feature = "matrix")]
 pub mod matrix;
 /// Quaternion operations and functions
 pub mod quat;

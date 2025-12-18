@@ -22,3 +22,5 @@ https://www.cs.utexas.edu/~ear/cs341/automatabook/AutomataTheoryBook.pdf
 https://dl.acm.org/doi/pdf/10.1145/360825.360855
 https://docs.google.com/document/d/1KkKC2-ozJkvbWQIAXeJ1MUGqxjn19c-Mmc7RtxFTA3c/edit?tab=t.0
 https://ntrs.nasa.gov/api/citations/19900013774/downloads/19900013774.pdf
+
+https://www.cs.unc.edu/techreports/96-043.pdf

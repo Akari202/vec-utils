@@ -1,3 +1,4 @@
+use core::cmp::Ordering;
 use core::fmt;
 use core::ops::{Add, Div, Index, Mul, Sub};
 
@@ -7,6 +8,7 @@ use crate::{
 };
 
 /// A complex number
+#[repr(C)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(
     feature = "rkyv",
@@ -240,6 +242,42 @@ impl_single_op_variants_other!(
     Complex,
     "Divide a real number by a complex number"
 );
+
+impl PartialOrd for Complex {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        let self_mag_sq = self.real * self.real + self.imaginary * self.imaginary;
+        let other_mag_sq = other.real * other.real + other.imaginary * other.imaginary;
+
+        self_mag_sq.partial_cmp(&other_mag_sq)
+    }
+}
+
+impl PartialEq<f64> for Complex {
+    fn eq(&self, other: &f64) -> bool {
+        self.imaginary == 0.0 && self.real == *other
+    }
+}
+
+impl PartialOrd<f64> for Complex {
+    fn partial_cmp(&self, other: &f64) -> Option<Ordering> {
+        let self_mag_sq = self.real * self.real + self.imaginary * self.imaginary;
+        let other_mag_sq = other * other;
+
+        self_mag_sq.partial_cmp(&other_mag_sq)
+    }
+}
+
+impl PartialEq<Complex> for f64 {
+    fn eq(&self, other: &Complex) -> bool {
+        other.eq(self)
+    }
+}
+
+impl PartialOrd<Complex> for f64 {
+    fn partial_cmp(&self, other: &Complex) -> Option<Ordering> {
+        other.partial_cmp(self).map(Ordering::reverse)
+    }
+}
 
 impl Index<usize> for Complex {
     type Output = f64;

@@ -3,6 +3,10 @@ use core::{cmp, fmt, ops};
 
 /// An angle in degrees
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(
+    feature = "rkyv",
+    derive(rkyv::Deserialize, rkyv::Serialize, rkyv::Archive)
+)]
 #[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]
 pub struct AngleDegrees {
     /// The angle in degrees
@@ -11,6 +15,10 @@ pub struct AngleDegrees {
 
 /// An angle in radians, f64 is assumed to be in radians
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(
+    feature = "rkyv",
+    derive(rkyv::Deserialize, rkyv::Serialize, rkyv::Archive)
+)]
 #[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]
 pub struct AngleRadians {
     /// The angle in radians

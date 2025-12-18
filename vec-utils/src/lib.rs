@@ -37,7 +37,5 @@ pub(crate) mod macros;
 pub mod matrix;
 /// Quaternion operations and functions
 pub mod quat;
-/// Units and unit conversions
-pub mod units;
 /// 3D vector operations and functions
 pub mod vec3d;

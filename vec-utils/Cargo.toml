@@ -13,6 +13,7 @@ libm = { version = "0.2.15" }
 matrixmultiply = { version = "0.3.10", default-features = false, features = [
   "cgemm"
 ], optional = true }
+rkyv = { version = "0.8.12", default-features = false, features = ["bytecheck"], optional = true }
 serde = { version = "1.0.219", default-features = false, features = ["derive"], optional = true }
 
 [dev-dependencies]
@@ -22,5 +23,6 @@ pretty_assertions = "1.4.1"
 [features]
 default = ["std"]
 matrix = ["dep:matrixmultiply"]
+rkyv = ["dep:rkyv"]
 serde = ["dep:serde"]
-std = ["matrixmultiply?/std", "serde?/std"]
+std = ["matrixmultiply?/std", "rkyv?/std", "serde?/std"]

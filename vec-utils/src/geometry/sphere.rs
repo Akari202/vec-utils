@@ -3,6 +3,11 @@ use core::f64::consts::PI;
 use crate::vec3d::Vec3d;
 
 /// A sphere in space
+#[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(
+    feature = "rkyv",
+    derive(rkyv::Deserialize, rkyv::Serialize, rkyv::Archive)
+)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Sphere {
     /// The center of the sphere

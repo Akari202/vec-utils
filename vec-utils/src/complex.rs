@@ -10,6 +10,10 @@ use crate::{
 /// A complex number
 #[repr(C)]
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
+#[cfg_attr(
+    feature = "rkyv",
+    derive(rkyv::Deserialize, rkyv::Serialize, rkyv::Archive)
+)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Complex {
     /// The real part of the complex number

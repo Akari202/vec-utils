@@ -14,6 +14,8 @@ pub trait Oneable {
 
 pub trait Signed {
     fn abs(&self) -> Self;
+
+    fn flip(&mut self);
 }
 
 impl Zeroable for f64 {
@@ -39,6 +41,10 @@ impl Oneable for f64 {
 impl Signed for f64 {
     fn abs(&self) -> Self {
         f64::abs(*self)
+    }
+
+    fn flip(&mut self) {
+        *self *= -1.0;
     }
 }
 
@@ -74,5 +80,9 @@ impl Signed for Complex {
             real: self.magnitude(),
             imaginary: 0.0
         }
+    }
+
+    fn flip(&mut self) {
+        *self = *self * -1.0;
     }
 }

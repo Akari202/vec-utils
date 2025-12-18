@@ -38,7 +38,7 @@ where
                 R,
                 U,
                 C,
-                [1.0; 2],
+                [1.0, 0.0],
                 lhs_ptr,
                 U.cast_signed(),
                 1,
@@ -52,5 +52,55 @@ where
             );
         }
         result
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use pretty_assertions::assert_eq;
+
+    use super::*;
+
+    #[test]
+    fn test_mul() {
+        let a = CMatrix2x2::from_nested_arr([
+            [Complex::new(1.0, 0.0), Complex::new(0.0, 1.0)],
+            [Complex::new(0.0, 0.0), Complex::new(2.0, 0.0)]
+        ]);
+
+        let b = CMatrix2x2::from_nested_arr([
+            [Complex::new(0.0, 1.0), Complex::new(1.0, 0.0)],
+            [Complex::new(1.0, 0.0), Complex::new(0.0, 1.0)]
+        ]);
+
+        let correct = CMatrix2x2::from_nested_arr([
+            [Complex::new(0.0, 2.0), Complex::new(0.0, 0.0)],
+            [Complex::new(2.0, 0.0), Complex::new(0.0, 2.0)]
+        ]);
+
+        let result = a * b;
+
+        assert_eq!(result, correct);
+        let a = CMatrix3x3::from_nested_arr([
+            [
+                Complex::new(1.0, 2.0),
+                Complex::new(3.0, 4.0),
+                Complex::new(5.0, 6.0)
+            ],
+            [
+                Complex::new(7.0, 8.0),
+                Complex::new(9.0, 0.0),
+                Complex::new(1.0, 1.0)
+            ],
+            [
+                Complex::new(0.0, 0.0),
+                Complex::new(2.0, 2.0),
+                Complex::new(3.0, 3.0)
+            ]
+        ]);
+
+        let zero_mat = CMatrix3x3::zeros();
+        let result = a * zero_mat;
+        assert_eq!(result, zero_mat);
     }
 }

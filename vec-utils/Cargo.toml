@@ -20,8 +20,7 @@ assert_float_eq = "1.2.0"
 pretty_assertions = "1.4.1"
 
 [features]
-# default = ["std"]
-default = ["matrix", "std"]
+default = ["std"]
 matrix = ["dep:matrixmultiply"]
 serde = ["dep:serde"]
 std = ["matrixmultiply/std", "serde/std"]

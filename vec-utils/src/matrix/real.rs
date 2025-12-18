@@ -4,7 +4,6 @@ use matrixmultiply::dgemm;
 
 #[doc(inline)]
 use crate::matrix::generic::GMatrix;
-use crate::matrix::traits::Zeroable;
 
 /// A generic 2d matrix of width R and height C
 pub type Matrix<const R: usize, const C: usize> = GMatrix<R, C, f64>;
@@ -14,56 +13,7 @@ pub type Matrix2x2 = Matrix<2, 2>;
 /// An alias for 3x3 matracies
 pub type Matrix3x3 = Matrix<3, 3>;
 
-impl<const R: usize, const C: usize> Matrix<R, C>
-where
-    [f64; R * C]: Sized
-{
-    /// Reduce the matrix to row eschelon form using gaussian elimination and partial pivoting
-    pub fn to_ref(&self) -> Self {
-        let mut result = *self;
-        let mut pivot_row = 0;
-        let mut pivot_col = 0;
-
-        while pivot_row < R && pivot_col < C {
-            let mut max_row = pivot_row;
-            let mut max_val = result[[max_row, pivot_col]].abs();
-
-            for r in (pivot_row + 1)..R {
-                let val = result[[r, pivot_col]].abs();
-                if val > max_val {
-                    max_val = val;
-                    max_row = r;
-                }
-            }
-
-            if max_val.is_zero() {
-                pivot_col += 1;
-                continue;
-            }
-
-            if max_row != pivot_row {
-                for c in 0..C {
-                    result.values.swap(pivot_row * C + c, max_row * C + c);
-                }
-            }
-
-            for r in (pivot_row + 1)..R {
-                let factor = result[[r, pivot_col]] / result[[pivot_row, pivot_col]];
-
-                result[[r, pivot_col]] = 0.0;
-
-                for c in (pivot_col + 1)..C {
-                    let subtracted = factor * result[[pivot_row, c]];
-                    result[[r, c]] -= subtracted;
-                }
-            }
-
-            pivot_row += 1;
-            pivot_col += 1;
-        }
-        result
-    }
-}
+impl<const R: usize, const C: usize> Matrix<R, C> where [f64; R * C]: Sized {}
 
 impl<const R: usize, const C: usize, const U: usize> Mul<Matrix<U, C>> for Matrix<R, U>
 where

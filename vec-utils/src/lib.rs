@@ -1,10 +1,10 @@
 #![no_std]
+#![warn(clippy::pedantic)]
 #![deny(
     missing_docs,
     clippy::undocumented_unsafe_blocks,
     clippy::unnecessary_safety_doc
 )]
-#![warn(clippy::pedantic)]
 #![allow(
     clippy::must_use_candidate,
     clippy::many_single_char_names,

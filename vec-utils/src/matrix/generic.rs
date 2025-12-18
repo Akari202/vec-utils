@@ -1,9 +1,12 @@
+use core::fmt;
 use core::fmt::Debug;
 use core::ops::{Add, Div, Index, IndexMut, Mul, Sub};
 #[cfg(feature = "std")]
+use std::string::String;
+#[cfg(feature = "std")]
 use std::vec::Vec;
 
-use crate::matrix::traits::{Oneable, Signed, Zeroable};
+use crate::matrix::traits::{Fourable, Oneable, Signed, Twoable, Zeroable};
 
 /// A generic 2d matrix of width R and height C
 // TODO: I would like to add a generic is row major switch
@@ -26,6 +29,8 @@ where
     T: Debug
         + Oneable
         + Zeroable
+        + Twoable
+        + Fourable
         + Copy
         + Clone
         + PartialEq
@@ -47,6 +52,7 @@ where
     #[cfg(feature = "std")]
     pub fn from_nested_vec(values: Vec<Vec<T>>) -> Self {
         let flattened: Vec<T> = values.into_iter().flatten().collect();
+        dbg!(flattened.len());
         let values: [T; R * C] = flattened
             .try_into()
             .expect("Input dimensions do not match Matrix size R * C");
@@ -185,6 +191,41 @@ where
             let c = idx % C;
             ((r, c), val)
         })
+    }
+
+    /// Finds the trace of the matrix
+    /// The sum of the diagonals
+    /// # Panics
+    /// If the matrix is not square
+    pub fn tr(&self) -> T {
+        if Self::IS_SQUARE {
+            (0..R).fold(T::zero(), |acc, i| acc + self.values[i + i * C])
+        } else {
+            panic!("Cannot take the determinant of a non square matrix");
+        }
+    }
+
+    /// Finds the eigenvalues of the matrix
+    /// # Panics
+    /// If the matrix is of a form with eigenvalues not yet implemented or if the matrix is not
+    /// square. Currently ony 2x2 is implemented.
+    pub fn eigenvalues(&self) -> [T; R]
+    where
+        [T; R]: Sized
+    {
+        if Self::IS_2X2 {
+            let tr = self.tr();
+            let det = self.determinant();
+            let discriminant = (tr.sqr() - T::four() * det).sqrt();
+            let eigenvalues = [(tr + discriminant).half(), (tr - discriminant).half()];
+            // Safety: We know that [T; R] is the same size as [T; 2] when R is 2
+            unsafe {
+                let ptr = (&raw const eigenvalues).cast::<[T; R]>();
+                core::ptr::read(ptr)
+            }
+        } else {
+            panic!("Cannot take the determinant of a non square matrix");
+        }
     }
 
     /// Calculates the determinant of the matrix
@@ -378,10 +419,46 @@ where
     }
 }
 
+#[cfg(feature = "std")]
+impl<const R: usize, const C: usize, T> fmt::Display for GMatrix<R, C, T>
+where
+    T: fmt::Display,
+    [T; R * C]: Sized
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut col_widths = vec![0; C];
+        let mut formatted_values = vec![String::new(); R * C];
+
+        for r in 0..R {
+            for (c, width) in col_widths.iter_mut().enumerate() {
+                let idx = r * C + c;
+                let val_str = format!("{}", self.values[idx]);
+                *width = *width.max(&mut val_str.len());
+                formatted_values[idx] = val_str;
+            }
+        }
+
+        for r in 0..R {
+            write!(f, "[ ")?;
+            for (c, width) in col_widths.iter().enumerate() {
+                let idx = r * C + c;
+                write!(f, "{:>width$}", formatted_values[idx],)?;
+
+                if c < C - 1 {
+                    write!(f, "  ")?;
+                }
+            }
+            writeln!(f, " ]")?;
+        }
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use assert_float_eq::assert_f64_near;
     use pretty_assertions::assert_eq;
+    use test::Bencher;
 
     use super::*;
     use crate::complex::Complex;
@@ -641,9 +718,8 @@ mod tests {
         let det = m.determinant();
         let adj = m.adjoint();
 
-        let row0_col0 = (m.values[0] * adj.values[0]
-            + m.values[1] * adj.values[3]
-            + m.values[2] * adj.values[6]);
+        let row0_col0 =
+            m.values[0] * adj.values[0] + m.values[1] * adj.values[3] + m.values[2] * adj.values[6];
 
         assert_f64_near!(row0_col0, det);
     }
@@ -659,5 +735,88 @@ mod tests {
         for (i, j) in adj.values.into_iter().zip(expected.into_iter()) {
             assert_f64_near!(i, j);
         }
+    }
+    #[test]
+    fn test_trace() {
+        let m = GMatrix::<3, 3, f64> {
+            values: [1.0, 2.0, 3.0, 0.0, 4.0, 5.0, 1.0, 0.0, 6.0]
+        };
+        let tr = m.tr();
+        let expected = 11.0;
+
+        assert_f64_near!(tr, expected);
+    }
+
+    #[test]
+    fn test_eigenvalues() {
+        let m = GMatrix::<2, 2, f64> {
+            values: [5.0, 1.0, 3.0, 2.0]
+        };
+        let eigen = m.eigenvalues();
+        let expected = [5.791_287 * 1_000_000.0, 1.208_712 * 1_000_000.0];
+
+        for (i, j) in eigen.into_iter().zip(expected.into_iter()) {
+            assert_f64_near!((i * 1_000_000.0).trunc(), j);
+        }
+    }
+
+    #[bench]
+    fn bench_adjoint(b: &mut Bencher) {
+        let m = GMatrix::<3, 3, f64> {
+            values: [1.0, 2.0, 3.0, 0.0, 1.0, 4.0, 5.0, 6.0, 0.0]
+        };
+
+        b.iter(|| m.adjoint());
+    }
+
+    #[bench]
+    fn bench_cofactor_matrix(b: &mut Bencher) {
+        let m = GMatrix::<3, 3, f64> {
+            values: [1.0, 2.0, 3.0, 0.0, 1.0, 4.0, 5.0, 6.0, 0.0]
+        };
+
+        b.iter(|| m.cofactor_matrix());
+    }
+
+    #[bench]
+    fn bench_transpose(b: &mut Bencher) {
+        let m = GMatrix::<3, 3, f64> {
+            values: [1.0, 2.0, 3.0, 0.0, 1.0, 4.0, 5.0, 6.0, 0.0]
+        };
+
+        b.iter(|| m.transpose());
+    }
+
+    #[bench]
+    fn bench_determinant(b: &mut Bencher) {
+        let m = GMatrix::<3, 3, f64> {
+            values: [1.0, 2.0, 3.0, 0.0, 1.0, 4.0, 5.0, 6.0, 0.0]
+        };
+
+        b.iter(|| m.determinant());
+    }
+
+    #[bench]
+    #[cfg(feature = "std")]
+    fn bench_very_large_det_of_adj(b: &mut Bencher) {
+        let m = GMatrix::<50, 50, f64>::from_nested_vec(
+            (0..50)
+                .map(|i| (10..60).map(|j| f64::from(i * j)).collect::<Vec<f64>>())
+                .collect::<Vec<Vec<f64>>>()
+        );
+
+        b.iter(|| m.adjoint().determinant());
+    }
+
+    #[bench]
+    #[cfg(feature = "std")]
+    fn bench_very_large_tr(b: &mut Bencher) {
+        let m = GMatrix::<100, 100, f64>::from_nested_vec(
+            (0..100)
+                .map(|i| (10..110).map(|j| f64::from(i * j)).collect::<Vec<f64>>())
+                .collect::<Vec<Vec<f64>>>()
+        );
+
+        b.iter(|| m.tr());
     }
 }

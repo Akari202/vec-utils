@@ -8,6 +8,10 @@ license = "GPL-3"
 [lib]
 name = "vec_utils"
 
+[[example]]
+name = "matrix_math"
+required-features = ["matrix"]
+
 [dependencies]
 libm = { version = "0.2.15" }
 matrixmultiply = { version = "0.3.10", default-features = false, features = [

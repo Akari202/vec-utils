@@ -29,7 +29,7 @@ impl Complex {
     }
 
     /// Create a new complex number from the square root of a real number
-    pub fn sqrt(num: f64) -> Complex {
+    pub fn from_sqrt(num: f64) -> Complex {
         if num < 0.0 {
             #[cfg(not(feature = "std"))]
             return Complex::new(0.0, core::f64::math::sqrt(num.abs()));
@@ -50,6 +50,11 @@ impl Complex {
         );
         #[cfg(feature = "std")]
         return (self.real.powi(2) + self.imaginary.powi(2)).sqrt();
+    }
+
+    /// Calculates the square root of the complex number
+    pub fn sqrt(&self) -> Complex {
+        todo!();
     }
 
     /// Get the conjugate of the complex number
@@ -317,8 +322,8 @@ mod tests {
     }
 
     #[test]
-    fn test_sqrt() {
-        let c = Complex::sqrt(-16.0);
+    fn test_from_sqrt() {
+        let c = Complex::from_sqrt(-16.0);
         assert_f64_near!(c.real, 0.0);
         assert_f64_near!(c.imaginary, 4.0);
     }

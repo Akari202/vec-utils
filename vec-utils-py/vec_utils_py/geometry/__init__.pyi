@@ -1,4 +1,3 @@
-from typing import overload, Any, List, Optional, Tuple
 from .. import Vec3d
 
 class Plane:
@@ -9,6 +8,7 @@ class Plane:
         normal (Vec3d): The normal vector of the plane.
         distance (float): The distance of the plane from the origin along its normal.
     """
+
     def __init__(self, normal: "Vec3d", distance: float) -> None:
         """
         Creates a new Plane instance.
@@ -78,9 +78,7 @@ class Plane:
         ...
 
     @normal.setter
-    def normal(self, value: "Vec3d") -> None:
-        ...
-
+    def normal(self, value: "Vec3d") -> None: ...
     @property
     def distance(self) -> float:
         """
@@ -91,9 +89,7 @@ class Plane:
         ...
 
     @distance.setter
-    def distance(self, value: float) -> None:
-        ...
-
+    def distance(self, value: float) -> None: ...
     def distance_to_point(self, point: "Vec3d") -> float:
         """
         Calculates the signed distance from the plane to a point.
@@ -112,7 +108,6 @@ class Plane:
         """
         ...
 
-
 class Circle:
     """
     A class representing a circle in 3D space.
@@ -122,6 +117,7 @@ class Circle:
         radius (float): The radius of the circle.
         normal (Vec3d): The normal vector of the circle's plane.
     """
+
     def __init__(self, center: "Vec3d", radius: float, normal: "Vec3d") -> None:
         """
         Creates a new Circle instance.
@@ -151,9 +147,7 @@ class Circle:
         ...
 
     @center.setter
-    def center(self, value: "Vec3d") -> None:
-        ...
-
+    def center(self, value: "Vec3d") -> None: ...
     @property
     def normal(self) -> "Vec3d":
         """
@@ -164,9 +158,7 @@ class Circle:
         ...
 
     @normal.setter
-    def normal(self, value: "Vec3d") -> None:
-        ...
-
+    def normal(self, value: "Vec3d") -> None: ...
     @property
     def radius(self) -> float:
         """
@@ -177,9 +169,7 @@ class Circle:
         ...
 
     @radius.setter
-    def radius(self, value: float) -> None:
-        ...
-
+    def radius(self, value: float) -> None: ...
     @property
     def area(self) -> float:
         """
@@ -225,7 +215,9 @@ class Circle:
 
 # --- Intersection Functions ---
 
-def circle_circle(circle1: "Circle", circle2: "Circle") -> Optional[Tuple["Vec3d", "Vec3d"]]:
+def circle_circle(
+    circle1: "Circle", circle2: "Circle"
+) -> tuple["Vec3d", "Vec3d"] | None:
     """
     Finds the intersection points of two circles.
 
@@ -235,7 +227,7 @@ def circle_circle(circle1: "Circle", circle2: "Circle") -> Optional[Tuple["Vec3d
     """
     ...
 
-def plane_line(plane: "Plane", a: "Vec3d", b: "Vec3d") -> Optional["Vec3d"]:
+def plane_line(plane: "Plane", a: "Vec3d", b: "Vec3d") -> "Vec3d" | None:
     """
     Calculates the intersection point of a plane and a line defined by two points.
 
@@ -269,4 +261,3 @@ def circle_point_unchecked(circle: "Circle", point: "Vec3d", inner: bool) -> boo
     :return: True if the point meets the criteria, False otherwise.
     """
     ...
-

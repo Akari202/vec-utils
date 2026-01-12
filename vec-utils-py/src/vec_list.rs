@@ -79,11 +79,7 @@ impl VecList {
     pub fn collapse(&self, axis: usize) -> Self {
         assert!(axis <= 2);
         VecList {
-            list: self
-                .list
-                .par_iter()
-                .map(|i| i.collapse(axis).unwrap())
-                .collect()
+            list: self.list.par_iter().map(|i| i.collapse(axis)).collect()
         }
     }
 

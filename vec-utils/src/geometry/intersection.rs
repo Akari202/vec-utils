@@ -148,7 +148,7 @@ pub fn sphere_circle(
     let sphere_circle = sphere_plane(sphere, &circle_plane)?;
     if sphere_circle.is_degenerate() {
         match circle_point_unchecked(circle, &sphere_circle.center, false) {
-            Ok(()) => Ok((sphere_circle.center, sphere_circle.center)),
+            Ok(_) => Ok((sphere_circle.center, sphere_circle.center)),
             Err(e) => Err(e)
         }
     } else {

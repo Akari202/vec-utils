@@ -1,6 +1,6 @@
 [project]
 name = "vec-utils-py"
-version = "0.3.0"
+version = "0.3.1"
 requires-python = ">=3.9"
 authors = [
   { name="Akari202", email="akaritwo0two@gmail.com" }
@@ -20,6 +20,31 @@ license-files = ["LICENSE"]
 GitHub = "https://github.com/Akari202/vec-utils"
 Issues = "https://github.com/Akari202/vec-utils/issues"
 
+[tool.pyrefly.errors]
+bad-override = "ignore"
+missing-import = "ignore"
+unsupported-operation = "ignore"
+missing-module-attribute = "ignore"
+
 [build-system]
 requires = ["maturin>=1.0, <2.0"]
 build-backend = "maturin"
+
+[tool.basedpyright]
+typeCheckingMode = "all"
+reportExplicitAny = "none"
+reportAny = "none"
+reportImplicitOverride = "none"
+reportIncompatibleMethodOverride = "none"
+reportMissingImports = "none"
+ignore = ["tests/vec_list.py"]
+
+[tool.pyright]
+typeCheckingMode = "strict"
+reportImplicitOverride = "none"
+reportIncompatibleMethodOverride = "none"
+reportMissingImports = "none"
+ignore = ["tests/vec_list.py"]
+
+[tool.pyrefly]
+infer-with-first-use = false

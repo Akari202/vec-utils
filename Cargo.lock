@@ -553,7 +553,7 @@ dependencies = [
 
 [[package]]
 name = "vec-utils"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "assert_float_eq",
  "libm",
@@ -566,7 +566,7 @@ dependencies = [
 
 [[package]]
 name = "vec-utils-py"
-version = "0.3.0"
+version = "0.3.1"
 dependencies = [
  "ordered-float",
  "pyo3",

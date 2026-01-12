@@ -641,9 +641,8 @@ mod tests {
         let det = m.determinant();
         let adj = m.adjoint();
 
-        let row0_col0 = (m.values[0] * adj.values[0]
-            + m.values[1] * adj.values[3]
-            + m.values[2] * adj.values[6]);
+        let row0_col0 =
+            m.values[0] * adj.values[0] + m.values[1] * adj.values[3] + m.values[2] * adj.values[6];
 
         assert_f64_near!(row0_col0, det);
     }

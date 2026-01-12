@@ -237,24 +237,25 @@ impl Vec3d {
     /// Collapse the vector
     /// sets the axis to zero
     /// similar to `project_onto_plane` but might be faster
-    pub fn collapse(&self, axis: usize) -> Option<Vec3d> {
+    /// returns self if the axis is out of range
+    pub fn collapse(&self, axis: usize) -> Vec3d {
         match axis {
-            0 => Some(Vec3d {
+            0 => Vec3d {
                 x: 0.0,
                 y: self.y,
                 z: self.z
-            }),
-            1 => Some(Vec3d {
+            },
+            1 => Vec3d {
                 x: self.x,
                 y: 0.0,
                 z: self.z
-            }),
-            2 => Some(Vec3d {
+            },
+            2 => Vec3d {
                 x: self.x,
                 y: self.y,
                 z: 0.0
-            }),
-            _ => None
+            },
+            _ => *self
         }
     }
 }
@@ -529,10 +530,10 @@ mod tests {
     #[test]
     fn collapse() {
         let v = Vec3d::new(1.0, 2.0, 3.0);
-        let p = v.collapse(2).unwrap();
+        let p = v.collapse(2);
         let good = Vec3d::new(1.0, 2.0, 0.0);
         assert_eq!(p, good);
-        assert_eq!(v.collapse(13), None);
+        assert_eq!(v.collapse(13), v);
     }
 
     #[test]

@@ -284,7 +284,8 @@ impl Index<usize> for Quat {
 
     /// Index into a quaternion
     /// 0 is w, 1 is x, 2 is y, 3 is z
-    /// Panics if the index is out of bounds
+    /// # Panics
+    /// if the index is out of bounds
     fn index(&self, index: usize) -> &f64 {
         match index {
             0 => &self.w,

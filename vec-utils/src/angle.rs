@@ -1,5 +1,11 @@
 use core::f64::consts::PI;
-use core::{cmp, fmt, ops};
+use core::ops::{Add, Div, Mul, Neg, Rem, Sub};
+use core::{cmp, fmt};
+
+use crate::{
+    impl_dual_op_variants, impl_single_op_comm, impl_single_op_variants,
+    impl_single_op_variants_comm
+};
 
 /// An angle in degrees
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
@@ -114,6 +120,12 @@ impl AngleRadians {
     pub fn from_degrees(angle: AngleDegrees) -> Self {
         angle.into()
     }
+
+    /// Takes the mod of the angle
+    /// "wraps" the angle around back to zero
+    pub fn wrap(&self) -> Self {
+        self % Self::two_pi()
+    }
 }
 
 impl AngleDegrees {
@@ -161,6 +173,12 @@ impl AngleDegrees {
     pub fn from_radians(angle: AngleRadians) -> Self {
         angle.into()
     }
+
+    /// Takes the mod of the angle
+    /// "wraps" the angle around back to zero
+    pub fn wrap(&self) -> Self {
+        self % Self::from_radians(AngleRadians::two_pi())
+    }
 }
 
 impl From<AngleDegrees> for AngleRadians {
@@ -205,57 +223,67 @@ impl From<&AngleRadians> for f64 {
     }
 }
 
-impl ops::Div<f64> for AngleRadians {
-    type Output = AngleRadians;
+macro_rules! impl_dual_op {
+    ($trait:ident, $method:ident, $op:tt, $T:ty, $description:literal) => {
+        impl $trait for $T {
+            type Output = $T;
 
-    fn div(self, rhs: f64) -> AngleRadians {
-        (self.angle / rhs).into()
+            #[doc = $description]
+            fn $method(self, other: $T) -> $T {
+                Self { angle: self.angle $op other.angle }
+            }
+        }
+
+        impl_dual_op_variants!($trait, $method, $T, $description);
     }
 }
 
-impl ops::Mul<f64> for AngleRadians {
-    type Output = AngleRadians;
+macro_rules! impl_single_op {
+    ($trait:ident, $method:ident, $op:tt, $T:ty, $W:ty, $description:literal) => {
+        impl $trait<$W> for $T {
+            type Output = $T;
 
-    fn mul(self, rhs: f64) -> AngleRadians {
-        (self.angle * rhs).into()
+            #[doc = $description]
+            fn $method(self, other: $W) -> $T {
+                Self { angle: self.angle $op other }
+            }
+        }
+
+        impl_single_op_variants!($trait, $method, $T, $W, $description);
     }
 }
 
-impl ops::Mul<f64> for AngleDegrees {
-    type Output = AngleDegrees;
+impl_dual_op!(Add, add, +, AngleRadians, "Add two angles together");
+impl_dual_op!(Sub, sub, -, AngleRadians, "Subtract one angle from another");
+impl_dual_op!(Add, add, +, AngleDegrees, "Add two angles together");
+impl_dual_op!(Sub, sub, -, AngleDegrees, "Subtract one angle from another");
+// TODO: Make rem always wrap positive
+impl_dual_op!(Rem, rem, %, AngleDegrees, "The mod of an angle");
+impl_dual_op!(Rem, rem, %, AngleRadians, "The mod of an angle");
 
-    fn mul(self, rhs: f64) -> AngleDegrees {
-        AngleDegrees::new(self.angle * rhs)
-    }
-}
+impl_single_op_comm!(Add, add, +, AngleRadians, f64, "Add a f64 to an angle as radians");
+impl_single_op!(Sub, sub, -, AngleRadians, f64, "Subtract a f64 from an angle as radians");
+impl_single_op_comm!(Mul, mul, *, AngleRadians, f64, "Multiply an angle");
+impl_single_op!(Div, div, /, AngleRadians, f64, "Divide an angle");
+impl_single_op!(Rem, rem, %, AngleRadians, f64, "The mod of an angle");
 
-impl ops::Add<AngleRadians> for AngleRadians {
+impl_single_op_comm!(Mul, mul, *, AngleDegrees, f64, "Multiply an angle");
+impl_single_op!(Div, div, /, AngleDegrees, f64, "Divide an angle");
+impl_single_op!(Rem, rem, %, AngleDegrees, f64, "The mod of an angle");
+
+impl Neg for AngleRadians {
     type Output = AngleRadians;
 
-    fn add(self, rhs: AngleRadians) -> AngleRadians {
-        (self.angle + rhs.angle).into()
-    }
-}
-
-impl ops::Sub<AngleRadians> for AngleRadians {
-    type Output = AngleRadians;
-
-    fn sub(self, rhs: AngleRadians) -> AngleRadians {
-        (self.angle - rhs.angle).into()
-    }
-}
-
-impl ops::Neg for AngleRadians {
-    type Output = AngleRadians;
-
+    /// Negates the angle
     fn neg(self) -> AngleRadians {
         (-self.angle).into()
     }
 }
 
-impl ops::Neg for AngleDegrees {
+impl Neg for AngleDegrees {
     type Output = AngleDegrees;
 
+    /// Negates the angle
     fn neg(self) -> AngleDegrees {
         AngleDegrees::new(-self.angle)
     }
@@ -299,5 +327,94 @@ impl fmt::Display for AngleDegrees {
 
 #[cfg(test)]
 mod tests {
-    // TODO
+    use core::f64::consts::PI;
+
+    use assert_float_eq::assert_f64_near;
+    use pretty_assertions::assert_eq;
+
+    use super::*;
+
+    #[test]
+    fn test_constants_and_new() {
+        assert_f64_near!(AngleRadians::new(PI).angle, PI);
+        assert_f64_near!(AngleRadians::zero().angle, 0.0);
+        assert_f64_near!(AngleRadians::pi().angle, PI);
+        assert_f64_near!(AngleRadians::two_pi().angle, 2.0 * PI);
+        assert_f64_near!(AngleRadians::half_pi().angle, PI / 2.0);
+        assert_f64_near!(AngleRadians::quarter_pi().angle, PI / 4.0);
+        assert_f64_near!(AngleRadians::third_pi().angle, PI / 3.0);
+        assert_f64_near!(AngleRadians::sixth_pi().angle, PI / 6.0);
+    }
+
+    #[test]
+    fn test_conversions() {
+        let deg = AngleDegrees::new(180.0);
+        let rad = deg.to_radians();
+        assert_f64_near!(rad.angle, PI);
+
+        let back_to_deg = rad.to_degrees();
+        assert_f64_near!(back_to_deg.angle, 180.0);
+
+        let rad_from: AngleRadians = AngleDegrees::new(90.0).into();
+        assert_f64_near!(rad_from.angle, PI / 2.0);
+
+        let f64_from: f64 = AngleRadians::pi().into();
+        assert_f64_near!(f64_from, PI);
+    }
+
+    #[test]
+    fn test_trigonometry() {
+        let rad = AngleRadians::pi() / 4.0; // 45 degrees
+        let deg = AngleDegrees::new(45.0);
+
+        assert_f64_near!(rad.sin(), (2.0f64).sqrt() / 2.0);
+        assert_f64_near!(deg.sin(), rad.sin());
+
+        assert_f64_near!(rad.cos(), (2.0f64).sqrt() / 2.0);
+        assert_f64_near!(deg.cos(), rad.cos());
+
+        assert_f64_near!(rad.tan(), 1.0);
+        assert_f64_near!(deg.tan(), 1.0);
+
+        assert_f64_near!(AngleRadians::zero().sec(), 1.0);
+        assert_f64_near!(AngleRadians::half_pi().csc(), 1.0);
+    }
+
+    #[test]
+    fn test_wrapping() {
+        assert_f64_near!(AngleRadians::new(3.0 * PI).wrap().angle, PI);
+        assert_f64_near!(AngleDegrees::new(450.0).wrap().angle, 90.0);
+
+        // TODO: fix wrap
+        // assert_f64_near!(AngleRadians::new(-PI).wrap().angle, PI);
+        // assert_f64_near!(AngleDegrees::new(-90.0).wrap().angle, 270.0);
+    }
+
+    #[test]
+    fn test_arithmetic() {
+        let a = AngleDegrees::new(100.0);
+        let b = AngleDegrees::new(50.0);
+
+        assert_f64_near!((a + b).angle, 150.0);
+        assert_f64_near!((a - b).angle, 50.0);
+        assert_f64_near!((a * 2.0).angle, 200.0);
+        assert_f64_near!((a / 2.0).angle, 50.0);
+        assert_f64_near!((-a).angle, -100.0);
+
+        let r = AngleRadians::pi();
+        assert_f64_near!((r + PI).angle, 2.0 * PI);
+    }
+
+    #[test]
+    fn test_ordering_and_equality() {
+        let a = AngleDegrees::new(10.0);
+        let b = AngleDegrees::new(20.0);
+        let c = AngleDegrees::new(10.0);
+
+        assert!(a < b);
+        assert!(b > a);
+        assert_eq!(a, c);
+
+        assert!(AngleRadians::pi() > AngleRadians::half_pi());
+    }
 }

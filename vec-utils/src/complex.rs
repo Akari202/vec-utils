@@ -282,6 +282,10 @@ impl PartialOrd<Complex> for f64 {
 impl Index<usize> for Complex {
     type Output = f64;
 
+    /// Index into a quaternion
+    /// 0 is the real component, 1 is the imaginary component
+    /// # Panics
+    /// if the index is out of bounds
     fn index(&self, index: usize) -> &f64 {
         match index {
             0 => &self.real,
@@ -292,6 +296,7 @@ impl Index<usize> for Complex {
 }
 
 impl fmt::Display for Complex {
+    /// Format the complex number as a string
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.real == 0.0 {
             write!(f, "{}i", self.imaginary)

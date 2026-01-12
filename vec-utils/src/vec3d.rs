@@ -319,7 +319,8 @@ impl Index<usize> for Vec3d {
 
     /// Index into a Vec3d
     /// 0 is x, 1 is y, 2 is z
-    /// Panics if the index is out of bounds
+    /// # Panics
+    /// if the index is out of bounds
     fn index(&self, index: usize) -> &f64 {
         match index {
             0 => &self.x,

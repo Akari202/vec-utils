@@ -73,7 +73,7 @@ impl Twoable for f64 {
 
     fn sqrt(&self) -> Self {
         #[cfg(not(feature = "std"))]
-        return core::f64::math::sqrt(self);
+        return core::f64::math::sqrt(*self);
         #[cfg(feature = "std")]
         return f64::sqrt(*self);
     }

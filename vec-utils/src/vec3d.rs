@@ -3,6 +3,9 @@ use core::{f64, fmt};
 #[cfg(feature = "std")]
 use std::vec::Vec;
 
+#[cfg(feature = "nalgebra")]
+use nalgebra::Vector3;
+
 use crate::angle::AngleRadians;
 #[cfg(feature = "matrix")]
 use crate::matrix::real::Matrix;
@@ -190,6 +193,21 @@ impl Vec3d {
         );
     }
 
+    /// Calculate the signed angle between two Vec3d's relative to a reference axis
+    /// the result is in radians
+    pub fn signed_angle_to(&self, other: &Vec3d, axis: &Vec3d) -> AngleRadians {
+        let dot = self.dot(other);
+        let cross = self.cross(other);
+
+        let sign = if cross.dot(axis) >= 0.0 { 1.0 } else { -1.0 };
+
+        #[cfg(not(feature = "std"))]
+        let angle = libm::atan2(cross.magnitude(), dot);
+        #[cfg(feature = "std")]
+        let angle = cross.magnitude().atan2(dot);
+        AngleRadians::new(angle * sign)
+    }
+
     /// Calculate the scalar triple product of three Vec3d's
     pub fn scalar_triple_product(a: &Vec3d, b: &Vec3d, c: &Vec3d) -> f64 {
         a.dot(&b.cross(c))
@@ -334,6 +352,31 @@ impl fmt::Display for Vec3d {
     /// Format the Vec3d as a string
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "({}, {}, {})", self.x, self.y, self.z)
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl From<Vec3d> for Vector3<f64> {
+    fn from(v: Vec3d) -> Self {
+        Vector3::new(v.x, v.y, v.z)
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl From<Vector3<f64>> for Vec3d {
+    fn from(v: Vector3<f64>) -> Self {
+        Self {
+            x: v.x,
+            y: v.y,
+            z: v.z
+        }
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl PartialEq<Vector3<f64>> for Vec3d {
+    fn eq(&self, other: &Vector3<f64>) -> bool {
+        self.x == other.x && self.y == other.y && self.z == other.z
     }
 }
 
@@ -620,5 +663,60 @@ mod tests {
         assert_f64_near!(v[0], 1.0);
         assert_f64_near!(v[1], 2.0);
         assert_f64_near!(v[2], 3.0);
+    }
+
+    #[test]
+    fn test_signed_angle_cardinal_axes() {
+        let v1 = Vec3d::new(1.0, 0.0, 0.0);
+        let v2 = Vec3d::new(0.0, 1.0, 0.0);
+        let axis = Vec3d::new(0.0, 0.0, 1.0);
+
+        let angle = v1.signed_angle_to(&v2, &axis);
+        assert_f64_near!(angle.angle, AngleRadians::half_pi().angle);
+    }
+
+    #[test]
+    fn test_signed_angle_clockwise() {
+        let v1 = Vec3d::new(1.0, 0.0, 0.0);
+        let v2 = Vec3d::new(0.0, 1.0, 0.0);
+        let axis = Vec3d::new(0.0, 0.0, 1.0);
+
+        let angle = v2.signed_angle_to(&v1, &axis);
+        assert_f64_near!(angle.angle, -AngleRadians::half_pi().angle);
+    }
+
+    #[test]
+    fn test_signed_angle_parallel_cases() {
+        let v1 = Vec3d::new(1.0, 0.0, 0.0);
+        let v2 = Vec3d::new(1.0, 0.0, 0.0);
+        let axis = Vec3d::new(0.0, 0.0, 1.0);
+
+        assert_f64_near!(
+            v1.signed_angle_to(&v2, &axis).angle,
+            AngleRadians::zero().angle
+        );
+
+        let v3 = Vec3d::new(-1.0, 0.0, 0.0);
+        assert_f64_near!(
+            v1.signed_angle_to(&v3, &axis).abs().angle,
+            AngleRadians::pi().angle
+        );
+    }
+
+    #[test]
+    #[cfg(feature = "nalgebra")]
+    fn test_vec3d_interop() {
+        let v = Vec3d {
+            x: 1.0,
+            y: 2.0,
+            z: 3.0
+        };
+        let nal_v: Vector3<f64> = v.into();
+
+        assert_eq!(nal_v, Vector3::new(1.0, 2.0, 3.0));
+        assert_eq!(v, nal_v);
+
+        let round_trip: Vec3d = nal_v.into();
+        assert_eq!(round_trip.x, 1.0);
     }
 }

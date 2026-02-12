@@ -1,6 +1,6 @@
 [package]
 name = "vec-utils"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 authors = ["Akari Harada <akaritwo0two@gmail.com>"]
 license = "GPL-3"
@@ -10,14 +10,15 @@ name = "vec_utils"
 
 [[example]]
 name = "matrix_math"
-required-features = ["matrix"]
+required-features = ["matrix", "std"]
 
 [dependencies]
-libm = { version = "0.2.15" }
+libm = { version = "0.2.16" }
 matrixmultiply = { version = "0.3.10", default-features = false, features = [
   "cgemm"
 ], optional = true }
-rkyv = { version = "0.8.12", default-features = false, features = ["bytecheck"], optional = true }
+nalgebra = { version = "0.34.1", default-features = false, optional = true }
+rkyv = { version = "0.8.15", default-features = false, features = ["bytecheck"], optional = true }
 serde = { version = "1.0.219", default-features = false, features = ["derive"], optional = true }
 
 [dev-dependencies]
@@ -26,7 +27,9 @@ pretty_assertions = "1.4.1"
 
 [features]
 default = ["std"]
+# default = ["matrix", "nalgebra", "rkyv", "serde"]
 matrix = ["dep:matrixmultiply"]
+nalgebra = ["dep:nalgebra"]
 rkyv = ["dep:rkyv"]
 serde = ["dep:serde"]
-std = ["matrixmultiply?/std", "rkyv?/std", "serde?/std"]
+std = ["matrixmultiply?/std", "nalgebra?/std", "rkyv?/std", "serde?/std"]

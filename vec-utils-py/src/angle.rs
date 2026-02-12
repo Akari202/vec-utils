@@ -1,13 +1,13 @@
 use pyo3::prelude::*;
 use vec_utils::*;
 
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]
 pub struct AngleRadians {
     pub inner: angle::AngleRadians
 }
 
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]
 pub struct AngleDegrees {
     pub inner: angle::AngleDegrees

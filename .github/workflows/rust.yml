@@ -16,9 +16,7 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --verbose --all-features
     - name: Run tests
       run: cargo test --verbose --all-features
     - name: Run tests no-std
-      run: cargo test --verbose --features matrix
+      run: cargo test --verbose --no-default-features --features matrix,nalgebra,rkyv,serde

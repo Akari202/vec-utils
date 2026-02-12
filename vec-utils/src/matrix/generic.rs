@@ -1,3 +1,4 @@
+#[cfg(feature = "std")]
 use core::fmt;
 use core::fmt::Debug;
 use core::ops::{Add, Div, Index, IndexMut, Mul, Sub};
@@ -6,10 +7,13 @@ use std::string::String;
 #[cfg(feature = "std")]
 use std::vec::Vec;
 
+#[cfg(feature = "nalgebra")]
+use nalgebra::SMatrix;
+
 use crate::matrix::traits::{Fourable, Oneable, Signed, Twoable, Zeroable};
 
-/// A generic 2d matrix of width R and height C
 // TODO: I would like to add a generic is row major switch
+/// A generic 2d matrix of width R and height C
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct GMatrix<const R: usize, const C: usize, T>
 where
@@ -454,6 +458,52 @@ where
     }
 }
 
+#[cfg(feature = "nalgebra")]
+impl<const R: usize, const C: usize, T> From<GMatrix<R, C, T>> for SMatrix<T, R, C>
+where
+    T: nalgebra::Scalar + Copy,
+    [T; R * C]: Sized
+{
+    fn from(m: GMatrix<R, C, T>) -> Self {
+        Self::from_row_slice(&m.values)
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl<const R: usize, const C: usize, T> From<SMatrix<T, R, C>> for GMatrix<R, C, T>
+where
+    T: nalgebra::Scalar + Copy,
+    [T; R * C]: Sized
+{
+    fn from(m: SMatrix<T, R, C>) -> Self {
+        let mut values = [m.as_slice()[0]; R * C];
+        for r in 0..R {
+            for c in 0..C {
+                values[r * C + c] = m[(r, c)];
+            }
+        }
+        Self { values }
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl<const R: usize, const C: usize, T> PartialEq<SMatrix<T, R, C>> for GMatrix<R, C, T>
+where
+    T: nalgebra::Scalar + PartialEq + Copy,
+    [T; R * C]: Sized
+{
+    fn eq(&self, other: &SMatrix<T, R, C>) -> bool {
+        for r in 0..R {
+            for c in 0..C {
+                if self.values[r * C + c] != other[(r, c)] {
+                    return false;
+                }
+            }
+        }
+        true
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use assert_float_eq::assert_f64_near;
@@ -522,6 +572,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "std")]
     fn test_iterators() {
         let mut mat = GMatrix2x2::<f64>::from_nested_arr([[1.0, 2.0], [3.0, 4.0]]);
 
@@ -818,5 +869,21 @@ mod tests {
         );
 
         b.iter(|| m.tr());
+    }
+
+    #[test]
+    #[cfg(feature = "nalgebra")]
+    fn test_gmatrix_interop() {
+        let m = GMatrix::<2, 3, f64> {
+            values: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+        };
+
+        let nal_m: SMatrix<f64, 2, 3> = m.into();
+
+        assert_f64_near!(nal_m[(0, 0)], 1.0);
+        assert_f64_near!(nal_m[(0, 2)], 3.0);
+        assert_f64_near!(nal_m[(1, 0)], 4.0);
+
+        assert!(m == nal_m);
     }
 }

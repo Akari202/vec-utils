@@ -3,7 +3,7 @@ use vec_utils::*;
 
 use super::super::vec3d::Vec3d;
 
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Plane {
     pub inner: geometry::plane::Plane

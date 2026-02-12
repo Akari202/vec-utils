@@ -11,10 +11,13 @@ name = "vec_utils_py"
 
 [dependencies]
 ordered-float = "5.1.0"
-pyo3 = { version = "0.27.2", features = [
+pyo3 = { version = "0.28.0", features = [
   "experimental-inspect",
   "extension-module",
   "generate-import-lib"
 ] }
 rayon = "1.11.0"
-vec-utils = { path = "../vec-utils", features = ["matrix"] }
+vec-utils = { path = "../vec-utils", default-features = false, features = [
+  "matrix",
+  "std"
+] }

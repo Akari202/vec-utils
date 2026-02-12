@@ -24,3 +24,8 @@ https://docs.google.com/document/d/1KkKC2-ozJkvbWQIAXeJ1MUGqxjn19c-Mmc7RtxFTA3c/
 https://ntrs.nasa.gov/api/citations/19900013774/downloads/19900013774.pdf
 
 https://www.cs.unc.edu/techreports/96-043.pdf
+
+https://vini-fda.github.io/numerical-algorithms-rust/index.html
+https://library.oapen.org/bitstream/id/9bb74b77-23e3-42d3-9ae3-e5307f6de777/978-3-031-25820-6.pdf
+https://amath583.github.io/sp22/units/L9.html
+https://fab.cba.mit.edu/classes/865.18/design/optimization/dynamics_1.pdf

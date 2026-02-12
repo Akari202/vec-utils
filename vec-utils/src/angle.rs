@@ -13,7 +13,7 @@ use crate::{
     feature = "rkyv",
     derive(rkyv::Deserialize, rkyv::Serialize, rkyv::Archive)
 )]
-#[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialOrd, PartialEq, Clone, Copy, Default)]
 pub struct AngleDegrees {
     /// The angle in degrees
     pub angle: f64
@@ -25,7 +25,7 @@ pub struct AngleDegrees {
     feature = "rkyv",
     derive(rkyv::Deserialize, rkyv::Serialize, rkyv::Archive)
 )]
-#[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]
+#[derive(Debug, PartialOrd, PartialEq, Clone, Copy, Default)]
 pub struct AngleRadians {
     /// The angle in radians
     pub angle: f64
@@ -126,6 +126,13 @@ impl AngleRadians {
     pub fn wrap(&self) -> Self {
         self % Self::two_pi()
     }
+
+    /// The absolute value of the angle
+    pub fn abs(&self) -> Self {
+        AngleRadians {
+            angle: self.angle.abs()
+        }
+    }
 }
 
 impl AngleDegrees {
@@ -178,6 +185,13 @@ impl AngleDegrees {
     /// "wraps" the angle around back to zero
     pub fn wrap(&self) -> Self {
         self % Self::from_radians(AngleRadians::two_pi())
+    }
+
+    /// The absolute value of the angle
+    pub fn abs(&self) -> Self {
+        AngleDegrees {
+            angle: self.angle.abs()
+        }
     }
 }
 

@@ -4,7 +4,7 @@ use vec_utils::*;
 use super::super::vec3d::Vec3d;
 use super::plane::Plane;
 
-#[pyclass]
+#[pyclass(from_py_object)]
 #[derive(Debug, Clone, Copy)]
 pub struct Circle {
     pub inner: geometry::circle::Circle

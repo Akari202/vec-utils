@@ -7,7 +7,7 @@ use vec_utils::*;
 use super::angle::AngleRadians;
 use super::quat::Quat;
 
-#[pyclass(eq)]
+#[pyclass(eq, from_py_object)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub struct Vec3d {
     pub inner: vec3d::Vec3d

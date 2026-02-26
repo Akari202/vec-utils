@@ -1,4 +1,4 @@
-use vec_utils::matrix::real::Matrix2x2;
+use bektor::matrix::real::Matrix2x2;
 
 fn main() {
     let a = Matrix2x2::from_nested_arr([[1.0, 2.0], [3.0, 4.0]]);

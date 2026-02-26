@@ -1,6 +1,6 @@
+use bektor::*;
 use pyo3::exceptions::PyValueError;
 use pyo3::prelude::*;
-use vec_utils::*;
 
 use super::super::vec3d::Vec3d;
 use super::circle::Circle;

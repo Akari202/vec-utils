@@ -1,6 +1,8 @@
-# Vec-Utils
+# Vec-Utils / Bektor
 
+![Crates.io Version](https://img.shields.io/crates/v/bektor)
 ![PyPI - Version](https://img.shields.io/pypi/v/vec-utils-py)
+![docs.rs](https://img.shields.io/docsrs/bektor)
 
 A Rust crate for 3D vector math, quaternions, geometry, complex numbers, and angles. Built for simplicity and correctness over raw performance. Optimizations are planned. Python bindings are also available for much of the library.
 

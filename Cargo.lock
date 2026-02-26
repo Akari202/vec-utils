@@ -30,6 +30,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c08606f8c3cbf4ce6ec8e28fb0014a2c086708fe954eaa885384a6165172e7e8"
 
 [[package]]
+name = "bektor"
+version = "0.3.2"
+dependencies = [
+ "assert_float_eq",
+ "glam 0.32.0",
+ "libm",
+ "matrixmultiply",
+ "nalgebra",
+ "pretty_assertions",
+ "rand",
+ "rkyv",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "bitflags"
 version = "2.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -879,29 +895,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "vec-utils"
-version = "0.3.1"
-dependencies = [
- "assert_float_eq",
- "glam 0.32.0",
- "libm",
- "matrixmultiply",
- "nalgebra",
- "pretty_assertions",
- "rand",
- "rkyv",
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "vec-utils-py"
-version = "0.3.1"
+version = "0.3.2"
 dependencies = [
+ "bektor",
  "ordered-float",
  "pyo3",
  "rayon",
- "vec-utils",
 ]
 
 [[package]]

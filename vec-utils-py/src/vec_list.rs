@@ -1,6 +1,6 @@
+use bektor::*;
 use pyo3::prelude::*;
 use rayon::prelude::*;
-use vec_utils::*;
 
 use super::quat::Quat;
 use super::vec3d::Vec3d;

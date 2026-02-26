@@ -1,8 +1,8 @@
 use std::hash::{DefaultHasher, Hash, Hasher};
 
+use bektor::*;
 use ordered_float::OrderedFloat;
 use pyo3::prelude::*;
-use vec_utils::*;
 
 use super::angle::AngleRadians;
 use super::quat::Quat;

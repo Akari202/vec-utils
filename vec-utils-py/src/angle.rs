@@ -1,5 +1,5 @@
+use bektor::*;
 use pyo3::prelude::*;
-use vec_utils::*;
 
 #[pyclass(from_py_object)]
 #[derive(Debug, PartialOrd, PartialEq, Clone, Copy)]

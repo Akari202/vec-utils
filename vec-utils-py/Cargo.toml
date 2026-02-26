@@ -16,7 +16,7 @@ bektor = { path = "../bektor", default-features = false, features = [
   "std"
 ] }
 ordered-float = "5.1.0"
-pyo3 = { version = "0.28.0", features = [
+pyo3 = { version = "0.28.2", features = [
   "experimental-inspect",
   "extension-module",
   "generate-import-lib"

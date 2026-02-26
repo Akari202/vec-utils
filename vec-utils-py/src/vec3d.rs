@@ -157,19 +157,19 @@ impl Vec3d {
 
     pub fn __add__(&self, other: &Vec3d) -> Self {
         Vec3d {
-            inner: self.inner + &other.inner
+            inner: self.inner + other.inner
         }
     }
 
     pub fn __sub__(&self, other: &Vec3d) -> Self {
         Vec3d {
-            inner: &self.inner - &other.inner
+            inner: self.inner - other.inner
         }
     }
 
     pub fn __mul__(&self, rhs: f64) -> Self {
         Vec3d {
-            inner: &self.inner * rhs
+            inner: self.inner * rhs
         }
     }
 

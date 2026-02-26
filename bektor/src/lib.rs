@@ -10,8 +10,7 @@
     clippy::many_single_char_names,
     clippy::return_self_not_must_use,
     clippy::derive_ord_xor_partial_ord,
-    incomplete_features,
-    clippy::cargo_common_metadata
+    incomplete_features
 )]
 #![cfg_attr(not(feature = "std"), feature(core_float_math))]
 #![cfg_attr(feature = "matrix", feature(generic_const_exprs))]

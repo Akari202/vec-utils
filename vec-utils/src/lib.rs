@@ -1,5 +1,5 @@
 #![no_std]
-#![warn(clippy::pedantic)]
+#![warn(clippy::pedantic, clippy::cargo)]
 #![deny(
     missing_docs,
     clippy::undocumented_unsafe_blocks,
@@ -10,7 +10,8 @@
     clippy::many_single_char_names,
     clippy::return_self_not_must_use,
     clippy::derive_ord_xor_partial_ord,
-    incomplete_features
+    incomplete_features,
+    clippy::cargo_common_metadata
 )]
 #![cfg_attr(not(feature = "std"), feature(core_float_math))]
 #![cfg_attr(feature = "matrix", feature(generic_const_exprs))]

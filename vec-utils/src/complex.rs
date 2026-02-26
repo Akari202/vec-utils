@@ -2,6 +2,11 @@ use core::cmp::Ordering;
 use core::fmt;
 use core::ops::{Add, Div, Index, Mul, Sub};
 
+#[cfg(feature = "rand")]
+use rand::distr::{Distribution, StandardUniform};
+#[cfg(feature = "rand")]
+use rand::{Rng, RngExt};
+
 use crate::{
     impl_dual_op_variants, impl_single_op_comm, impl_single_op_variants,
     impl_single_op_variants_comm, impl_single_op_variants_other
@@ -309,6 +314,16 @@ impl fmt::Display for Complex {
             write!(f, "{} - {}i", self.real, self.imaginary.abs())
         } else {
             write!(f, "{} + {}i", self.real, self.imaginary)
+        }
+    }
+}
+
+#[cfg(feature = "rand")]
+impl Distribution<Complex> for StandardUniform {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Complex {
+        Complex {
+            real: rng.random(),
+            imaginary: rng.random()
         }
     }
 }

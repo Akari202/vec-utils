@@ -1,6 +1,11 @@
-use core::f64::consts::PI;
+use core::f64::consts::{PI, TAU};
 use core::ops::{Add, Div, Mul, Neg, Rem, Sub};
 use core::{cmp, fmt};
+
+#[cfg(feature = "rand")]
+use rand::distr::{Distribution, StandardUniform};
+#[cfg(feature = "rand")]
+use rand::{Rng, RngExt};
 
 use crate::{
     impl_dual_op_variants, impl_single_op_comm, impl_single_op_variants,
@@ -44,7 +49,12 @@ impl AngleRadians {
 
     /// Get 2pi
     pub fn two_pi() -> Self {
-        Self::new(2.0 * PI)
+        Self::tau()
+    }
+
+    /// Get tau (2pi)
+    pub fn tau() -> Self {
+        Self::new(TAU)
     }
 
     /// Get pi
@@ -339,10 +349,26 @@ impl fmt::Display for AngleDegrees {
     }
 }
 
+#[cfg(feature = "rand")]
+impl Distribution<AngleRadians> for StandardUniform {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> AngleRadians {
+        AngleRadians {
+            angle: rng.random_range(0.0..TAU)
+        }
+    }
+}
+
+#[cfg(feature = "rand")]
+impl Distribution<AngleDegrees> for StandardUniform {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> AngleDegrees {
+        AngleDegrees {
+            angle: rng.random_range(0.0..360.0)
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use core::f64::consts::PI;
-
     use assert_float_eq::assert_f64_near;
     use pretty_assertions::assert_eq;
 
@@ -353,7 +379,8 @@ mod tests {
         assert_f64_near!(AngleRadians::new(PI).angle, PI);
         assert_f64_near!(AngleRadians::zero().angle, 0.0);
         assert_f64_near!(AngleRadians::pi().angle, PI);
-        assert_f64_near!(AngleRadians::two_pi().angle, 2.0 * PI);
+        assert_f64_near!(AngleRadians::two_pi().angle, TAU);
+        assert_f64_near!(AngleRadians::tau().angle, TAU);
         assert_f64_near!(AngleRadians::half_pi().angle, PI / 2.0);
         assert_f64_near!(AngleRadians::quarter_pi().angle, PI / 4.0);
         assert_f64_near!(AngleRadians::third_pi().angle, PI / 3.0);
@@ -378,7 +405,7 @@ mod tests {
 
     #[test]
     fn test_trigonometry() {
-        let rad = AngleRadians::pi() / 4.0; // 45 degrees
+        let rad = AngleRadians::pi() / 4.0;
         let deg = AngleDegrees::new(45.0);
 
         assert_f64_near!(rad.sin(), (2.0f64).sqrt() / 2.0);
@@ -416,7 +443,7 @@ mod tests {
         assert_f64_near!((-a).angle, -100.0);
 
         let r = AngleRadians::pi();
-        assert_f64_near!((r + PI).angle, 2.0 * PI);
+        assert_f64_near!((r + PI).angle, TAU);
     }
 
     #[test]

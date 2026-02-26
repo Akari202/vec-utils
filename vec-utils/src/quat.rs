@@ -1,7 +1,20 @@
+#[allow(unused_imports)]
+use core::f64::consts::TAU;
 use core::fmt;
 use core::ops::{Add, Div, Index, Mul, Sub};
 #[cfg(feature = "std")]
 use std::vec::Vec;
+
+#[cfg(feature = "glam")]
+use glam::DQuat;
+#[cfg(feature = "nalgebra")]
+use nalgebra::Quaternion;
+#[cfg(feature = "nalgebra")]
+use nalgebra::UnitQuaternion;
+#[cfg(feature = "rand")]
+use rand::distr::{Distribution, StandardUniform};
+#[cfg(feature = "rand")]
+use rand::{Rng, RngExt};
 
 use crate::angle::AngleRadians;
 #[cfg(feature = "matrix")]
@@ -216,6 +229,45 @@ impl Quat {
     pub fn to_vec(&self) -> Vec<f64> {
         vec![self.w, self.i, self.j, self.k]
     }
+
+    // https://stackoverflow.com/questions/31600717/how-to-generate-a-random-quaternion-quickly
+    /// Generates a uniformly distributed random unit quaternion
+    #[cfg(feature = "rand")]
+    pub fn random_unit<R: Rng + ?Sized>(rng: &mut R) -> Quat {
+        let u1: f64 = rng.random();
+        let u2: f64 = rng.random();
+        let u3: f64 = rng.random();
+
+        #[cfg(not(feature = "std"))]
+        let sqrt_u1 = core::f64::math::sqrt(1.0 - u1);
+        #[cfg(feature = "std")]
+        let sqrt_u1 = (1.0 - u1).sqrt();
+
+        #[cfg(not(feature = "std"))]
+        let sqrt_1_u1 = core::f64::math::sqrt(u1);
+        #[cfg(feature = "std")]
+        let sqrt_1_u1 = u1.sqrt();
+
+        let theta1 = TAU * u2;
+        let theta2 = TAU * u3;
+
+        #[cfg(not(feature = "std"))]
+        let (sin_t1, cos_t1) = (libm::sin(theta1), libm::cos(theta1));
+        #[cfg(feature = "std")]
+        let (sin_t1, cos_t1) = theta1.sin_cos();
+
+        #[cfg(not(feature = "std"))]
+        let (sin_t2, cos_t2) = (libm::sin(theta2), libm::cos(theta2));
+        #[cfg(feature = "std")]
+        let (sin_t2, cos_t2) = theta2.sin_cos();
+
+        Quat {
+            w: sqrt_u1 * sin_t1,
+            i: sqrt_u1 * cos_t1,
+            j: sqrt_1_u1 * sin_t2,
+            k: sqrt_1_u1 * cos_t2
+        }
+    }
 }
 
 macro_rules! impl_dual_op {
@@ -313,10 +365,114 @@ impl PartialEq for Quat {
     }
 }
 
+#[cfg(feature = "nalgebra")]
+impl From<Quat> for UnitQuaternion<f64> {
+    fn from(q: Quat) -> Self {
+        UnitQuaternion::new_normalize(Quaternion::new(q.w, q.i, q.j, q.k))
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl From<UnitQuaternion<f64>> for Quat {
+    fn from(q: UnitQuaternion<f64>) -> Self {
+        Self {
+            w: q.w,
+            i: q.i,
+            j: q.j,
+            k: q.k
+        }
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl From<Quaternion<f64>> for Quat {
+    fn from(q: Quaternion<f64>) -> Self {
+        Self {
+            w: q.w,
+            i: q.i,
+            j: q.j,
+            k: q.k
+        }
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl From<Quat> for Quaternion<f64> {
+    fn from(q: Quat) -> Self {
+        Quaternion::new(q.w, q.i, q.j, q.k)
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl PartialEq<Quaternion<f64>> for Quat {
+    fn eq(&self, other: &Quaternion<f64>) -> bool {
+        (self.w - other.w).abs() < f64::EPSILON
+            && (self.i - other.i).abs() < f64::EPSILON
+            && (self.j - other.j).abs() < f64::EPSILON
+            && (self.k - other.k).abs() < f64::EPSILON
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl PartialEq<UnitQuaternion<f64>> for Quat {
+    fn eq(&self, other: &UnitQuaternion<f64>) -> bool {
+        self.is_unit()
+            && (self.w - other.w).abs() < f64::EPSILON
+            && (self.i - other.i).abs() < f64::EPSILON
+            && (self.j - other.j).abs() < f64::EPSILON
+            && (self.k - other.k).abs() < f64::EPSILON
+    }
+}
+
+#[cfg(feature = "glam")]
+impl From<Quat> for DQuat {
+    fn from(q: Quat) -> Self {
+        DQuat::from_xyzw(q.i, q.j, q.k, q.w)
+    }
+}
+
+#[cfg(feature = "glam")]
+impl From<DQuat> for Quat {
+    fn from(q: DQuat) -> Self {
+        Self {
+            w: q.w,
+            i: q.x,
+            j: q.y,
+            k: q.z
+        }
+    }
+}
+
+#[cfg(feature = "glam")]
+impl PartialEq<DQuat> for Quat {
+    fn eq(&self, other: &DQuat) -> bool {
+        (self.w - other.w).abs() < f64::EPSILON
+            && (self.i - other.x).abs() < f64::EPSILON
+            && (self.j - other.y).abs() < f64::EPSILON
+            && (self.k - other.z).abs() < f64::EPSILON
+    }
+}
+
+#[cfg(feature = "rand")]
+impl Distribution<Quat> for StandardUniform {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Quat {
+        Quat {
+            w: rng.random(),
+            i: rng.random(),
+            j: rng.random(),
+            k: rng.random()
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use assert_float_eq::assert_f64_near;
     use pretty_assertions::assert_eq;
+    #[cfg(feature = "rand")]
+    use rand::SeedableRng;
+    #[cfg(feature = "rand")]
+    use rand::rngs::SmallRng;
 
     use super::*;
 
@@ -431,5 +587,48 @@ mod tests {
         assert_f64_near!(q[1], 2.0);
         assert_f64_near!(q[2], 3.0);
         assert_f64_near!(q[3], 4.0);
+    }
+
+    #[test]
+    #[cfg(feature = "nalgebra")]
+    fn test_nalgebra_interop() {
+        let q = Quat {
+            i: 1.0,
+            j: 2.0,
+            k: 3.0,
+            w: 4.0
+        };
+        let nal_q: Quaternion<f64> = q.into();
+        let roundtrip: Quat = nal_q.into();
+
+        assert_eq!(nal_q, Quaternion::new(4.0, 1.0, 2.0, 3.0));
+        assert_eq!(q, nal_q);
+        assert_eq!(roundtrip, q);
+    }
+
+    #[test]
+    #[cfg(feature = "glam")]
+    fn test_glam_interop() {
+        let q = Quat {
+            i: 1.0,
+            j: 2.0,
+            k: 3.0,
+            w: 4.0
+        };
+        let glam_q: DQuat = q.into();
+        let roundtrip: Quat = glam_q.into();
+
+        assert_eq!(glam_q, DQuat::from_xyzw(1.0, 2.0, 3.0, 4.0));
+        assert_eq!(q, glam_q);
+        assert_eq!(roundtrip, q);
+    }
+
+    #[test]
+    #[cfg(feature = "rand")]
+    fn test_random_is_unit() {
+        let mut rng = SmallRng::seed_from_u64(39332);
+        for _ in 0..100 {
+            assert_f64_near!(Quat::random_unit(&mut rng).magnitude(), 1.0);
+        }
     }
 }

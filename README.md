@@ -1,31 +1,42 @@
-https://www.euclideanspace.com/maths/algebra/realNormedAlgebra/quaternions/transforms/index.htm
-https://paroj.github.io/gltut/Positioning/Tut08%20Quaternions.html
-https://math.stackexchange.com/questions/1905533/find-perpendicular-distance-from-point-to-line-in-3d
-THIS MIGHT BE WRONG
-https://danceswithcode.net/engineeringnotes/quaternions/quaternions.html
-https://web.archive.org/web/20161011113446/http://www.abecedarical.com/zenosamples/zs_circle3pts.html
-https://math.stackexchange.com/questions/213658/get-the-equation-of-a-circle-when-given-3-points
-https://www.youtube.com/watch?v=d4EgbgTm0Bg
-https://eater.net/quaternions
-https://ulissigroup.cheme.cmu.edu/math-methods-chemical-engineering/notes/linear_algebra/7b-numerical-eigenvalues.html
-https://stackoverflow.com/questions/6684238/whats-the-fastest-way-to-find-eigenvalues-vectors-in-python
-https://patrickwalls.github.io/mathematicalpython/linear-algebra/eigenvalues-eigenvectors/
-https://math.stackexchange.com/questions/2377980/book-recommendations-for-linear-algebra
-https://github.com/NeilStrickland/linear_maths
-https://www.cs.ox.ac.uk/files/12921/book.pdf
-https://www.cis.upenn.edu/~cis5150/linalg-I-f.pdf
-https://la4cs.com/files/LA4CS-Free.pdf
-Linear Algebra for Computational Sciences and Engineering
-https://stackoverflow.com/questions/79631106/whats-the-difference-between-reprrust-reprc-and-reprpacked
-https://www.cs.utexas.edu/~ear/cs341/automatabook/AutomataTheoryBook.pdf
+# Vec-Utils
 
-https://dl.acm.org/doi/pdf/10.1145/360825.360855
-https://docs.google.com/document/d/1KkKC2-ozJkvbWQIAXeJ1MUGqxjn19c-Mmc7RtxFTA3c/edit?tab=t.0
-https://ntrs.nasa.gov/api/citations/19900013774/downloads/19900013774.pdf
+![PyPI - Version](https://img.shields.io/pypi/v/vec-utils-py)
 
-https://www.cs.unc.edu/techreports/96-043.pdf
+A Rust crate for 3D vector math, quaternions, geometry, complex numbers, and angles. Built for simplicity and correctness over raw performance. Optimizations are planned. Python bindings are also available for much of the library.
 
-https://vini-fda.github.io/numerical-algorithms-rust/index.html
-https://library.oapen.org/bitstream/id/9bb74b77-23e3-42d3-9ae3-e5307f6de777/978-3-031-25820-6.pdf
-https://amath583.github.io/sp22/units/L9.html
-https://fab.cba.mit.edu/classes/865.18/design/optimization/dynamics_1.pdf
+- `f64` precision
+- Many matrix operations are zero copy and generic
+
+## Modules
+
+- `vec3d`: 3D vector operations
+- `quat`: Quaternion operations
+- `matrix`: Matrix operations
+    - `complex`: A complex valued matrix
+    - `generic`: Generic 2d matrx of any size or type
+    - `real`: A real valued matrix
+- `geometry`: Geometry operations
+    - `circle`, `plane`, `sphere`: Geometry primitives
+    - `intersection`: Calculate intersections between geometry objects
+- `complex`: Complex numbers
+- `angle`: Angles in degrees and radians
+
+## Crate Features
+
+- `std`: standard library support across all active dependencies (default)
+- `all-nostd`: all crate features excluding `std`
+- `all`: all crate features
+- `matrix`: matrix multiplicaiton and other operations, still missing a lot of features
+- `rand`: Random generation of types (default)
+- `nalgebra`: interop with `nalgebra` types
+- `glam`: interop with `glam` types
+- `rkyv`: zero-copy serialization
+- `serde`: serialization/deserialization
+
+Unless any features are enabled only `libm`, `thiserror`, and `rand` are depended on.
+
+## License
+
+GPL-3.0-only
+See [LICENSE](./LICENSE) for details
+

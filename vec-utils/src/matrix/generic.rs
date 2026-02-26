@@ -9,6 +9,10 @@ use std::vec::Vec;
 
 #[cfg(feature = "nalgebra")]
 use nalgebra::SMatrix;
+#[cfg(feature = "rand")]
+use rand::distr::{Distribution, StandardUniform};
+#[cfg(feature = "rand")]
+use rand::{Rng, RngExt};
 
 use crate::matrix::traits::{Fourable, Oneable, Signed, Twoable, Zeroable};
 
@@ -476,7 +480,9 @@ where
     [T; R * C]: Sized
 {
     fn from(m: SMatrix<T, R, C>) -> Self {
-        let mut values = [m.as_slice()[0]; R * C];
+        // let mut values = [m.as_slice()[0]; R * C];
+        // Safety: every element is explicitly written in the loop before self is constructed
+        let mut values = unsafe { core::mem::MaybeUninit::<[T; R * C]>::uninit().assume_init() };
         for r in 0..R {
             for c in 0..C {
                 values[r * C + c] = m[(r, c)];
@@ -486,21 +492,17 @@ where
     }
 }
 
-#[cfg(feature = "nalgebra")]
-impl<const R: usize, const C: usize, T> PartialEq<SMatrix<T, R, C>> for GMatrix<R, C, T>
+#[cfg(feature = "rand")]
+impl<const R: usize, const C: usize, T> Distribution<GMatrix<R, C, T>> for StandardUniform
 where
-    T: nalgebra::Scalar + PartialEq + Copy,
+    StandardUniform: Distribution<T>,
+    T: Copy,
     [T; R * C]: Sized
 {
-    fn eq(&self, other: &SMatrix<T, R, C>) -> bool {
-        for r in 0..R {
-            for c in 0..C {
-                if self.values[r * C + c] != other[(r, c)] {
-                    return false;
-                }
-            }
+    fn sample<Rng_: Rng + ?Sized>(&self, rng: &mut Rng_) -> GMatrix<R, C, T> {
+        GMatrix {
+            values: core::array::from_fn(|_| rng.random())
         }
-        true
     }
 }
 
@@ -869,21 +871,5 @@ mod tests {
         );
 
         b.iter(|| m.tr());
-    }
-
-    #[test]
-    #[cfg(feature = "nalgebra")]
-    fn test_gmatrix_interop() {
-        let m = GMatrix::<2, 3, f64> {
-            values: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
-        };
-
-        let nal_m: SMatrix<f64, 2, 3> = m.into();
-
-        assert_f64_near!(nal_m[(0, 0)], 1.0);
-        assert_f64_near!(nal_m[(0, 2)], 3.0);
-        assert_f64_near!(nal_m[(1, 0)], 4.0);
-
-        assert!(m == nal_m);
     }
 }

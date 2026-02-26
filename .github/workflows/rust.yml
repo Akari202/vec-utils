@@ -2,21 +2,22 @@ name: Rust
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Run tests
-      run: cargo test --verbose --all-features
-    - name: Run tests no-std
-      run: cargo test --verbose --no-default-features --features matrix,nalgebra,rkyv,serde
+      - uses: actions/checkout@v3
+      - name: Run tests all features
+        run: cargo test --verbose --all-features
+      - name: Run tests all features no std
+        run: cargo test --verbose --no-default-features --features all-nostd
+      - name: Run tests no features
+        run: cargo test --verbose --no-default-features

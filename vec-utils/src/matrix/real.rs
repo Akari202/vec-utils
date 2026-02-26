@@ -1,6 +1,10 @@
 use core::ops::Mul;
 
+#[cfg(feature = "glam")]
+use glam::{DMat2, DMat3};
 use matrixmultiply::dgemm;
+#[cfg(feature = "nalgebra")]
+use nalgebra::SMatrix;
 
 #[doc(inline)]
 use crate::matrix::generic::GMatrix;
@@ -70,6 +74,55 @@ where
     }
 }
 
+#[cfg(feature = "glam")]
+impl From<Matrix2x2> for DMat2 {
+    fn from(m: Matrix2x2) -> Self {
+        DMat2::from_cols_array(m.transpose().values.as_slice().try_into().unwrap())
+    }
+}
+#[cfg(feature = "glam")]
+impl From<DMat2> for Matrix2x2 {
+    fn from(m: DMat2) -> Self {
+        Matrix2x2::from_nested_arr(m.to_cols_array_2d()).transpose()
+    }
+}
+#[cfg(feature = "glam")]
+impl PartialEq<DMat2> for Matrix2x2 {
+    fn eq(&self, other: &DMat2) -> bool {
+        (0..2).all(|r| (0..2).all(|c| (self[[r, c]] - other.col(c)[r]).abs() < f64::EPSILON))
+    }
+}
+
+#[cfg(feature = "glam")]
+impl From<Matrix3x3> for DMat3 {
+    fn from(m: Matrix3x3) -> Self {
+        DMat3::from_cols_array(m.transpose().values.as_slice().try_into().unwrap())
+    }
+}
+#[cfg(feature = "glam")]
+impl From<DMat3> for Matrix3x3 {
+    fn from(m: DMat3) -> Self {
+        Matrix3x3::from_nested_arr(m.to_cols_array_2d()).transpose()
+    }
+}
+#[cfg(feature = "glam")]
+impl PartialEq<DMat3> for Matrix3x3 {
+    fn eq(&self, other: &DMat3) -> bool {
+        (0..3).all(|r| (0..3).all(|c| (self[[r, c]] - other.col(c)[r]).abs() < f64::EPSILON))
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl<const R: usize, const C: usize, T> PartialEq<SMatrix<T, R, C>> for GMatrix<R, C, T>
+where
+    T: nalgebra::Scalar + PartialEq + Copy,
+    [T; R * C]: Sized
+{
+    fn eq(&self, other: &SMatrix<T, R, C>) -> bool {
+        (0..R).all(|r| (0..C).all(|c| self[[r, c]] == other[(r, c)]))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use assert_float_eq::assert_f64_near;
@@ -105,5 +158,37 @@ mod tests {
         assert_f64_near!(vec_from_row.x, 4.0);
         assert_f64_near!(vec_from_row.y, 5.0);
         assert_f64_near!(vec_from_row.z, 6.0);
+    }
+
+    #[test]
+    #[cfg(feature = "glam")]
+    fn test_glam_dmat2_interop() {
+        let m = Matrix2x2::from_nested_arr([[1.0, 2.0], [3.0, 4.0]]);
+        let glam_m: DMat2 = m.into();
+        let roundtrip: Matrix2x2 = glam_m.into();
+        assert_eq!(m, glam_m);
+        assert_eq!(roundtrip, m);
+    }
+
+    #[test]
+    #[cfg(feature = "glam")]
+    fn test_glam_dmat3_interop() {
+        let m = Matrix3x3::from_nested_arr([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]]);
+        let glam_m: DMat3 = m.into();
+        let roundtrip: Matrix3x3 = glam_m.into();
+        assert_eq!(m, glam_m);
+        assert_eq!(roundtrip, m);
+    }
+
+    #[test]
+    #[cfg(feature = "nalgebra")]
+    fn test_nalgebra_interop() {
+        let m = Matrix::<2, 3> {
+            values: [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]
+        };
+        let nal_m: SMatrix<f64, 2, 3> = m.into();
+        let roundtrip: Matrix<2, 3> = nal_m.into();
+        assert_eq!(m, nal_m);
+        assert_eq!(roundtrip, m);
     }
 }

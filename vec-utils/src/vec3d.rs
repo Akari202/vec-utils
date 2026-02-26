@@ -3,8 +3,14 @@ use core::{f64, fmt};
 #[cfg(feature = "std")]
 use std::vec::Vec;
 
+#[cfg(feature = "glam")]
+use glam::DVec3;
 #[cfg(feature = "nalgebra")]
 use nalgebra::Vector3;
+#[cfg(feature = "rand")]
+use rand::distr::{Distribution, StandardUniform};
+#[cfg(feature = "rand")]
+use rand::{Rng, RngExt};
 
 use crate::angle::AngleRadians;
 #[cfg(feature = "matrix")]
@@ -378,7 +384,47 @@ impl From<Vector3<f64>> for Vec3d {
 #[cfg(feature = "nalgebra")]
 impl PartialEq<Vector3<f64>> for Vec3d {
     fn eq(&self, other: &Vector3<f64>) -> bool {
-        self.x == other.x && self.y == other.y && self.z == other.z
+        (self.x - other.x).abs() < f64::EPSILON
+            && (self.y - other.y).abs() < f64::EPSILON
+            && (self.z - other.z).abs() < f64::EPSILON
+    }
+}
+
+#[cfg(feature = "glam")]
+impl From<Vec3d> for DVec3 {
+    fn from(v: Vec3d) -> Self {
+        DVec3::new(v.x, v.y, v.z)
+    }
+}
+
+#[cfg(feature = "glam")]
+impl From<DVec3> for Vec3d {
+    fn from(v: DVec3) -> Self {
+        Self {
+            x: v.x,
+            y: v.y,
+            z: v.z
+        }
+    }
+}
+
+#[cfg(feature = "glam")]
+impl PartialEq<DVec3> for Vec3d {
+    fn eq(&self, other: &DVec3) -> bool {
+        (self.x - other.x).abs() < f64::EPSILON
+            && (self.y - other.y).abs() < f64::EPSILON
+            && (self.z - other.z).abs() < f64::EPSILON
+    }
+}
+
+#[cfg(feature = "rand")]
+impl Distribution<Vec3d> for StandardUniform {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec3d {
+        Vec3d {
+            x: rng.random(),
+            y: rng.random(),
+            z: rng.random()
+        }
     }
 }
 
@@ -707,18 +753,33 @@ mod tests {
 
     #[test]
     #[cfg(feature = "nalgebra")]
-    fn test_vec3d_interop() {
+    fn test_nalgebra_interop() {
         let v = Vec3d {
             x: 1.0,
             y: 2.0,
             z: 3.0
         };
         let nal_v: Vector3<f64> = v.into();
+        let roundtrip: Vec3d = nal_v.into();
 
         assert_eq!(nal_v, Vector3::new(1.0, 2.0, 3.0));
         assert_eq!(v, nal_v);
+        assert_eq!(roundtrip, v);
+    }
 
-        let round_trip: Vec3d = nal_v.into();
-        assert_eq!(round_trip.x, 1.0);
+    #[test]
+    #[cfg(feature = "glam")]
+    fn test_glam_interop() {
+        let v = Vec3d {
+            x: 1.0,
+            y: 2.0,
+            z: 3.0
+        };
+        let glam_v: DVec3 = v.into();
+        let roundtrip: Vec3d = glam_v.into();
+
+        assert_eq!(glam_v, DVec3::new(1.0, 2.0, 3.0));
+        assert_eq!(v, glam_v);
+        assert_eq!(roundtrip, v);
     }
 }

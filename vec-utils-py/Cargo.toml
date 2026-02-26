@@ -3,7 +3,8 @@ name = "vec-utils-py"
 version = "0.3.1"
 edition = "2024"
 authors = ["Akari Harada <akaritwo0two@gmail.com>"]
-license = "GPL-3"
+license = "	GPL-3.0-only"
+repository = "https://github.com/Akari202/vec-utils/"
 
 [lib]
 crate-type = ["cdylib", "rlib"]

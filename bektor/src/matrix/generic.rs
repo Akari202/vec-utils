@@ -18,7 +18,7 @@ use crate::matrix::traits::{Fourable, Oneable, Signed, Twoable, Zeroable};
 
 // TODO: I would like to add a generic is row major switch
 /// A generic 2d matrix of width R and height C
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Copy, Clone)]
 pub struct GMatrix<const R: usize, const C: usize, T>
 where
     [T; R * C]: Sized
@@ -482,6 +482,7 @@ where
     fn from(m: SMatrix<T, R, C>) -> Self {
         // let mut values = [m.as_slice()[0]; R * C];
         // Safety: every element is explicitly written in the loop before self is constructed
+        #[allow(clippy::uninit_assumed_init)]
         let mut values = unsafe { core::mem::MaybeUninit::<[T; R * C]>::uninit().assume_init() };
         for r in 0..R {
             for c in 0..C {

@@ -55,6 +55,18 @@ where
     }
 }
 
+impl<const R: usize, const C: usize> PartialEq for CMatrix<R, C>
+where
+    [Complex; R * C]: Sized
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.values.iter().zip(other.values.iter()).all(|(a, b)| {
+            (a.real - b.real).abs() <= f64::EPSILON
+                && (a.imaginary - b.imaginary).abs() <= f64::EPSILON
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;

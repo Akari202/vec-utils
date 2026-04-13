@@ -11,6 +11,9 @@ categories = ["mathematics", "no-std::no-alloc"]
 description = "A simple vector, quaternion, geometry, and matrix library"
 exclude = ["examples/"]
 
+[package.metadata.docs.rs]
+all-features = true
+
 [lib]
 name = "bektor"
 
@@ -35,8 +38,8 @@ assert_float_eq = "1.2.0"
 pretty_assertions = "1.4.1"
 
 [features]
-# default = ["all-nostd"]
-default = ["rand", "std"]
+default = ["all-nostd"]
+# default = ["rand", "std"]
 all = ["glam", "matrix", "nalgebra", "rand", "rkyv", "serde", "std"]
 all-nostd = ["glam", "matrix", "nalgebra", "rand", "rkyv", "serde"]
 glam = ["dep:glam"]

@@ -26,6 +26,7 @@ use crate::{
 };
 
 /// A quaternion
+/// Conforms to NASA's SPICE specifications
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(
     feature = "rkyv",
@@ -65,14 +66,14 @@ impl Quat {
     /// the resulting quaternion is definitionally a unit quaternion
     /// the angle is positive for a counter-clockwise rotation
     pub fn from_axis_angle(axis: &Vec3d, angle: impl Into<AngleRadians>) -> Quat {
-        let angle: AngleRadians = -angle.into();
+        let angle: AngleRadians = angle.into();
         let half_angle: AngleRadians = angle / 2.0;
         let s = half_angle.sin();
         Quat {
             w: half_angle.cos(),
-            i: axis[0] * s,
-            j: axis[1] * s,
-            k: axis[2] * s
+            i: -axis[0] * s,
+            j: -axis[1] * s,
+            k: -axis[2] * s
         }
     }
 
@@ -183,7 +184,7 @@ impl Quat {
         }
     }
 
-    /// Convert the quaternion to a vector
+    /// Convert the quaternion to a vec3d
     /// the real component of the quaternion is discarded
     /// the imaginary components of the quaternion are used as the vector components
     pub fn to_vec3d(&self) -> Vec3d {
@@ -221,7 +222,7 @@ impl Quat {
             j: v.y,
             k: v.z
         };
-        (self.conjugate() * qv * self).to_vec3d()
+        (self * (qv * self.conjugate())).to_vec3d()
     }
 
     /// Convert the Quat to a Vec of f64 with length 4
@@ -630,5 +631,31 @@ mod tests {
         for _ in 0..100 {
             assert_f64_near!(Quat::random_unit(&mut rng).magnitude(), 1.0);
         }
+    }
+
+    // page 9-10
+    // https://naif.jpl.nasa.gov/pub/naif/misc/Quaternion_White_Paper/Quaternions_White_Paper.pdf
+    #[test]
+    fn test_spice_example() {
+        // when naif calculates the quaternion in the white paper example they appear to have not halved the angle
+        let phi = AngleRadians::new(f64::atan(4.0 / 3.0) * 2.0);
+        let r = Vec3d::k();
+        let quat = Quat::from_axis_angle(&r, phi);
+        assert_eq!(quat, Quat::new(3.0 / 5.0, 0.0, 0.0, -4.0 / 5.0));
+        #[cfg(feature = "matrix")]
+        assert_eq!(
+            quat.to_rotation_matrix(),
+            Matrix3x3::from_nested_arr([
+                [-7.0 / 25.0, 24.0 / 25.0, 0.0],
+                [-24.0 / 25.0, -7.0 / 25.0, 0.0],
+                [0.0, 0.0, 1.0]
+            ])
+        );
+        let vec = Vec3d::new(1.0, 1.0, 0.0);
+        let rotated = quat.rotate(&vec);
+        let correct = Vec3d::new(17.0 / 25.0, -31.0 / 25.0, 0.0);
+        assert_f64_near!(rotated[0], correct[0]);
+        assert_f64_near!(rotated[1], correct[1]);
+        assert_f64_near!(rotated[2], correct[2]);
     }
 }

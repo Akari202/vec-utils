@@ -30,3 +30,7 @@ https://library.oapen.org/bitstream/id/9bb74b77-23e3-42d3-9ae3-e5307f6de777/978-
 https://amath583.github.io/sp22/units/L9.html
 https://fab.cba.mit.edu/classes/865.18/design/optimization/dynamics_1.pdf
 https://stackoverflow.com/questions/31600717/how-to-generate-a-random-quaternion-quickly
+
+https://math.stackexchange.com/questions/2177006/how-to-define-a-plane-based-on-4-points
+https://naif.jpl.nasa.gov/pub/naif/misc/Quaternion_White_Paper/Quaternions_White_Paper.pdf
+https://naif.jpl.nasa.gov/pub/naif/misc/toolkit_docs_N0067/C/req/rotation.html#Composing%20rotations%20using%20quaternions

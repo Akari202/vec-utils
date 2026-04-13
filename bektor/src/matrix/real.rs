@@ -74,6 +74,18 @@ where
     }
 }
 
+impl<const R: usize, const C: usize> PartialEq for Matrix<R, C>
+where
+    [f64; R * C]: Sized
+{
+    fn eq(&self, other: &Self) -> bool {
+        self.values
+            .iter()
+            .zip(other.values.iter())
+            .all(|(a, b)| (a - b).abs() <= f64::EPSILON)
+    }
+}
+
 #[cfg(feature = "glam")]
 impl From<Matrix2x2> for DMat2 {
     fn from(m: Matrix2x2) -> Self {

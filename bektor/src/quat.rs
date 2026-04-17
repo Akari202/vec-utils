@@ -5,6 +5,12 @@ use core::ops::{Add, Div, Index, Mul, Sub};
 #[cfg(feature = "std")]
 use std::vec::Vec;
 
+#[cfg(feature = "glam")]
+use glam::DQuat;
+#[cfg(feature = "nalgebra")]
+use nalgebra::Quaternion;
+#[cfg(feature = "nalgebra")]
+use nalgebra::UnitQuaternion;
 #[cfg(feature = "rand")]
 use rand::distr::{Distribution, StandardUniform};
 #[cfg(feature = "rand")]
@@ -783,109 +789,10 @@ mod tests {
         let q2 = Quat::from_axis_angle(&Vec3d::k(), AngleRadians::half_pi());
         assert_eq!(q1.angular_distance(&q2), AngleRadians::half_pi());
     }
-}
-
-mod interop {
-    #[cfg(feature = "glam")]
-    use glam::DQuat;
-    #[cfg(feature = "nalgebra")]
-    use nalgebra::Quaternion;
-    #[cfg(feature = "nalgebra")]
-    use nalgebra::UnitQuaternion;
-
-    #[cfg(feature = "nalgebra")]
-    impl From<Quat> for UnitQuaternion<f64> {
-        fn from(q: Quat) -> Self {
-            UnitQuaternion::new_normalize(Quaternion::new(q.w, q.i, q.j, q.k))
-        }
-    }
-
-    #[cfg(feature = "nalgebra")]
-    impl From<UnitQuaternion<f64>> for Quat {
-        fn from(q: UnitQuaternion<f64>) -> Self {
-            Self {
-                w: q.w,
-                i: q.i,
-                j: q.j,
-                k: q.k
-            }
-        }
-    }
-
-    #[cfg(feature = "nalgebra")]
-    impl From<Quaternion<f64>> for Quat {
-        fn from(q: Quaternion<f64>) -> Self {
-            Self {
-                w: q.w,
-                i: q.i,
-                j: q.j,
-                k: q.k
-            }
-        }
-    }
-
-    #[cfg(feature = "nalgebra")]
-    impl From<Quat> for Quaternion<f64> {
-        fn from(q: Quat) -> Self {
-            Quaternion::new(q.w, q.i, q.j, q.k)
-        }
-    }
-
-    #[cfg(feature = "nalgebra")]
-    impl PartialEq<Quaternion<f64>> for Quat {
-        fn eq(&self, other: &Quaternion<f64>) -> bool {
-            (self.w - other.w).abs() < f64::EPSILON
-                && (self.i - other.i).abs() < f64::EPSILON
-                && (self.j - other.j).abs() < f64::EPSILON
-                && (self.k - other.k).abs() < f64::EPSILON
-        }
-    }
-
-    #[cfg(feature = "nalgebra")]
-    impl PartialEq<UnitQuaternion<f64>> for Quat {
-        fn eq(&self, other: &UnitQuaternion<f64>) -> bool {
-            self.is_unit()
-                && (self.w - other.w).abs() < f64::EPSILON
-                && (self.i - other.i).abs() < f64::EPSILON
-                && (self.j - other.j).abs() < f64::EPSILON
-                && (self.k - other.k).abs() < f64::EPSILON
-        }
-    }
-
-    #[cfg(feature = "glam")]
-    impl From<Quat> for DQuat {
-        fn from(q: Quat) -> Self {
-            DQuat::from_xyzw(q.i, q.j, q.k, q.w)
-        }
-    }
-
-    #[cfg(feature = "glam")]
-    impl From<DQuat> for Quat {
-        fn from(q: DQuat) -> Self {
-            Self {
-                w: q.w,
-                i: q.x,
-                j: q.y,
-                k: q.z
-            }
-        }
-    }
-
-    #[cfg(feature = "glam")]
-    impl PartialEq<DQuat> for Quat {
-        fn eq(&self, other: &DQuat) -> bool {
-            (self.w - other.w).abs() < f64::EPSILON
-                && (self.i - other.x).abs() < f64::EPSILON
-                && (self.j - other.y).abs() < f64::EPSILON
-                && (self.k - other.z).abs() < f64::EPSILON
-        }
-    }
 
     #[test]
-    #[cfg(test)]
     #[cfg(feature = "nalgebra")]
     fn test_nalgebra_interop() {
-        use pretty_assertions::assert_eq;
         let q = Quat {
             i: 1.0,
             j: 2.0,
@@ -901,10 +808,8 @@ mod interop {
     }
 
     #[test]
-    #[cfg(test)]
     #[cfg(feature = "glam")]
     fn test_glam_interop() {
-        use pretty_assertions::assert_eq;
         let q = Quat {
             i: 1.0,
             j: 2.0,
@@ -917,5 +822,93 @@ mod interop {
         assert_eq!(glam_q, DQuat::from_xyzw(1.0, 2.0, 3.0, 4.0));
         assert_eq!(q, glam_q);
         assert_eq!(roundtrip, q);
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl From<Quat> for UnitQuaternion<f64> {
+    fn from(q: Quat) -> Self {
+        UnitQuaternion::new_normalize(Quaternion::new(q.w, q.i, q.j, q.k))
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl From<UnitQuaternion<f64>> for Quat {
+    fn from(q: UnitQuaternion<f64>) -> Self {
+        Self {
+            w: q.w,
+            i: q.i,
+            j: q.j,
+            k: q.k
+        }
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl From<Quaternion<f64>> for Quat {
+    fn from(q: Quaternion<f64>) -> Self {
+        Self {
+            w: q.w,
+            i: q.i,
+            j: q.j,
+            k: q.k
+        }
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl From<Quat> for Quaternion<f64> {
+    fn from(q: Quat) -> Self {
+        Quaternion::new(q.w, q.i, q.j, q.k)
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl PartialEq<Quaternion<f64>> for Quat {
+    fn eq(&self, other: &Quaternion<f64>) -> bool {
+        (self.w - other.w).abs() < f64::EPSILON
+            && (self.i - other.i).abs() < f64::EPSILON
+            && (self.j - other.j).abs() < f64::EPSILON
+            && (self.k - other.k).abs() < f64::EPSILON
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl PartialEq<UnitQuaternion<f64>> for Quat {
+    fn eq(&self, other: &UnitQuaternion<f64>) -> bool {
+        self.is_unit()
+            && (self.w - other.w).abs() < f64::EPSILON
+            && (self.i - other.i).abs() < f64::EPSILON
+            && (self.j - other.j).abs() < f64::EPSILON
+            && (self.k - other.k).abs() < f64::EPSILON
+    }
+}
+
+#[cfg(feature = "glam")]
+impl From<Quat> for DQuat {
+    fn from(q: Quat) -> Self {
+        DQuat::from_xyzw(q.i, q.j, q.k, q.w)
+    }
+}
+
+#[cfg(feature = "glam")]
+impl From<DQuat> for Quat {
+    fn from(q: DQuat) -> Self {
+        Self {
+            w: q.w,
+            i: q.x,
+            j: q.y,
+            k: q.z
+        }
+    }
+}
+
+#[cfg(feature = "glam")]
+impl PartialEq<DQuat> for Quat {
+    fn eq(&self, other: &DQuat) -> bool {
+        (self.w - other.w).abs() < f64::EPSILON
+            && (self.i - other.x).abs() < f64::EPSILON
+            && (self.j - other.y).abs() < f64::EPSILON
+            && (self.k - other.z).abs() < f64::EPSILON
     }
 }

@@ -422,9 +422,18 @@ class Quat:
 
     def magnitude(self) -> float:
         """
+        Deprecated since 0.3.3, magnitude was changed to norm
         Calculates the magnitude of the quaternion.
 
         :return: The magnitude.
+        """
+        ...
+
+    def norm(self) -> float:
+        """
+        Calculates the norm (magnitude) of the quaternion.
+
+        :return: The norm.
         """
         ...
 

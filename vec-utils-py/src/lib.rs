@@ -1,4 +1,3 @@
-#![feature(iter_intersperse)]
 #![allow(clippy::wrong_self_convention, clippy::cargo_common_metadata)]
 use pyo3::prelude::*;
 

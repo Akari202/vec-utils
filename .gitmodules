@@ -1,0 +1,3 @@
+[submodule "docs/Latex-Macros"]
+	path = docs/Latex-Macros
+	url = https://github.com/Akari202/Latex-Macros.git

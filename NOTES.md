@@ -34,3 +34,8 @@ https://stackoverflow.com/questions/31600717/how-to-generate-a-random-quaternion
 https://math.stackexchange.com/questions/2177006/how-to-define-a-plane-based-on-4-points
 https://naif.jpl.nasa.gov/pub/naif/misc/Quaternion_White_Paper/Quaternions_White_Paper.pdf
 https://naif.jpl.nasa.gov/pub/naif/misc/toolkit_docs_N0067/C/req/rotation.html#Composing%20rotations%20using%20quaternions
+https://nescacademy.nasa.gov/review/downloadfile.php?file=quat_ident.pdf&id=120&distr=Public
+https://www.mathworks.com/help/aerotbx/flight-parameters-1.html
+https://web.mit.edu/2.998/www/QuaternionReport1.pdf
+
+intersperse benchmark: https://play.rust-lang.org/?version=nightly&mode=debug&edition=2018&gist=50bda743d1955e8ae94d9f5c03d59f9f

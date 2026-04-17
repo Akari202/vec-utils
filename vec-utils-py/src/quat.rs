@@ -79,8 +79,13 @@ impl Quat {
         }
     }
 
+    #[deprecated(since = "0.3.3", note = "magnitude was changed to norm")]
     fn magnitude(&self) -> f64 {
-        self.inner.magnitude()
+        self.norm()
+    }
+
+    fn norm(&self) -> f64 {
+        self.inner.norm()
     }
 
     fn normalize(&self) -> Quat {

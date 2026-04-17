@@ -22,13 +22,13 @@ name = "matrix_math"
 required-features = ["matrix", "std"]
 
 [dependencies]
-glam = { version = "0.32.0", default-features = false, features = ["nostd-libm"], optional = true }
+glam = { version = "0.32.1", default-features = false, features = ["nostd-libm"], optional = true }
 libm = { version = "0.2.16" }
 matrixmultiply = { version = "0.3.10", default-features = false, features = [
   "cgemm"
 ], optional = true }
-nalgebra = { version = "0.34.1", default-features = false, features = ["libm"], optional = true }
-rand = { version = "0.10.0", default-features = false, optional = true }
+nalgebra = { version = "0.34.2", default-features = false, features = ["libm"], optional = true }
+rand = { version = "0.10.1", default-features = false, optional = true }
 rkyv = { version = "0.8.15", default-features = false, features = ["bytecheck"], optional = true }
 serde = { version = "1.0.219", default-features = false, features = ["derive"], optional = true }
 thiserror = { version = "2.0.17", default-features = false }
@@ -38,8 +38,8 @@ assert_float_eq = "1.2.0"
 pretty_assertions = "1.4.1"
 
 [features]
-default = ["all-nostd"]
-# default = ["rand", "std"]
+# default = ["all-nostd"]
+default = ["rand", "std"]
 all = ["glam", "matrix", "nalgebra", "rand", "rkyv", "serde", "std"]
 all-nostd = ["glam", "matrix", "nalgebra", "rand", "rkyv", "serde"]
 glam = ["dep:glam"]

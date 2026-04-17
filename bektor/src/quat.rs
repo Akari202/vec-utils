@@ -5,12 +5,6 @@ use core::ops::{Add, Div, Index, Mul, Sub};
 #[cfg(feature = "std")]
 use std::vec::Vec;
 
-#[cfg(feature = "glam")]
-use glam::DQuat;
-#[cfg(feature = "nalgebra")]
-use nalgebra::Quaternion;
-#[cfg(feature = "nalgebra")]
-use nalgebra::UnitQuaternion;
 #[cfg(feature = "rand")]
 use rand::distr::{Distribution, StandardUniform};
 #[cfg(feature = "rand")]
@@ -26,7 +20,6 @@ use crate::{
 };
 
 /// A quaternion
-/// Conforms to NASA's SPICE specifications
 #[cfg_attr(feature = "serde", derive(serde::Deserialize, serde::Serialize))]
 #[cfg_attr(
     feature = "rkyv",
@@ -34,7 +27,7 @@ use crate::{
 )]
 #[derive(Debug, Copy, Clone)]
 pub struct Quat {
-    /// The real component of the quaternion
+    /// The real, w, component of the quaternion
     pub w: f64,
     /// The i component of the quaternion
     pub i: f64,
@@ -61,6 +54,69 @@ impl Quat {
         }
     }
 
+    /// Create a new Quat from a slice of f64s
+    /// the slice should have a length of 4
+    /// any additional elements will be ignored
+    /// ordering of [w, x, y, z] is assumed
+    pub fn from_slice(v: &[f64]) -> Quat {
+        Quat {
+            w: v[0],
+            i: v[1],
+            j: v[2],
+            k: v[3]
+        }
+    }
+
+    /// Convert the Quat to a Vec of f64 with length 4
+    /// ordering of [w, x, y, z] is assumed
+    #[cfg(feature = "std")]
+    pub fn to_vec(&self) -> Vec<f64> {
+        vec![self.w, self.i, self.j, self.k]
+    }
+
+    /// Convert the Quat to a array of f64 with length 4
+    /// ordering of [w, x, y, z] is assumed
+    pub fn to_array(&self) -> [f64; 4] {
+        [self.w, self.i, self.j, self.k]
+    }
+
+    /// Create a quaternion from a Vec3d
+    /// the x, y, and z components of the vector are used as the imaginary components of the quaternion
+    /// the real component of the quaternion is set to 0
+    pub fn from_vec3d(v: &Vec3d) -> Quat {
+        Quat {
+            w: 0.0,
+            i: v.x,
+            j: v.y,
+            k: v.z
+        }
+    }
+
+    /// Convert the quaternion to a vec3d
+    /// the real component of the quaternion is discarded
+    /// the imaginary components of the quaternion are used as the vector components
+    pub fn to_vec3d(&self) -> Vec3d {
+        Vec3d::new(self.i, self.j, self.k)
+    }
+
+    /// Create a quaternion from a f64
+    /// the real component of the quaternion is set to the float
+    /// the imaginary components are set to 0
+    pub fn from_f64(num: f64) -> Quat {
+        Quat {
+            w: num,
+            i: 0.0,
+            j: 0.0,
+            k: 0.0
+        }
+    }
+
+    /// Convert the quaternion to a f64
+    /// extracts the real component the imaginary part is discarded
+    pub fn to_f64(&self) -> f64 {
+        self.w
+    }
+
     /// Create a new quaternion from an axis and an angle
     /// representing a rotation of the given angle around the given axis
     /// the resulting quaternion is definitionally a unit quaternion
@@ -74,6 +130,21 @@ impl Quat {
             i: -axis[0] * s,
             j: -axis[1] * s,
             k: -axis[2] * s
+        }
+    }
+
+    /// Convert the quaternion to an axis and an angle
+    pub fn to_axis_angle(&self) -> (Vec3d, AngleRadians) {
+        if (self.w - 1.0).abs() < f64::EPSILON {
+            (Vec3d::i(), 0.0.into())
+        } else {
+            let a = self.to_vec3d().magnitude();
+            #[cfg(not(feature = "std"))]
+            let angle = 2.0 * libm::atan2(a, self.w * self.w);
+            #[cfg(feature = "std")]
+            let angle = 2.0 * a.atan2(self.w * self.w);
+            let vec = Vec3d::new(self.i / a, self.j / a, self.k / a);
+            (vec, angle.into())
         }
     }
 
@@ -127,68 +198,69 @@ impl Quat {
         }
     }
 
-    /// Calculate the conjugate of the quaternion
-    /// i.e. the quaternion with the same real component and negated imaginary components
-    pub fn conjugate(&self) -> Quat {
+    #[cfg(feature = "matrix")]
+    #[cfg(feature = "std")]
+    fn from_rotation_matrix_sarabandi_thomas(m: &Matrix3x3) -> Quat {
+        let eta = 0.0;
         Quat {
-            w: self.w,
-            i: -self.i,
-            j: -self.j,
-            k: -self.k
+            w: if m[[1, 1]] + m[[2, 2]] + m[[3, 3]] > eta {
+                0.5 * (1.0 + m[[1, 1]] + m[[2, 2]] + m[[3, 3]]).sqrt()
+            } else {
+                0.5 * (((m[[3, 2]] - m[[2, 3]]).powi(2)
+                    + (m[[1, 3]] - m[[3, 1]]).powi(2)
+                    + (m[[2, 1]] - m[[1, 2]]).powi(2))
+                    / (3.0 - m[[1, 1]] - m[[2, 2]] - m[[3, 3]]))
+                .sqrt()
+            },
+            i: (m[[3, 2]] - m[[2, 3]]).signum()
+                * if m[[1, 1]] - m[[2, 2]] - m[[3, 3]] > eta {
+                    0.5 * (1.0 + m[[1, 1]] - m[[2, 2]] - m[[3, 3]]).sqrt()
+                } else {
+                    0.5 * (((m[[3, 2]] - m[[2, 3]]).powi(2)
+                        + (m[[1, 2]] + m[[2, 1]]).powi(2)
+                        + (m[[3, 1]] + m[[1, 3]]).powi(2))
+                        / (3.0 - m[[1, 1]] + m[[2, 2]] + m[[3, 3]]))
+                    .sqrt()
+                },
+            j: (m[[1, 3]] - m[[3, 1]]).signum()
+                * if -m[[1, 1]] + m[[2, 2]] - m[[3, 3]] > eta {
+                    0.5 * (1.0 - m[[1, 1]] + m[[2, 2]] - m[[3, 3]]).sqrt()
+                } else {
+                    0.5 * (((m[[1, 3]] - m[[3, 1]]).powi(2)
+                        + (m[[1, 2]] + m[[2, 1]]).powi(2)
+                        + (m[[2, 3]] + m[[3, 2]]).powi(2))
+                        / (3.0 + m[[1, 1]] - m[[2, 2]] + m[[3, 3]]))
+                    .sqrt()
+                },
+            k: (m[[2, 1]] - m[[1, 2]]).signum()
+                * if -m[[1, 1]] - m[[2, 2]] + m[[3, 3]] > eta {
+                    0.5 * (1.0 - m[[1, 1]] - m[[2, 2]] + m[[3, 3]]).sqrt()
+                } else {
+                    0.5 * (((m[[2, 1]] - m[[1, 2]]).powi(2)
+                        + (m[[3, 1]] + m[[1, 3]]).powi(2)
+                        + (m[[3, 2]] + m[[2, 3]]).powi(2))
+                        / (3.0 + m[[1, 1]] + m[[2, 2]] - m[[3, 3]]))
+                    .sqrt()
+                }
         }
     }
 
-    /// Calculate the magnitude of the quaternion
-    pub fn magnitude(&self) -> f64 {
-        #[cfg(not(feature = "std"))]
-        return core::f64::math::sqrt(
-            self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k
-        );
-        #[cfg(feature = "std")]
-        return (self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k).sqrt();
+    #[cfg(feature = "matrix")]
+    #[cfg(feature = "std")]
+    fn from_rotation_matrix_markley(m: &Matrix3x3) -> Quat {
+        todo!()
     }
 
-    /// Return a new Quat of the normalized quaternion
-    pub fn normalize(&self) -> Quat {
-        let magnitude = self.magnitude();
-        Quat {
-            w: self.w / magnitude,
-            i: self.i / magnitude,
-            j: self.j / magnitude,
-            k: self.k / magnitude
-        }
+    #[cfg(feature = "matrix")]
+    #[cfg(feature = "std")]
+    fn from_rotation_matrix_shepperd(m: &Matrix3x3) -> Quat {
+        todo!()
     }
 
-    /// Check if the quaternion is a unit quaternion
-    pub fn is_unit(&self) -> bool {
-        (self.magnitude() - 1.0).abs() < f64::EPSILON
-    }
-
-    /// Convert the quaternion to an axis and an angle
-    pub fn to_axis_angle(&self) -> (Vec3d, AngleRadians) {
-        if (self.w - 1.0).abs() < f64::EPSILON {
-            (Vec3d::i(), 0.0.into())
-        } else {
-            #[cfg(not(feature = "std"))]
-            let angle = 2.0 * libm::acos(self.w);
-            #[cfg(feature = "std")]
-            let angle = 2.0 * self.w.acos();
-            #[cfg(not(feature = "std"))]
-            let s = libm::sin(angle / 2.0);
-            #[cfg(feature = "std")]
-            let s = (angle / 2.0).sin();
-            let x = self.i / s;
-            let y = self.j / s;
-            let z = self.k / s;
-            (Vec3d::new(x, y, z), angle.into())
-        }
-    }
-
-    /// Convert the quaternion to a vec3d
-    /// the real component of the quaternion is discarded
-    /// the imaginary components of the quaternion are used as the vector components
-    pub fn to_vec3d(&self) -> Vec3d {
-        Vec3d::new(self.i, self.j, self.k)
+    #[cfg(feature = "matrix")]
+    #[cfg(feature = "std")]
+    fn from_rotation_matrix_wu(m: &Matrix3x3) -> Quat {
+        todo!()
     }
 
     /// Convert the quaternion to a rotation matrix
@@ -213,22 +285,155 @@ impl Quat {
         ])
     }
 
-    /// Rotate a vector by the quaternion
-    /// this is an active rotation
-    pub fn rotate(&self, v: &Vec3d) -> Vec3d {
-        let qv = Quat {
-            w: 0.0,
-            i: v.x,
-            j: v.y,
-            k: v.z
-        };
-        (self * (qv * self.conjugate())).to_vec3d()
+    /// Calculate the conjugate of the quaternion
+    /// i.e. the quaternion with the same real component and negated imaginary components
+    pub fn conjugate(&self) -> Quat {
+        Quat {
+            w: self.w,
+            i: -self.i,
+            j: -self.j,
+            k: -self.k
+        }
     }
 
-    /// Convert the Quat to a Vec of f64 with length 4
-    #[cfg(feature = "std")]
-    pub fn to_vec(&self) -> Vec<f64> {
-        vec![self.w, self.i, self.j, self.k]
+    /// Calculate the multiplicative inverse of the quaternion
+    /// q^-1 = q^* / ||q||^2
+    pub fn inverse(&self) -> Quat {
+        let denom = self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k;
+        Quat {
+            w: self.w / denom,
+            i: -self.i / denom,
+            j: -self.j / denom,
+            k: -self.k / denom
+        }
+    }
+
+    /// Calculate the norm of the quaternion
+    /// sometimes called the magnitude
+    #[deprecated(since = "0.3.3", note = "magnitude was changed to norm")]
+    pub fn magnitude(&self) -> f64 {
+        self.norm()
+    }
+
+    /// Calculate the norm of the quaternion
+    /// sometimes called the magnitude
+    pub fn norm(&self) -> f64 {
+        #[cfg(not(feature = "std"))]
+        return core::f64::math::sqrt(
+            self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k
+        );
+        #[cfg(feature = "std")]
+        return (self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k).sqrt();
+    }
+
+    /// Return a new Quat of the normalized quaternion
+    pub fn normalize(&self) -> Quat {
+        let magnitude = self.norm();
+        Quat {
+            w: self.w / magnitude,
+            i: self.i / magnitude,
+            j: self.j / magnitude,
+            k: self.k / magnitude
+        }
+    }
+
+    /// Check if the quaternion is a unit quaternion
+    pub fn is_unit(&self) -> bool {
+        (self.norm() - 1.0).abs() < f64::EPSILON
+    }
+
+    /// Calculates the dot, or inner, product of two quaternions
+    pub fn dot(&self, other: &Quat) -> Quat {
+        Quat {
+            w: self.w * other.w,
+            i: self.i * other.i,
+            j: self.j * other.j,
+            k: self.k * other.k
+        }
+    }
+
+    /// Calculates the angular distance between two quaternions
+    pub fn angular_distance(&self, other: &Quat) -> AngleRadians {
+        let a = self * other.conjugate();
+        #[cfg(not(feature = "std"))]
+        return AngleRadians::new(2.0 * libm::atan2(a.to_vec3d().magnitude(), a.to_f64()));
+        #[cfg(feature = "std")]
+        return AngleRadians::new(2.0 * a.to_vec3d().magnitude().atan2(a.to_f64()));
+    }
+
+    /// Rotate a vector by the quaternion
+    pub fn rotate(&self, v: &Vec3d) -> Vec3d {
+        (self * (v.to_quat() * self.conjugate())).to_vec3d()
+    }
+
+    /// Interpolates between two rotations with constant angular velocity
+    /// Follows the great arc on a sphere of rotations
+    pub fn slerp(&self, other: &Quat, t: f64) -> Quat {
+        (other * self.conjugate()).powf(t) * self
+    }
+
+    /// Straight line interpolates between two rotations
+    /// the interpolation is linear in quaternion space
+    /// the angular velocity peaks in the middle
+    pub fn lerp(&self, other: &Quat, t: f64) -> Quat {
+        self * (1.0 - t) + other * t
+    }
+
+    /// Takes the quaternion to a power
+    /// q^p
+    pub fn pow(&self, p: &Quat) -> Quat {
+        (self.ln() * p).exp()
+    }
+
+    /// Takes the quaternion to a scalar power
+    /// q^n
+    pub fn powf(&self, n: f64) -> Quat {
+        self.pow(&Quat::from_f64(n))
+    }
+
+    /// Calculates the natural log of the quaternion
+    /// ln(q)
+    pub fn ln(&self) -> Quat {
+        let a = self.to_vec3d().magnitude();
+        let norm = self.norm();
+        #[cfg(not(feature = "std"))]
+        let b = libm::log(norm);
+        #[cfg(feature = "std")]
+        let b = norm.ln();
+        #[cfg(not(feature = "std"))]
+        let c = libm::acos(self.w / norm);
+        #[cfg(feature = "std")]
+        let c = (self.w / norm).acos();
+        Quat {
+            w: b,
+            i: c * self.i / a,
+            j: c * self.j / a,
+            k: c * self.k / a
+        }
+    }
+
+    /// Calculates e to the quaternion
+    /// e^q
+    pub fn exp(&self) -> Quat {
+        let a = self.to_vec3d().magnitude();
+        #[cfg(not(feature = "std"))]
+        let c = libm::cos(a);
+        #[cfg(feature = "std")]
+        let c = a.cos();
+        #[cfg(not(feature = "std"))]
+        let s = libm::sin(a);
+        #[cfg(feature = "std")]
+        let s = a.sin();
+        #[cfg(not(feature = "std"))]
+        let e = libm::exp(self.w);
+        #[cfg(feature = "std")]
+        let e = self.w.exp();
+        Quat {
+            w: e * c,
+            i: e * s * self.i / a,
+            j: e * s * self.j / a,
+            k: e * s * self.k / a
+        }
     }
 
     // https://stackoverflow.com/questions/31600717/how-to-generate-a-random-quaternion-quickly
@@ -303,9 +508,7 @@ macro_rules! impl_single_op {
 
 impl_dual_op!(Add, add, +, Quat, "Add two Quats together comonent-wise");
 impl_dual_op!(Sub, sub, -, Quat, "Subtract one Quat from another component-wise");
-
-// NOTE: I can't decide if it makes sense for addition to be communicative
-impl_single_op!(Add, add, +, Quat, f64, "Add a scalar to each component of a Quat");
+impl_single_op_comm!(Add, add, +, Quat, f64, "Add a scalar to each component of a Quat");
 impl_single_op!(Sub, sub, -, Quat, f64, "Subtract a scalar from each component of a Quat");
 impl_single_op_comm!(Mul, mul, *, Quat, f64, "Multiply a Quat by a scalar");
 impl_single_op!(Div, div, /, Quat, f64, "Divide a Quat by a scalar");
@@ -332,6 +535,24 @@ impl_dual_op_variants!(
     "Multiply two quaternions, also known as a Hamilton product"
 );
 
+impl Div<Quat> for Quat {
+    type Output = Quat;
+
+    /// Divide two quaternions
+    /// because quaternion multiplication is not commutative a left hand precedence is assumed
+    /// p / q = p q^-1 != q^-1 p
+    fn div(self, other: Quat) -> Quat {
+        self * other.inverse()
+    }
+}
+
+impl_dual_op_variants!(
+    Div,
+    div,
+    Quat,
+    "Divide two quaternions, because quaternion multiplication is not commutative a left hand precedence is assumed, p / q = p q^-1 != q^-1 p"
+);
+
 impl Index<usize> for Quat {
     type Output = f64;
 
@@ -351,7 +572,6 @@ impl Index<usize> for Quat {
 }
 
 impl fmt::Display for Quat {
-    /// Format the quaternion as a string
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "({}, {}, {}, {})", self.w, self.i, self.j, self.k)
     }
@@ -363,94 +583,6 @@ impl PartialEq for Quat {
             && (self.i - other.i).abs() < f64::EPSILON
             && (self.j - other.j).abs() < f64::EPSILON
             && (self.k - other.k).abs() < f64::EPSILON
-    }
-}
-
-#[cfg(feature = "nalgebra")]
-impl From<Quat> for UnitQuaternion<f64> {
-    fn from(q: Quat) -> Self {
-        UnitQuaternion::new_normalize(Quaternion::new(q.w, q.i, q.j, q.k))
-    }
-}
-
-#[cfg(feature = "nalgebra")]
-impl From<UnitQuaternion<f64>> for Quat {
-    fn from(q: UnitQuaternion<f64>) -> Self {
-        Self {
-            w: q.w,
-            i: q.i,
-            j: q.j,
-            k: q.k
-        }
-    }
-}
-
-#[cfg(feature = "nalgebra")]
-impl From<Quaternion<f64>> for Quat {
-    fn from(q: Quaternion<f64>) -> Self {
-        Self {
-            w: q.w,
-            i: q.i,
-            j: q.j,
-            k: q.k
-        }
-    }
-}
-
-#[cfg(feature = "nalgebra")]
-impl From<Quat> for Quaternion<f64> {
-    fn from(q: Quat) -> Self {
-        Quaternion::new(q.w, q.i, q.j, q.k)
-    }
-}
-
-#[cfg(feature = "nalgebra")]
-impl PartialEq<Quaternion<f64>> for Quat {
-    fn eq(&self, other: &Quaternion<f64>) -> bool {
-        (self.w - other.w).abs() < f64::EPSILON
-            && (self.i - other.i).abs() < f64::EPSILON
-            && (self.j - other.j).abs() < f64::EPSILON
-            && (self.k - other.k).abs() < f64::EPSILON
-    }
-}
-
-#[cfg(feature = "nalgebra")]
-impl PartialEq<UnitQuaternion<f64>> for Quat {
-    fn eq(&self, other: &UnitQuaternion<f64>) -> bool {
-        self.is_unit()
-            && (self.w - other.w).abs() < f64::EPSILON
-            && (self.i - other.i).abs() < f64::EPSILON
-            && (self.j - other.j).abs() < f64::EPSILON
-            && (self.k - other.k).abs() < f64::EPSILON
-    }
-}
-
-#[cfg(feature = "glam")]
-impl From<Quat> for DQuat {
-    fn from(q: Quat) -> Self {
-        DQuat::from_xyzw(q.i, q.j, q.k, q.w)
-    }
-}
-
-#[cfg(feature = "glam")]
-impl From<DQuat> for Quat {
-    fn from(q: DQuat) -> Self {
-        Self {
-            w: q.w,
-            i: q.x,
-            j: q.y,
-            k: q.z
-        }
-    }
-}
-
-#[cfg(feature = "glam")]
-impl PartialEq<DQuat> for Quat {
-    fn eq(&self, other: &DQuat) -> bool {
-        (self.w - other.w).abs() < f64::EPSILON
-            && (self.i - other.x).abs() < f64::EPSILON
-            && (self.j - other.y).abs() < f64::EPSILON
-            && (self.k - other.z).abs() < f64::EPSILON
     }
 }
 
@@ -519,9 +651,9 @@ mod tests {
     }
 
     #[test]
-    fn test_magnitude() {
+    fn test_norm() {
         let q = Quat::new(1.0, 2.0, 3.0, 4.0);
-        assert_f64_near!(q.magnitude(), 5.477_225_575_051_661);
+        assert_f64_near!(q.norm(), 5.477_225_575_051_661);
     }
 
     #[test]
@@ -591,49 +723,14 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "nalgebra")]
-    fn test_nalgebra_interop() {
-        let q = Quat {
-            i: 1.0,
-            j: 2.0,
-            k: 3.0,
-            w: 4.0
-        };
-        let nal_q: Quaternion<f64> = q.into();
-        let roundtrip: Quat = nal_q.into();
-
-        assert_eq!(nal_q, Quaternion::new(4.0, 1.0, 2.0, 3.0));
-        assert_eq!(q, nal_q);
-        assert_eq!(roundtrip, q);
-    }
-
-    #[test]
-    #[cfg(feature = "glam")]
-    fn test_glam_interop() {
-        let q = Quat {
-            i: 1.0,
-            j: 2.0,
-            k: 3.0,
-            w: 4.0
-        };
-        let glam_q: DQuat = q.into();
-        let roundtrip: Quat = glam_q.into();
-
-        assert_eq!(glam_q, DQuat::from_xyzw(1.0, 2.0, 3.0, 4.0));
-        assert_eq!(q, glam_q);
-        assert_eq!(roundtrip, q);
-    }
-
-    #[test]
     #[cfg(feature = "rand")]
     fn test_random_is_unit() {
         let mut rng = SmallRng::seed_from_u64(39332);
         for _ in 0..100 {
-            assert_f64_near!(Quat::random_unit(&mut rng).magnitude(), 1.0);
+            assert_f64_near!(Quat::random_unit(&mut rng).norm(), 1.0);
         }
     }
 
-    // page 9-10
     // https://naif.jpl.nasa.gov/pub/naif/misc/Quaternion_White_Paper/Quaternions_White_Paper.pdf
     #[test]
     fn test_spice_example() {
@@ -657,5 +754,168 @@ mod tests {
         assert_f64_near!(rotated[0], correct[0]);
         assert_f64_near!(rotated[1], correct[1]);
         assert_f64_near!(rotated[2], correct[2]);
+    }
+
+    #[test]
+    #[allow(clippy::float_cmp)]
+    fn test_from_array_vec() {
+        let q = Quat::new(1.0, 2.0, 3.0, 4.0);
+
+        let expected = [1.0, 2.0, 3.0, 4.0];
+        assert_eq!(q.to_array(), expected);
+        #[cfg(feature = "std")]
+        assert_eq!(q.to_vec(), expected.to_vec());
+    }
+
+    #[test]
+    fn test_from_slice() {
+        let data = [1.0, 2.0, 3.0, 4.0];
+
+        let q = Quat::from_slice(&data);
+        for (i, j) in q.to_array().into_iter().zip(data) {
+            assert_f64_near!(i, j);
+        }
+    }
+
+    #[test]
+    fn test_angular_distance() {
+        let q1 = Quat::new(1.0, 0.0, 0.0, 0.0);
+        let q2 = Quat::from_axis_angle(&Vec3d::k(), AngleRadians::half_pi());
+        assert_eq!(q1.angular_distance(&q2), AngleRadians::half_pi());
+    }
+}
+
+mod interop {
+    #[cfg(feature = "glam")]
+    use glam::DQuat;
+    #[cfg(feature = "nalgebra")]
+    use nalgebra::Quaternion;
+    #[cfg(feature = "nalgebra")]
+    use nalgebra::UnitQuaternion;
+
+    #[cfg(feature = "nalgebra")]
+    impl From<Quat> for UnitQuaternion<f64> {
+        fn from(q: Quat) -> Self {
+            UnitQuaternion::new_normalize(Quaternion::new(q.w, q.i, q.j, q.k))
+        }
+    }
+
+    #[cfg(feature = "nalgebra")]
+    impl From<UnitQuaternion<f64>> for Quat {
+        fn from(q: UnitQuaternion<f64>) -> Self {
+            Self {
+                w: q.w,
+                i: q.i,
+                j: q.j,
+                k: q.k
+            }
+        }
+    }
+
+    #[cfg(feature = "nalgebra")]
+    impl From<Quaternion<f64>> for Quat {
+        fn from(q: Quaternion<f64>) -> Self {
+            Self {
+                w: q.w,
+                i: q.i,
+                j: q.j,
+                k: q.k
+            }
+        }
+    }
+
+    #[cfg(feature = "nalgebra")]
+    impl From<Quat> for Quaternion<f64> {
+        fn from(q: Quat) -> Self {
+            Quaternion::new(q.w, q.i, q.j, q.k)
+        }
+    }
+
+    #[cfg(feature = "nalgebra")]
+    impl PartialEq<Quaternion<f64>> for Quat {
+        fn eq(&self, other: &Quaternion<f64>) -> bool {
+            (self.w - other.w).abs() < f64::EPSILON
+                && (self.i - other.i).abs() < f64::EPSILON
+                && (self.j - other.j).abs() < f64::EPSILON
+                && (self.k - other.k).abs() < f64::EPSILON
+        }
+    }
+
+    #[cfg(feature = "nalgebra")]
+    impl PartialEq<UnitQuaternion<f64>> for Quat {
+        fn eq(&self, other: &UnitQuaternion<f64>) -> bool {
+            self.is_unit()
+                && (self.w - other.w).abs() < f64::EPSILON
+                && (self.i - other.i).abs() < f64::EPSILON
+                && (self.j - other.j).abs() < f64::EPSILON
+                && (self.k - other.k).abs() < f64::EPSILON
+        }
+    }
+
+    #[cfg(feature = "glam")]
+    impl From<Quat> for DQuat {
+        fn from(q: Quat) -> Self {
+            DQuat::from_xyzw(q.i, q.j, q.k, q.w)
+        }
+    }
+
+    #[cfg(feature = "glam")]
+    impl From<DQuat> for Quat {
+        fn from(q: DQuat) -> Self {
+            Self {
+                w: q.w,
+                i: q.x,
+                j: q.y,
+                k: q.z
+            }
+        }
+    }
+
+    #[cfg(feature = "glam")]
+    impl PartialEq<DQuat> for Quat {
+        fn eq(&self, other: &DQuat) -> bool {
+            (self.w - other.w).abs() < f64::EPSILON
+                && (self.i - other.x).abs() < f64::EPSILON
+                && (self.j - other.y).abs() < f64::EPSILON
+                && (self.k - other.z).abs() < f64::EPSILON
+        }
+    }
+
+    #[test]
+    #[cfg(test)]
+    #[cfg(feature = "nalgebra")]
+    fn test_nalgebra_interop() {
+        use pretty_assertions::assert_eq;
+        let q = Quat {
+            i: 1.0,
+            j: 2.0,
+            k: 3.0,
+            w: 4.0
+        };
+        let nal_q: Quaternion<f64> = q.into();
+        let roundtrip: Quat = nal_q.into();
+
+        assert_eq!(nal_q, Quaternion::new(4.0, 1.0, 2.0, 3.0));
+        assert_eq!(q, nal_q);
+        assert_eq!(roundtrip, q);
+    }
+
+    #[test]
+    #[cfg(test)]
+    #[cfg(feature = "glam")]
+    fn test_glam_interop() {
+        use pretty_assertions::assert_eq;
+        let q = Quat {
+            i: 1.0,
+            j: 2.0,
+            k: 3.0,
+            w: 4.0
+        };
+        let glam_q: DQuat = q.into();
+        let roundtrip: Quat = glam_q.into();
+
+        assert_eq!(glam_q, DQuat::from_xyzw(1.0, 2.0, 3.0, 4.0));
+        assert_eq!(q, glam_q);
+        assert_eq!(roundtrip, q);
     }
 }

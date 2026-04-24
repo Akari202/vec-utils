@@ -250,6 +250,9 @@ errors@wu2019@sarabandi2019@markley2008.
 === Shepperd's algorithm @shepherd1978
 #todo
 
+=== Bar-Itzhack's algorithm @baritzhack2000
+#todo
+
 === Markley's algorithm @markley2008
 $
   a & = cases(

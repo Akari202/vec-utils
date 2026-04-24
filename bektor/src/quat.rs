@@ -157,115 +157,137 @@ impl Quat {
     /// Create a new quaternion from a rotation matrix
     #[cfg(feature = "matrix")]
     pub fn from_rotation_matrix(m: &Matrix3x3) -> Quat {
-        #[cfg(not(feature = "std"))]
-        let w = core::f64::math::sqrt(1.0 + m[[0, 0]] + m[[1, 1]] + m[[2, 2]]) / 2.0;
-        #[cfg(feature = "std")]
-        let w = (1.0 + m[[0, 0]] + m[[1, 1]] + m[[2, 2]]).sqrt() / 2.0;
-        #[cfg(not(feature = "std"))]
-        let i = core::f64::math::sqrt(1.0 + m[[0, 0]] - m[[1, 1]] - m[[2, 2]]) / 2.0;
-        #[cfg(feature = "std")]
-        let i = (1.0 + m[[0, 0]] - m[[1, 1]] - m[[2, 2]]).sqrt() / 2.0;
-        #[cfg(not(feature = "std"))]
-        let j = core::f64::math::sqrt(1.0 - m[[0, 0]] + m[[1, 1]] - m[[2, 2]]) / 2.0;
-        #[cfg(feature = "std")]
-        let j = (1.0 - m[[0, 0]] + m[[1, 1]] - m[[2, 2]]).sqrt() / 2.0;
-        #[cfg(not(feature = "std"))]
-        let k = core::f64::math::sqrt(1.0 - m[[0, 0]] - m[[1, 1]] + m[[2, 2]]) / 2.0;
-        #[cfg(feature = "std")]
-        let k = (1.0 - m[[0, 0]] - m[[1, 1]] + m[[2, 2]]).sqrt() / 2.0;
-        if w > i && w > j && w > k {
-            Quat {
-                w,
-                i: (m[[2, 1]] - m[[1, 2]]) / (4.0 * w),
-                j: (m[[0, 2]] - m[[2, 0]]) / (4.0 * w),
-                k: (m[[1, 0]] - m[[0, 1]]) / (4.0 * w)
-            }
-        } else if i > j && i > k {
+        Quat::from_rotation_matrix_shepperd(m)
+    }
+
+    #[cfg(feature = "matrix")]
+    fn from_rotation_matrix_sarabandi_thomas(m: &Matrix3x3) -> Quat {
+        let eta = 0.0;
+        Quat {
+            w: if m[[1, 1]] + m[[2, 2]] + m[[3, 3]] > eta {
+                0.5 * core::f64::math::sqrt(1.0 + m[[1, 1]] + m[[2, 2]] + m[[3, 3]])
+            } else {
+                0.5 * core::f64::math::sqrt(
+                    (core::f64::math::powi(m[[3, 2]] - m[[2, 3]], 2)
+                        + core::f64::math::powi(m[[1, 3]] - m[[3, 1]], 2)
+                        + core::f64::math::powi(m[[2, 1]] - m[[1, 2]], 2))
+                        / (3.0 - m[[1, 1]] - m[[2, 2]] - m[[3, 3]])
+                )
+            },
+            i: (m[[3, 2]] - m[[2, 3]]).signum()
+                * if m[[1, 1]] - m[[2, 2]] - m[[3, 3]] > eta {
+                    0.5 * core::f64::math::sqrt(1.0 + m[[1, 1]] - m[[2, 2]] - m[[3, 3]])
+                } else {
+                    0.5 * core::f64::math::sqrt(
+                        (core::f64::math::powi(m[[3, 2]] - m[[2, 3]], 2)
+                            + core::f64::math::powi(m[[1, 2]] + m[[2, 1]], 2)
+                            + core::f64::math::powi(m[[3, 1]] + m[[1, 3]], 2))
+                            / (3.0 - m[[1, 1]] + m[[2, 2]] + m[[3, 3]])
+                    )
+                },
+            j: (m[[1, 3]] - m[[3, 1]]).signum()
+                * if -m[[1, 1]] + m[[2, 2]] - m[[3, 3]] > eta {
+                    0.5 * core::f64::math::sqrt(1.0 - m[[1, 1]] + m[[2, 2]] - m[[3, 3]])
+                } else {
+                    0.5 * core::f64::math::sqrt(
+                        (core::f64::math::powi(m[[1, 3]] - m[[3, 1]], 2)
+                            + core::f64::math::powi(m[[1, 2]] + m[[2, 1]], 2)
+                            + core::f64::math::powi(m[[2, 3]] + m[[3, 2]], 2))
+                            / (3.0 + m[[1, 1]] - m[[2, 2]] + m[[3, 3]])
+                    )
+                },
+            k: (m[[2, 1]] - m[[1, 2]]).signum()
+                * if -m[[1, 1]] - m[[2, 2]] + m[[3, 3]] > eta {
+                    0.5 * core::f64::math::sqrt(1.0 - m[[1, 1]] - m[[2, 2]] + m[[3, 3]])
+                } else {
+                    0.5 * core::f64::math::sqrt(
+                        (core::f64::math::powi(m[[2, 1]] - m[[1, 2]], 2)
+                            + core::f64::math::powi(m[[3, 1]] + m[[1, 3]], 2)
+                            + core::f64::math::powi(m[[3, 2]] + m[[2, 3]], 2))
+                            / (3.0 + m[[1, 1]] + m[[2, 2]] - m[[3, 3]])
+                    )
+                }
+        }
+    }
+
+    #[cfg(feature = "matrix")]
+    fn from_rotation_matrix_markley(m: &Matrix3x3) -> Quat {
+        let q = if m[[0, 0]] > m[[1, 1]] && m[[0, 0]] > m[[2, 2]] {
             Quat {
                 w: (m[[2, 1]] - m[[1, 2]]) / (4.0 * i),
-                i,
+                i: 1.0 + m[[0, 0]] - m[[1, 1]] - m[[3, 3]],
                 j: (m[[0, 1]] + m[[1, 0]]) / (4.0 * i),
                 k: (m[[0, 2]] + m[[2, 0]]) / (4.0 * i)
             }
-        } else if j > k {
+        } else if m[[1, 1]] > m[[0, 0]] && m[[1, 1]] > m[[2, 2]] {
             Quat {
                 w: (m[[0, 2]] - m[[2, 0]]) / (4.0 * j),
-                i: (m[[0, 1]] + m[[1, 0]]) / (4.0 * j),
-                j,
-                k: (m[[1, 2]] + m[[2, 1]]) / (4.0 * j)
+                i: m[[0, 1]] + m[[1, 0]],
+                j: m[[2, 0]] + m[[0, 2]],
+                k: (m[[1, 2]] + m[[2, 1]])
             }
-        } else {
+        } else if m[[2, 2]] > m[[0, 0]] && m[[2, 2]] > m[[1, 1]] {
             Quat {
                 w: (m[[1, 0]] - m[[0, 1]]) / (4.0 * k),
                 i: (m[[0, 2]] + m[[2, 0]]) / (4.0 * k),
                 j: (m[[1, 2]] + m[[2, 1]]) / (4.0 * k),
                 k
             }
-        }
+        } else {
+            Quat {
+                w: 1.0 + m.tr(),
+                i: m[[2, 1]] - m[[1, 2]],
+                j: m[[0, 2]] - m[[2, 0]],
+                k: m[[1, 0]] - m[[0, 1]]
+            }
+        };
+        q.normalize()
     }
 
     #[cfg(feature = "matrix")]
-    #[cfg(feature = "std")]
-    fn from_rotation_matrix_sarabandi_thomas(m: &Matrix3x3) -> Quat {
-        let eta = 0.0;
-        Quat {
-            w: if m[[1, 1]] + m[[2, 2]] + m[[3, 3]] > eta {
-                0.5 * (1.0 + m[[1, 1]] + m[[2, 2]] + m[[3, 3]]).sqrt()
-            } else {
-                0.5 * (((m[[3, 2]] - m[[2, 3]]).powi(2)
-                    + (m[[1, 3]] - m[[3, 1]]).powi(2)
-                    + (m[[2, 1]] - m[[1, 2]]).powi(2))
-                    / (3.0 - m[[1, 1]] - m[[2, 2]] - m[[3, 3]]))
-                .sqrt()
-            },
-            i: (m[[3, 2]] - m[[2, 3]]).signum()
-                * if m[[1, 1]] - m[[2, 2]] - m[[3, 3]] > eta {
-                    0.5 * (1.0 + m[[1, 1]] - m[[2, 2]] - m[[3, 3]]).sqrt()
-                } else {
-                    0.5 * (((m[[3, 2]] - m[[2, 3]]).powi(2)
-                        + (m[[1, 2]] + m[[2, 1]]).powi(2)
-                        + (m[[3, 1]] + m[[1, 3]]).powi(2))
-                        / (3.0 - m[[1, 1]] + m[[2, 2]] + m[[3, 3]]))
-                    .sqrt()
-                },
-            j: (m[[1, 3]] - m[[3, 1]]).signum()
-                * if -m[[1, 1]] + m[[2, 2]] - m[[3, 3]] > eta {
-                    0.5 * (1.0 - m[[1, 1]] + m[[2, 2]] - m[[3, 3]]).sqrt()
-                } else {
-                    0.5 * (((m[[1, 3]] - m[[3, 1]]).powi(2)
-                        + (m[[1, 2]] + m[[2, 1]]).powi(2)
-                        + (m[[2, 3]] + m[[3, 2]]).powi(2))
-                        / (3.0 + m[[1, 1]] - m[[2, 2]] + m[[3, 3]]))
-                    .sqrt()
-                },
-            k: (m[[2, 1]] - m[[1, 2]]).signum()
-                * if -m[[1, 1]] - m[[2, 2]] + m[[3, 3]] > eta {
-                    0.5 * (1.0 - m[[1, 1]] - m[[2, 2]] + m[[3, 3]]).sqrt()
-                } else {
-                    0.5 * (((m[[2, 1]] - m[[1, 2]]).powi(2)
-                        + (m[[3, 1]] + m[[1, 3]]).powi(2)
-                        + (m[[3, 2]] + m[[2, 3]]).powi(2))
-                        / (3.0 + m[[1, 1]] + m[[2, 2]] - m[[3, 3]]))
-                    .sqrt()
-                }
-        }
-    }
-
-    #[cfg(feature = "matrix")]
-    #[cfg(feature = "std")]
-    fn from_rotation_matrix_markley(m: &Matrix3x3) -> Quat {
-        todo!()
-    }
-
-    #[cfg(feature = "matrix")]
-    #[cfg(feature = "std")]
     fn from_rotation_matrix_shepperd(m: &Matrix3x3) -> Quat {
+        if m[[0, 0]] > m[[1, 1]] && m[[0, 0]] > m[[2, 2]] {
+            let i = 0.5 * core::f64::math::sqrt(1.0 + m[[0, 0]] - m[[1, 1]] - m[[2, 2]]);
+            Quat {
+                w: (m[[2, 1]] - m[[1, 2]]) / (4.0 * i),
+                i,
+                j: (m[[0, 1]] + m[[1, 0]]) / (4.0 * i),
+                k: (m[[0, 2]] + m[[2, 0]]) / (4.0 * i)
+            }
+        } else if m[[1, 1]] > m[[0, 0]] && m[[1, 1]] > m[[2, 2]] {
+            let j = core::f64::math::sqrt(1.0 - m[[0, 0]] + m[[1, 1]] - m[[2, 2]]) / 2.0;
+            Quat {
+                w: (m[[0, 2]] - m[[2, 0]]) / (4.0 * j),
+                i: (m[[0, 1]] + m[[1, 0]]) / (4.0 * j),
+                j,
+                k: (m[[1, 2]] + m[[2, 1]]) / (4.0 * j)
+            }
+        } else if m[[2, 2]] > m[[0, 0]] && m[[2, 2]] > m[[1, 1]] {
+            let k = core::f64::math::sqrt(1.0 - m[[0, 0]] - m[[1, 1]] + m[[2, 2]]) / 2.0;
+            Quat {
+                w: (m[[1, 0]] - m[[0, 1]]) / (4.0 * k),
+                i: (m[[0, 2]] + m[[2, 0]]) / (4.0 * k),
+                j: (m[[1, 2]] + m[[2, 1]]) / (4.0 * k),
+                k
+            }
+        } else {
+            let w = 0.5 * core::f64::math::sqrt(1.0 + m.tr());
+            Quat {
+                w,
+                i: (m[[2, 1]] - m[[1, 2]]) / (4.0 * w),
+                j: (m[[0, 2]] - m[[2, 0]]) / (4.0 * w),
+                k: (m[[1, 0]] - m[[0, 1]]) / (4.0 * w)
+            }
+        }
+    }
+
+    #[cfg(feature = "matrix")]
+    fn from_rotation_matrix_wu(m: &Matrix3x3) -> Quat {
         todo!()
     }
 
     #[cfg(feature = "matrix")]
-    #[cfg(feature = "std")]
-    fn from_rotation_matrix_wu(m: &Matrix3x3) -> Quat {
+    fn from_rotation_matrix_baritzhack(m: &Matrix3x3) -> Quat {
         todo!()
     }
 
@@ -324,12 +346,9 @@ impl Quat {
     /// Calculate the norm of the quaternion
     /// sometimes called the magnitude
     pub fn norm(&self) -> f64 {
-        #[cfg(not(feature = "std"))]
         return core::f64::math::sqrt(
             self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k
         );
-        #[cfg(feature = "std")]
-        return (self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k).sqrt();
     }
 
     /// Return a new Quat of the normalized quaternion
@@ -450,15 +469,9 @@ impl Quat {
         let u2: f64 = rng.random();
         let u3: f64 = rng.random();
 
-        #[cfg(not(feature = "std"))]
         let sqrt_u1 = core::f64::math::sqrt(1.0 - u1);
-        #[cfg(feature = "std")]
-        let sqrt_u1 = (1.0 - u1).sqrt();
 
-        #[cfg(not(feature = "std"))]
         let sqrt_1_u1 = core::f64::math::sqrt(u1);
-        #[cfg(feature = "std")]
-        let sqrt_1_u1 = u1.sqrt();
 
         let theta1 = TAU * u2;
         let theta2 = TAU * u3;

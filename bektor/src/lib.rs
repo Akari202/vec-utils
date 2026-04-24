@@ -12,7 +12,7 @@
     clippy::derive_ord_xor_partial_ord,
     incomplete_features
 )]
-#![cfg_attr(not(feature = "std"), feature(core_float_math))]
+#![feature(core_float_math)]
 #![cfg_attr(feature = "matrix", feature(generic_const_exprs))]
 #![cfg_attr(test, feature(test))]
 #![doc(test(attr(deny(dead_code))))]

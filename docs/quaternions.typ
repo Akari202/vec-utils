@@ -88,8 +88,7 @@ $ r q = q r = (r w, r x, r y, r z) $<eq:smul>
 The dot product or inner product of $p$ and $q$ is@dam1998[def 9]:
 $
   p dot q & = (w_p + x_p i + y_p j + z_p k) dot (w_q + x_q i + y_q j + z_q k) \
-          & = w_p w_q + x_p x_q i + y_p y_q j + z_p z_q k \
-          & = (w_p w_q, x_p x_q, y_p y_q, z_p z_q)
+          & = w_p w_q + x_p x_q + y_p y_q + z_p z_q
 $<eq:dot>
 
 == Other operations

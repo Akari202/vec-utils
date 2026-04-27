@@ -1,6 +1,6 @@
 use core::cmp::Ordering;
 use core::fmt;
-use core::ops::{Add, Div, Index, Mul, Sub};
+use core::ops::{Add, Div, DivAssign, Index, Mul, Sub};
 
 #[cfg(feature = "rand")]
 use rand::distr::{Distribution, StandardUniform};
@@ -49,17 +49,16 @@ impl Complex {
 
     /// Get the magnitude of the complex number
     pub fn magnitude(&self) -> f64 {
-        #[cfg(not(feature = "std"))]
-        return core::f64::math::sqrt(
-            core::f64::math::powi(self.real, 2) + core::f64::math::powi(self.imaginary, 2)
-        );
-        #[cfg(feature = "std")]
-        return (self.real.powi(2) + self.imaginary.powi(2)).sqrt();
+        return core::f64::math::sqrt(self.real * self.real + self.imaginary * self.imaginary);
     }
 
     /// Calculates the square root of the complex number
     pub fn sqrt(&self) -> Complex {
-        todo!();
+        let magnitude = self.magnitude();
+        let real = core::f64::math::sqrt((magnitude + self.real) / 2.0);
+        let imaginary =
+            self.imaginary.signum() * core::f64::math::sqrt((magnitude - self.real) / 2.0);
+        Complex { real, imaginary }
     }
 
     /// Get the conjugate of the complex number
@@ -253,6 +252,20 @@ impl_single_op_variants_other!(
     "Divide a real number by a complex number"
 );
 
+impl DivAssign<Complex> for Complex {
+    /// Divide a complex number by another complex number in-place
+    fn div_assign(&mut self, other: Complex) {
+        *self = *self / other;
+    }
+}
+
+impl DivAssign<f64> for Complex {
+    /// Divide a complex number by a real number in-place
+    fn div_assign(&mut self, other: f64) {
+        *self = *self / other;
+    }
+}
+
 impl PartialOrd for Complex {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         let self_mag_sq = self.real * self.real + self.imaginary * self.imaginary;
@@ -378,5 +391,27 @@ mod tests {
         let diff = c1 - c2;
         assert_f64_near!(diff.real, -2.0);
         assert_f64_near!(diff.imaginary, -2.0);
+    }
+
+    #[test]
+    fn test_complex_sqrt() {
+        let cases = [
+            (3.0, 4.0, 2.0, 1.0),
+            (0.0, 0.0, 0.0, 0.0),
+            (-4.0, 0.0, 0.0, 2.0),
+            (0.0, 8.0, 2.0, 2.0),
+            (8.0, -6.0, 3.0, -1.0)
+        ];
+
+        for i in cases {
+            let z = Complex {
+                real: i.0,
+                imaginary: i.1
+            };
+            let res = z.sqrt();
+
+            assert_f64_near!(res.real, i.2);
+            assert_f64_near!(res.imaginary, i.3);
+        }
     }
 }

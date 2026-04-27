@@ -39,3 +39,5 @@ https://www.mathworks.com/help/aerotbx/flight-parameters-1.html
 https://web.mit.edu/2.998/www/QuaternionReport1.pdf
 
 intersperse benchmark: https://play.rust-lang.org/?version=nightly&mode=debug&edition=2018&gist=50bda743d1955e8ae94d9f5c03d59f9f
+
+https://ntrs.nasa.gov/api/citations/19990014340/downloads/19990014340.pdf

@@ -15,10 +15,10 @@ bektor = { path = "../bektor", default-features = false, features = [
   "matrix",
   "std"
 ] }
-ordered-float = "5.1.0"
-pyo3 = { version = "0.28.2", features = [
+ordered-float = "5.3.0"
+pyo3 = { version = "0.28.3", features = [
   "experimental-inspect",
   "extension-module",
   "generate-import-lib"
 ] }
-rayon = "1.11.0"
+rayon = "1.12.0"

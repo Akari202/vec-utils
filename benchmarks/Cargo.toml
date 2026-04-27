@@ -1,0 +1,32 @@
+[package]
+name = "benchmarks"
+version = "0.3.2"
+edition = "2024"
+license = "GPL-3.0-only"
+
+[[bench]]
+harness = false
+name = "quat_from_matrix"
+
+[[bench]]
+harness = false
+name = "matrix_operations"
+
+[[bench]]
+harness = false
+name = "intersperse"
+
+[dependencies]
+bektor = { path = "../bektor", default-features = false, features = [
+  "matrix",
+  "rand"
+] }
+itertools = { version = "0.14.0", default-features = false }
+rand = { version = "0.10.1", default-features = false }
+
+[dev-dependencies]
+criterion = { version = "0.8.2", features = ["html_reports"] }
+
+[features]
+default = ["std"]
+std = ["bektor/std", "itertools/use_std", "rand/std"]

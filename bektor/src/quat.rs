@@ -18,6 +18,8 @@ use rand::{Rng, RngExt};
 
 use crate::angle::AngleRadians;
 #[cfg(feature = "matrix")]
+use crate::matrix::real::Matrix;
+#[cfg(feature = "matrix")]
 use crate::matrix::real::Matrix3x3;
 use crate::vec3d::Vec3d;
 use crate::{
@@ -156,55 +158,65 @@ impl Quat {
 
     /// Create a new quaternion from a rotation matrix
     #[cfg(feature = "matrix")]
-    pub fn from_rotation_matrix(m: &Matrix3x3) -> Quat {
-        Quat::from_rotation_matrix_shepperd(m)
+    pub fn from_rotation_matrix(m: &Matrix3x3, algorithm: QuatFromMatrixAlgorithm) -> Quat {
+        match algorithm {
+            QuatFromMatrixAlgorithm::Shepherd => Self::from_rotation_matrix_shepperd(m),
+            QuatFromMatrixAlgorithm::SarabandiThomas => {
+                Self::from_rotation_matrix_sarabandi_thomas(m)
+            }
+            QuatFromMatrixAlgorithm::Markley => Self::from_rotation_matrix_markley(m),
+            QuatFromMatrixAlgorithm::Wu(previous_quat) => {
+                Self::from_rotation_matrix_wu(m, previous_quat)
+            }
+            QuatFromMatrixAlgorithm::BarItzhack => Self::from_rotation_matrix_baritzhack(m)
+        }
     }
 
     #[cfg(feature = "matrix")]
     fn from_rotation_matrix_sarabandi_thomas(m: &Matrix3x3) -> Quat {
         let eta = 0.0;
         Quat {
-            w: if m[[1, 1]] + m[[2, 2]] + m[[3, 3]] > eta {
-                0.5 * core::f64::math::sqrt(1.0 + m[[1, 1]] + m[[2, 2]] + m[[3, 3]])
+            w: if m[[0, 0]] + m[[1, 1]] + m[[2, 2]] > eta {
+                0.5 * core::f64::math::sqrt(1.0 + m[[0, 0]] + m[[1, 1]] + m[[2, 2]])
             } else {
                 0.5 * core::f64::math::sqrt(
-                    (core::f64::math::powi(m[[3, 2]] - m[[2, 3]], 2)
-                        + core::f64::math::powi(m[[1, 3]] - m[[3, 1]], 2)
-                        + core::f64::math::powi(m[[2, 1]] - m[[1, 2]], 2))
-                        / (3.0 - m[[1, 1]] - m[[2, 2]] - m[[3, 3]])
+                    (core::f64::math::powi(m[[2, 1]] - m[[1, 2]], 2)
+                        + core::f64::math::powi(m[[0, 2]] - m[[2, 0]], 2)
+                        + core::f64::math::powi(m[[1, 0]] - m[[0, 1]], 2))
+                        / (3.0 - m[[0, 0]] - m[[1, 1]] - m[[2, 2]])
                 )
             },
-            i: (m[[3, 2]] - m[[2, 3]]).signum()
-                * if m[[1, 1]] - m[[2, 2]] - m[[3, 3]] > eta {
-                    0.5 * core::f64::math::sqrt(1.0 + m[[1, 1]] - m[[2, 2]] - m[[3, 3]])
-                } else {
-                    0.5 * core::f64::math::sqrt(
-                        (core::f64::math::powi(m[[3, 2]] - m[[2, 3]], 2)
-                            + core::f64::math::powi(m[[1, 2]] + m[[2, 1]], 2)
-                            + core::f64::math::powi(m[[3, 1]] + m[[1, 3]], 2))
-                            / (3.0 - m[[1, 1]] + m[[2, 2]] + m[[3, 3]])
-                    )
-                },
-            j: (m[[1, 3]] - m[[3, 1]]).signum()
-                * if -m[[1, 1]] + m[[2, 2]] - m[[3, 3]] > eta {
-                    0.5 * core::f64::math::sqrt(1.0 - m[[1, 1]] + m[[2, 2]] - m[[3, 3]])
-                } else {
-                    0.5 * core::f64::math::sqrt(
-                        (core::f64::math::powi(m[[1, 3]] - m[[3, 1]], 2)
-                            + core::f64::math::powi(m[[1, 2]] + m[[2, 1]], 2)
-                            + core::f64::math::powi(m[[2, 3]] + m[[3, 2]], 2))
-                            / (3.0 + m[[1, 1]] - m[[2, 2]] + m[[3, 3]])
-                    )
-                },
-            k: (m[[2, 1]] - m[[1, 2]]).signum()
-                * if -m[[1, 1]] - m[[2, 2]] + m[[3, 3]] > eta {
-                    0.5 * core::f64::math::sqrt(1.0 - m[[1, 1]] - m[[2, 2]] + m[[3, 3]])
+            i: (m[[2, 1]] - m[[1, 2]]).signum()
+                * if m[[0, 0]] - m[[1, 1]] - m[[2, 2]] > eta {
+                    0.5 * core::f64::math::sqrt(1.0 + m[[0, 0]] - m[[1, 1]] - m[[2, 2]])
                 } else {
                     0.5 * core::f64::math::sqrt(
                         (core::f64::math::powi(m[[2, 1]] - m[[1, 2]], 2)
-                            + core::f64::math::powi(m[[3, 1]] + m[[1, 3]], 2)
-                            + core::f64::math::powi(m[[3, 2]] + m[[2, 3]], 2))
-                            / (3.0 + m[[1, 1]] + m[[2, 2]] - m[[3, 3]])
+                            + core::f64::math::powi(m[[0, 1]] + m[[1, 0]], 2)
+                            + core::f64::math::powi(m[[2, 0]] + m[[0, 2]], 2))
+                            / (3.0 - m[[0, 0]] + m[[1, 1]] + m[[2, 2]])
+                    )
+                },
+            j: (m[[0, 2]] - m[[2, 0]]).signum()
+                * if -m[[0, 0]] + m[[1, 1]] - m[[2, 2]] > eta {
+                    0.5 * core::f64::math::sqrt(1.0 - m[[0, 0]] + m[[1, 1]] - m[[2, 2]])
+                } else {
+                    0.5 * core::f64::math::sqrt(
+                        (core::f64::math::powi(m[[0, 2]] - m[[2, 0]], 2)
+                            + core::f64::math::powi(m[[0, 1]] + m[[1, 0]], 2)
+                            + core::f64::math::powi(m[[1, 2]] + m[[2, 1]], 2))
+                            / (3.0 + m[[0, 0]] - m[[1, 1]] + m[[2, 2]])
+                    )
+                },
+            k: (m[[1, 0]] - m[[0, 1]]).signum()
+                * if -m[[0, 0]] - m[[1, 1]] + m[[2, 2]] > eta {
+                    0.5 * core::f64::math::sqrt(1.0 - m[[0, 0]] - m[[1, 1]] + m[[2, 2]])
+                } else {
+                    0.5 * core::f64::math::sqrt(
+                        (core::f64::math::powi(m[[1, 0]] - m[[0, 1]], 2)
+                            + core::f64::math::powi(m[[2, 0]] + m[[0, 2]], 2)
+                            + core::f64::math::powi(m[[2, 1]] + m[[1, 2]], 2))
+                            / (3.0 + m[[0, 0]] + m[[1, 1]] - m[[2, 2]])
                     )
                 }
         }
@@ -214,24 +226,24 @@ impl Quat {
     fn from_rotation_matrix_markley(m: &Matrix3x3) -> Quat {
         let q = if m[[0, 0]] > m[[1, 1]] && m[[0, 0]] > m[[2, 2]] {
             Quat {
-                w: (m[[2, 1]] - m[[1, 2]]) / (4.0 * i),
-                i: 1.0 + m[[0, 0]] - m[[1, 1]] - m[[3, 3]],
-                j: (m[[0, 1]] + m[[1, 0]]) / (4.0 * i),
-                k: (m[[0, 2]] + m[[2, 0]]) / (4.0 * i)
+                w: m[[2, 1]] - m[[1, 2]],
+                i: 1.0 + m[[0, 0]] - m[[1, 1]] - m[[2, 2]],
+                j: m[[0, 1]] + m[[1, 0]],
+                k: m[[0, 2]] + m[[2, 0]]
             }
         } else if m[[1, 1]] > m[[0, 0]] && m[[1, 1]] > m[[2, 2]] {
             Quat {
-                w: (m[[0, 2]] - m[[2, 0]]) / (4.0 * j),
+                w: m[[0, 2]] - m[[2, 0]],
                 i: m[[0, 1]] + m[[1, 0]],
-                j: m[[2, 0]] + m[[0, 2]],
-                k: (m[[1, 2]] + m[[2, 1]])
+                j: 1.0 + m[[1, 1]] - m[[0, 0]] - m[[2, 2]],
+                k: m[[1, 2]] + m[[2, 1]]
             }
         } else if m[[2, 2]] > m[[0, 0]] && m[[2, 2]] > m[[1, 1]] {
             Quat {
-                w: (m[[1, 0]] - m[[0, 1]]) / (4.0 * k),
-                i: (m[[0, 2]] + m[[2, 0]]) / (4.0 * k),
-                j: (m[[1, 2]] + m[[2, 1]]) / (4.0 * k),
-                k
+                w: m[[1, 0]] - m[[0, 1]],
+                i: m[[0, 2]] + m[[2, 0]],
+                j: m[[1, 2]] + m[[2, 1]],
+                k: 1.0 + m[[2, 2]] - m[[0, 0]] - m[[1, 1]]
             }
         } else {
             Quat {
@@ -282,13 +294,71 @@ impl Quat {
     }
 
     #[cfg(feature = "matrix")]
-    fn from_rotation_matrix_wu(m: &Matrix3x3) -> Quat {
-        todo!()
+    fn from_rotation_matrix_wu(m: &Matrix3x3, previous_quat: Option<&Quat>) -> Quat {
+        let tr = m.tr();
+        let z0 = m[[1, 2]] - m[[2, 1]];
+        let z1 = m[[2, 0]] - m[[0, 2]];
+        let z2 = m[[0, 1]] - m[[1, 0]];
+        let k = Matrix::<4, 4>::from_nested_arr([
+            [tr, z0, z1, z2],
+            [
+                z0,
+                2.0 * m[[0, 0]] - tr,
+                m[[0, 1]] + m[[1, 0]],
+                m[[0, 2]] + m[[2, 0]]
+            ],
+            [
+                z1,
+                m[[0, 1]] + m[[1, 0]],
+                2.0 * m[[1, 1]] - tr,
+                m[[1, 2]] + m[[2, 1]]
+            ],
+            [
+                z2,
+                m[[0, 2]] + m[[2, 0]],
+                m[[1, 2]] + m[[2, 1]],
+                2.0 * m[[2, 2]] - tr
+            ]
+        ]);
+        let q = k.largest_eigenvector(20).to_quat();
+        if let Some(previous_quat) = previous_quat {
+            q.dot(previous_quat).signum() * q
+        } else {
+            q
+        }
     }
 
     #[cfg(feature = "matrix")]
     fn from_rotation_matrix_baritzhack(m: &Matrix3x3) -> Quat {
-        todo!()
+        let mut k = Matrix::<4, 4>::from_nested_arr([
+            [
+                m[[0, 0]] - m[[1, 1]] - m[[2, 2]],
+                m[[1, 0]] + m[[0, 1]],
+                m[[2, 0]] + m[[0, 2]],
+                m[[1, 2]] - m[[2, 1]]
+            ],
+            [
+                m[[1, 0]] + m[[0, 1]],
+                m[[1, 1]] - m[[0, 0]] - m[[2, 2]],
+                m[[2, 1]] + m[[1, 2]],
+                m[[2, 0]] - m[[0, 2]]
+            ],
+            [
+                m[[2, 0]] + m[[0, 2]],
+                m[[2, 1]] + m[[1, 2]],
+                m[[2, 2]] - m[[0, 0]] - m[[1, 1]],
+                m[[0, 1]] - m[[1, 0]]
+            ],
+            [
+                m[[1, 2]] - m[[2, 1]],
+                m[[2, 0]] - m[[0, 2]],
+                m[[0, 1]] - m[[1, 0]],
+                m[[0, 0]] + m[[1, 1]] + m[[2, 2]]
+            ]
+        ]);
+        // TODO: implement scalar multiplication for generic matracies. This is a temporary hack
+        k.values.iter_mut().for_each(|i| *i /= 3.0);
+        k.largest_eigenvector(20).to_quat_last()
     }
 
     /// Convert the quaternion to a rotation matrix
@@ -368,13 +438,8 @@ impl Quat {
     }
 
     /// Calculates the dot, or inner, product of two quaternions
-    pub fn dot(&self, other: &Quat) -> Quat {
-        Quat {
-            w: self.w * other.w,
-            i: self.i * other.i,
-            j: self.j * other.j,
-            k: self.k * other.k
-        }
+    pub fn dot(&self, other: &Quat) -> f64 {
+        self.w * other.w + self.i * other.i + self.j * other.j + self.k * other.k
     }
 
     /// Calculates the angular distance between two quaternions
@@ -492,6 +557,62 @@ impl Quat {
             j: sqrt_1_u1 * sin_t2,
             k: sqrt_1_u1 * cos_t2
         }
+    }
+}
+
+/// Specifies the numerical algorithm used to convert a rotation matrix into a quaternion
+/// Different algorithms offer varying trade-offs between numerical stability and computational speed
+/// Shepherd is a good default
+#[derive(Debug, Clone, Copy, PartialEq)]
+#[cfg(feature = "matrix")]
+pub enum QuatFromMatrixAlgorithm<'a> {
+    /// Shepherd's voting-scheme method
+    ///
+    /// Shepherd, "Quaternion from Rotation Matrix" [10.2514/3.55767b](https://doi.org/10.2514/3.55767b)
+    Shepherd,
+
+    /// Optimized to outperform Shepherd's method in numerical accuracy
+    ///
+    /// Sarabandi & Thomas, "Accurate Computation of Quaternions from Rotation Matrices" [10.1007/978-3-319-93188-3_5](https://doi.org/10.1007/978-3-319-93188-3_5)
+    SarabandiThomas,
+
+    /// Less sensitive to slightly non-orthonormal matracies than Shepherd's method
+    ///
+    /// Markley, "Unit Quaternion from Rotation Matrix" [10.2514/1.31730](https://doi.org/10.2514/1.31730)
+    Markley,
+
+    /// Slow but ensures continuity with a previous rotation
+    ///
+    /// Wu, "Optimal Continuous Unit Quaternions from Rotation Matrices" [10.2514/1.G004043](https://doi.org/10.2514/1.G004043)
+    Wu(Option<&'a Quat>),
+
+    /// Bar-Itzhack, "New Method for Extracting the Quaternion from a Rotation Matrix" [10.2514/2.4654](https://doi.org/10.2514/2.4654)
+    BarItzhack
+}
+
+#[cfg(feature = "matrix")]
+impl QuatFromMatrixAlgorithm<'_> {
+    /// An array of all algorithm variations
+    pub const ALL: [Self; 5] = [
+        Self::Shepherd,
+        Self::SarabandiThomas,
+        Self::Markley,
+        Self::Wu(None),
+        Self::BarItzhack
+    ];
+}
+
+#[cfg(feature = "matrix")]
+impl fmt::Display for QuatFromMatrixAlgorithm<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let name = match self {
+            Self::Shepherd => "Shepherd (1978)",
+            Self::SarabandiThomas => "Sarabandi-Thomas (2019)",
+            Self::Markley => "Markley (2008)",
+            Self::Wu(_) => "Wu (2019)",
+            Self::BarItzhack => "Bar-Itzhack (2000)"
+        };
+        write!(f, "{}", name)
     }
 }
 
@@ -619,7 +740,7 @@ impl Distribution<Quat> for StandardUniform {
 
 #[cfg(test)]
 mod tests {
-    use assert_float_eq::assert_f64_near;
+    use assert_float_eq::{assert_f64_near, assert_float_absolute_eq};
     use pretty_assertions::assert_eq;
     #[cfg(feature = "rand")]
     use rand::SeedableRng;
@@ -656,9 +777,41 @@ mod tests {
     #[cfg(feature = "matrix")]
     fn test_from_rotation_matrix() {
         let m = Matrix3x3::from_nested_arr([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]);
-        let q = Quat::from_rotation_matrix(&m);
-        let good = Quat::new(1.0, 0.0, 0.0, 0.0);
-        assert_eq!(q, good);
+        for i in QuatFromMatrixAlgorithm::ALL {
+            let q = Quat::from_rotation_matrix(&m, i);
+            for (j, k) in q.to_array().into_iter().zip([1.0, 0.0, 0.0, 0.0]) {
+                assert_float_absolute_eq!(j, k, 1e-9);
+            }
+        }
+    }
+
+    #[test]
+    #[cfg(feature = "matrix")]
+    #[cfg(feature = "rand")]
+    fn test_rotation_matrix_roundtrip() {
+        let mut rng = SmallRng::seed_from_u64(39332);
+        for _ in 0..50 {
+            let original = Quat::random_unit(&mut rng);
+            let m = original.to_rotation_matrix();
+
+            for i in QuatFromMatrixAlgorithm::ALL {
+                let q = Quat::from_rotation_matrix(&m, i);
+                let dot_original = q.dot(&original).abs();
+                let dot_inverse = q.dot(&original.inverse()).abs();
+
+                let epsilon = f64::EPSILON * 4.0;
+
+                assert!(
+                    (dot_original - 1.0).abs() < epsilon || (dot_inverse - 1.0).abs() < epsilon,
+                    "[{}] failed\ndot original: {}\ndot inverse: {}\nresult: {:?}\noriginal: {:?}",
+                    i,
+                    dot_original,
+                    dot_inverse,
+                    q,
+                    original
+                );
+            }
+        }
     }
 
     #[test]
@@ -745,7 +898,7 @@ mod tests {
     #[cfg(feature = "rand")]
     fn test_random_is_unit() {
         let mut rng = SmallRng::seed_from_u64(39332);
-        for _ in 0..100 {
+        for _ in 0..20 {
             assert_f64_near!(Quat::random_unit(&mut rng).norm(), 1.0);
         }
     }

@@ -15,15 +15,15 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        features:
+          ["--all-features", "--no-default-features --features all-nostd", "--no-default-features"]
     steps:
       - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@nightly
-      - name: Run tests all features
-        run: cargo test --verbose --all-features
-      - name: Run tests all features no std
-        run: cargo test --verbose --no-default-features --features all-nostd
-      - name: Run tests no features
-        run: cargo test --verbose --no-default-features
+      - name: Run tests
+        run: cargo test --verbose ${{ matrix.features }}
 
   publish:
     runs-on: ubuntu-latest

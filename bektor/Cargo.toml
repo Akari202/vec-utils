@@ -29,16 +29,16 @@ matrixmultiply = { version = "0.3.10", default-features = false, features = [
 ], optional = true }
 nalgebra = { version = "0.34.2", default-features = false, features = ["libm"], optional = true }
 rand = { version = "0.10.1", default-features = false, optional = true }
-rkyv = { version = "0.8.15", default-features = false, features = ["bytecheck"], optional = true }
+rkyv = { version = "0.8.16", default-features = false, features = ["bytecheck"], optional = true }
 serde = { version = "1.0.219", default-features = false, features = ["derive"], optional = true }
 thiserror = { version = "2.0.17", default-features = false }
 
 [dev-dependencies]
 assert_float_eq = "1.2.0"
+criterion = { version = "0.8.2", features = ["html_reports"] }
 pretty_assertions = "1.4.1"
 
 [features]
-# default = ["all-nostd"]
 default = ["rand", "std"]
 all = ["glam", "matrix", "nalgebra", "rand", "rkyv", "serde", "std"]
 all-nostd = ["glam", "matrix", "nalgebra", "rand", "rkyv", "serde"]

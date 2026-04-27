@@ -1,3 +1,4 @@
+use core::mem::MaybeUninit;
 use core::ops::Mul;
 
 #[cfg(feature = "glam")]
@@ -8,6 +9,7 @@ use nalgebra::SMatrix;
 
 #[doc(inline)]
 use crate::matrix::generic::GMatrix;
+use crate::quat::Quat;
 use crate::vec3d::Vec3d;
 
 /// A generic 2d matrix of width R and height C
@@ -41,6 +43,51 @@ impl Matrix<1, 3> {
     }
 }
 
+impl Matrix<4, 1> {
+    /// Convert a 4x1 matrix into a Quat, the real component is assumed to be first
+    pub fn to_quat(&self) -> Quat {
+        Quat {
+            w: self.values[0],
+            i: self.values[1],
+            j: self.values[2],
+            k: self.values[3]
+        }
+    }
+
+    /// Convert a 4x1 matrix into a Quat, the real component is last
+    pub fn to_quat_last(&self) -> Quat {
+        Quat {
+            w: self.values[3],
+            i: self.values[0],
+            j: self.values[1],
+            k: self.values[2]
+        }
+    }
+}
+
+impl Matrix<1, 4> {
+    // TODO: could be zerocopy
+    /// Convert a 1x4 matrix into a Quat, the real component is assumed to be first
+    pub fn to_quat(&self) -> Quat {
+        Quat {
+            w: self.values[0],
+            i: self.values[1],
+            j: self.values[2],
+            k: self.values[3]
+        }
+    }
+
+    /// Convert a 4x1 matrix into a Quat, the real component is last
+    pub fn to_quat_last(&self) -> Quat {
+        Quat {
+            w: self.values[3],
+            i: self.values[0],
+            j: self.values[1],
+            k: self.values[2]
+        }
+    }
+}
+
 impl<const R: usize, const C: usize, const U: usize> Mul<Matrix<U, C>> for Matrix<R, U>
 where
     [f64; R * C]: Sized,
@@ -50,9 +97,9 @@ where
     type Output = Matrix<R, C>;
 
     fn mul(self, rhs: Matrix<U, C>) -> Self::Output {
-        let mut result = Matrix::<R, C>::zeros();
-        // Safety: dgemm is an unsafe function
+        // Safety: dgemm is an unsafe function and allows C to be uninit when beta is 0.0
         unsafe {
+            let mut result_values: [MaybeUninit<f64>; R * C] = MaybeUninit::uninit().into();
             dgemm(
                 R,
                 U,
@@ -65,12 +112,14 @@ where
                 C.cast_signed(),
                 1,
                 0.0,
-                result.values.as_mut_ptr(),
+                result_values.as_mut_ptr().cast::<f64>(),
                 C.cast_signed(),
                 1
             );
+            Matrix {
+                values: core::mem::transmute_copy(&result_values)
+            }
         }
-        result
     }
 }
 
@@ -137,7 +186,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use assert_float_eq::assert_f64_near;
+    use assert_float_eq::{assert_f64_near, assert_float_absolute_eq};
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -170,6 +219,33 @@ mod tests {
         assert_f64_near!(vec_from_row.x, 4.0);
         assert_f64_near!(vec_from_row.y, 5.0);
         assert_f64_near!(vec_from_row.z, 6.0);
+    }
+
+    #[test]
+    fn test_largest_eigenvector_basic() {
+        let matrix = Matrix::<2, 2> {
+            values: [2.0, 0.0, 0.0, 1.0]
+        };
+
+        let iterations = 100;
+        let eigenvector = matrix.largest_eigenvector(iterations).values;
+
+        assert_f64_near!(eigenvector[0], 1.0, 32);
+        assert_float_absolute_eq!(eigenvector[1], 0.0, 1e-12);
+    }
+
+    #[test]
+    fn test_largest_eigenvector_symmetric() {
+        let matrix = Matrix::<2, 2> {
+            values: [2.0, 1.0, 1.0, 2.0]
+        };
+
+        let iterations = 20;
+        let eigenvector = matrix.largest_eigenvector(iterations).values;
+
+        let expected = 0.5f64.sqrt();
+        assert_f64_near!(eigenvector[0], expected);
+        assert_f64_near!(eigenvector[1], expected);
     }
 
     #[test]

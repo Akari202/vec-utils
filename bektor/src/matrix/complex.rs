@@ -69,6 +69,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use assert_float_eq::assert_float_absolute_eq;
     use pretty_assertions::assert_eq;
 
     use super::*;
@@ -114,5 +115,25 @@ mod tests {
         let zero_mat = CMatrix3x3::zeros();
         let result = a * zero_mat;
         assert_eq!(result, zero_mat);
+    }
+
+    #[test]
+    fn test_largest_eigenvector_complex_basic() {
+        let matrix = CMatrix::<2, 2> {
+            values: [
+                Complex::new(2.0, 0.0),
+                Complex::new(0.0, 0.0),
+                Complex::new(0.0, 0.0),
+                Complex::new(1.0, 0.0)
+            ]
+        };
+
+        let epsilon = 1e-9;
+        let eigenvector = matrix.largest_eigenvector(30).values;
+
+        assert_float_absolute_eq!(eigenvector[0].real, 1.0, epsilon);
+        assert_float_absolute_eq!(eigenvector[0].imaginary, 0.0, epsilon);
+        assert_float_absolute_eq!(eigenvector[1].real, 0.0, epsilon);
+        assert_float_absolute_eq!(eigenvector[1].imaginary, 0.0, epsilon);
     }
 }

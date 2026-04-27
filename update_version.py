@@ -2,6 +2,7 @@ VERSION = "0.3.2"
 
 locations = [
     "./bektor/Cargo.toml",
+    "./benchmarks/Cargo.toml",
     "./vec-utils-py/Cargo.toml",
     "./vec-utils-py/pyproject.toml",
 ]

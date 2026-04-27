@@ -1,10 +1,10 @@
 # Vec-Utils / Bektor
 
-![Crates.io Version](https://img.shields.io/crates/v/bektor)
-![PyPI - Version](https://img.shields.io/pypi/v/vec-utils-py)
-![docs.rs](https://img.shields.io/docsrs/bektor)
+![Crates.io Version](https://img.shields.io/crates/v/bektor?link=https%3A%2F%2Fcrates.io%2Fcrates%2Fbektor)
+![PyPI - Version](https://img.shields.io/pypi/v/vec-utils-py?link=https%3A%2F%2Fpypi.org%2Fproject%2Fvec-utils-py%2F)
+![docs.rs](https://img.shields.io/docsrs/bektor?link=https%3A%2F%2Fdocs.rs%2Fbektor%2F0.3.2%2Fbektor%2F)
 
-A Rust crate for 3D vector math, quaternions, geometry, complex numbers, and angles. Built for simplicity and correctness over raw performance. Optimizations are planned. Python bindings are also available for much of the library.
+A Rust crate for 3D vector math, quaternions, geometry, complex numbers, and angles. Python bindings are also available for much of the library.
 
 - `f64` precision
 - Many matrix operations are zero copy and generic
@@ -23,11 +23,9 @@ A Rust crate for 3D vector math, quaternions, geometry, complex numbers, and ang
 - `complex`: Complex numbers
 - `angle`: Angles in degrees and radians
 
-## Crate Features
+## Features
 
 - `std`: standard library support across all active dependencies (default)
-- `all-nostd`: all crate features excluding `std`
-- `all`: all crate features
 - `matrix`: matrix multiplicaiton and other operations, still missing a lot of features
 - `rand`: Random generation of types (default)
 - `nalgebra`: interop with `nalgebra` types
@@ -35,7 +33,7 @@ A Rust crate for 3D vector math, quaternions, geometry, complex numbers, and ang
 - `rkyv`: zero-copy serialization
 - `serde`: serialization/deserialization
 
-Unless any features are enabled only `libm`, `thiserror`, and `rand` are depended on.
+The only base dependencies are `libm`, `thiserror`
 
 ## License
 

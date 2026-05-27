@@ -3,18 +3,13 @@
   title: "Quaternion Algrebra",
   bib: true,
   header-center: "Quaternions",
+  show-title: true,
   numbering: (equation: true, section: true),
 )
 
 #let ab(body) = {
   math.arrow(math.bold(body))
 }
-
-#metadata("title") <titlepage>
-#align(center)[#title()\ #author \ #datetime.today().display("[month repr:long] [day], [year]")]\
-#line(length: 100%)\
-#outline(depth: 2)
-#pagebreak()
 
 = Overview
 A quaternion is given to be
@@ -249,9 +244,6 @@ errors@wu2019@sarabandi2019@markley2008.
 === Shepperd's algorithm @shepherd1978
 #todo
 
-=== Bar-Itzhack's algorithm @baritzhack2000
-#todo
-
 === Markley's algorithm @markley2008
 $
   a & = cases(
@@ -287,7 +279,13 @@ $<eq:sarabandi>
 A suitable $eta$ value
 #todo
 
+=== Bar-Itzhack's algorithm @baritzhack2000
+The previous methods are all solutions
+#todo
+
 === Wu's algorithm @wu2019
+Wu's algorithm is an improvement on Bar-Itzhack's method that aims to maintain continuity across
+multiple rotations.
 #todo
 
 == Interpolation

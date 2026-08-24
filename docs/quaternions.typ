@@ -3,6 +3,7 @@
   title: "Quaternion Algrebra",
   bib: true,
   header-center: "Quaternions",
+  description: "Notes on quaternion algebra",
   show-title: true,
   numbering: (equation: true, section: true),
 )

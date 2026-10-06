@@ -1,30 +1,22 @@
 [project]
 name = "vec-utils-py"
 version = "0.3.2"
-requires-python = ">=3.9"
-authors = [
-  { name="Akari202", email="akaritwo0two@gmail.com" }
-]
 description = "A simple vector operations library"
 readme = "README.md"
-classifiers = [
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Rust",
-    "Topic :: Scientific/Engineering :: Mathematics",
-    "Operating System :: OS Independent"
-]
+requires-python = ">=3.9"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
+authors = [{ name = "Akari202", email = "akaritwo0two@gmail.com" }]
+classifiers = [
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Rust",
+  "Topic :: Scientific/Engineering :: Mathematics"
+]
 
 [project.urls]
 GitHub = "https://github.com/Akari202/vec-utils"
 Issues = "https://github.com/Akari202/vec-utils/issues"
-
-[tool.pyrefly.errors]
-bad-override = "ignore"
-missing-import = "ignore"
-unsupported-operation = "ignore"
-missing-module-attribute = "ignore"
 
 [build-system]
 requires = ["maturin>=1.0, <2.0"]
@@ -39,12 +31,18 @@ reportIncompatibleMethodOverride = "none"
 reportMissingImports = "none"
 ignore = ["tests/vec_list.py"]
 
+[tool.pyrefly]
+infer-with-first-use = false
+
+[tool.pyrefly.errors]
+bad-override = "ignore"
+missing-import = "ignore"
+unsupported-operation = "ignore"
+missing-module-attribute = "ignore"
+
 [tool.pyright]
 typeCheckingMode = "strict"
 reportImplicitOverride = "none"
 reportIncompatibleMethodOverride = "none"
 reportMissingImports = "none"
 ignore = ["tests/vec_list.py"]
-
-[tool.pyrefly]
-infer-with-first-use = false

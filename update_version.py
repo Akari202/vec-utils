@@ -1,3 +1,5 @@
+import re
+
 VERSION = "0.3.2"
 
 locations = [
@@ -18,3 +20,18 @@ for i in locations:
     with open(i, "w", encoding="utf-8", newline="\n") as file:
         file.writelines(data)
     print(f"{i} version updated")
+
+flake_path = "./flake.nix"
+with open(flake_path, "r", encoding="utf-8") as file:
+    content = file.read()
+
+updated_content = re.sub(
+    r'(version\s*=\s*")[^"]+(";)',
+    rf"\g<1>{VERSION}\g<2>",
+    content,
+)
+
+with open(flake_path, "w", encoding="utf-8", newline="\n") as file:
+    _ = file.write(updated_content)
+
+print(f"{flake_path} version updated")

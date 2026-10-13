@@ -183,6 +183,12 @@ impl AngleRadians {
         }
     }
 
+    pub fn __rmul__(&self, lhs: f64) -> AngleRadians {
+        AngleRadians {
+            inner: self.inner * lhs
+        }
+    }
+
     pub fn __truediv__(&self, rhs: f64) -> AngleRadians {
         AngleRadians {
             inner: self.inner / rhs

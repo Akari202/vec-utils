@@ -89,17 +89,13 @@ impl Matrix<1, 4> {
 }
 
 impl<const R: usize, const C: usize, const U: usize> Mul<Matrix<U, C>> for Matrix<R, U>
-where
-    [f64; R * C]: Sized,
-    [f64; R * U]: Sized,
-    [f64; U * C]: Sized
 {
     type Output = Matrix<R, C>;
 
     fn mul(self, rhs: Matrix<U, C>) -> Self::Output {
         // Safety: dgemm is an unsafe function and allows C to be uninit when beta is 0.0
         unsafe {
-            let mut result_values: [MaybeUninit<f64>; R * C] = MaybeUninit::uninit().into();
+            let mut result_values: [MaybeUninit<f64>; Self::LEN] = MaybeUninit::uninit().into();
             dgemm(
                 R,
                 U,
@@ -124,8 +120,6 @@ where
 }
 
 impl<const R: usize, const C: usize> PartialEq for Matrix<R, C>
-where
-    [f64; R * C]: Sized
 {
     fn eq(&self, other: &Self) -> bool {
         self.values
@@ -177,7 +171,6 @@ impl PartialEq<DMat3> for Matrix3x3 {
 impl<const R: usize, const C: usize, T> PartialEq<SMatrix<T, R, C>> for GMatrix<R, C, T>
 where
     T: nalgebra::Scalar + PartialEq + Copy,
-    [T; R * C]: Sized
 {
     fn eq(&self, other: &SMatrix<T, R, C>) -> bool {
         (0..R).all(|r| (0..C).all(|c| self[[r, c]] == other[(r, c)]))

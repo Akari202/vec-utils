@@ -29,11 +29,13 @@ pub struct Complex {
 
 impl Complex {
     /// Create a new complex number
+    #[inline]
     pub fn new(real: f64, imaginary: f64) -> Complex {
         Complex { real, imaginary }
     }
 
     /// Create a new complex number from the square root of a real number
+    #[inline]
     pub fn from_sqrt(num: f64) -> Complex {
         if num < 0.0 {
             #[cfg(not(feature = "std"))]
@@ -48,11 +50,13 @@ impl Complex {
     }
 
     /// Get the magnitude of the complex number
+    #[inline]
     pub fn magnitude(&self) -> f64 {
         return core::f64::math::sqrt(self.real * self.real + self.imaginary * self.imaginary);
     }
 
     /// Calculates the square root of the complex number
+    #[inline]
     pub fn sqrt(&self) -> Complex {
         let magnitude = self.magnitude();
         let real = core::f64::math::sqrt((magnitude + self.real) / 2.0);
@@ -62,6 +66,7 @@ impl Complex {
     }
 
     /// Get the conjugate of the complex number
+    #[inline]
     pub fn conjugate(&self) -> Complex {
         Complex {
             real: self.real,

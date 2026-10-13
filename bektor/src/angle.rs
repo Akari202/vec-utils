@@ -43,46 +43,55 @@ impl AngleRadians {
     }
 
     /// Get 0
+    #[inline]
     pub fn zero() -> Self {
         Self::new(0.0)
     }
 
     /// Get 2pi
+    #[inline]
     pub fn two_pi() -> Self {
         Self::tau()
     }
 
     /// Get tau (2pi)
+    #[inline]
     pub fn tau() -> Self {
         Self::new(TAU)
     }
 
     /// Get pi
+    #[inline]
     pub fn pi() -> Self {
         Self::new(PI)
     }
 
     /// Get pi/2
+    #[inline]
     pub fn half_pi() -> Self {
         Self::new(PI / 2.0)
     }
 
     /// Get pi/4
+    #[inline]
     pub fn quarter_pi() -> Self {
         Self::new(PI / 4.0)
     }
 
     /// Get pi/3
+    #[inline]
     pub fn third_pi() -> Self {
         Self::new(PI / 3.0)
     }
 
     /// Get pi/6
+    #[inline]
     pub fn sixth_pi() -> Self {
         Self::new(PI / 6.0)
     }
 
     /// Get the sine of the angle
+    #[inline]
     pub fn sin(&self) -> f64 {
         #[cfg(not(feature = "std"))]
         return libm::sin(self.angle);
@@ -91,6 +100,7 @@ impl AngleRadians {
     }
 
     /// Get the cosine of the angle
+    #[inline]
     pub fn cos(&self) -> f64 {
         #[cfg(not(feature = "std"))]
         return libm::cos(self.angle);
@@ -99,6 +109,7 @@ impl AngleRadians {
     }
 
     /// Get the tangent of the angle
+    #[inline]
     pub fn tan(&self) -> f64 {
         #[cfg(not(feature = "std"))]
         return libm::tan(self.angle);
@@ -107,37 +118,44 @@ impl AngleRadians {
     }
 
     /// Get the secant of the angle
+    #[inline]
     pub fn sec(&self) -> f64 {
         1.0 / self.cos()
     }
 
     /// Get the cosecant of the angle
+    #[inline]
     pub fn csc(&self) -> f64 {
         1.0 / self.sin()
     }
 
     /// Get the cotangent of the angle
+    #[inline]
     pub fn cot(&self) -> f64 {
         1.0 / self.tan()
     }
 
     /// Get the angle in degrees
+    #[inline]
     pub fn to_degrees(&self) -> AngleDegrees {
         self.into()
     }
 
     /// Create a new angle from degrees
+    #[inline]
     pub fn from_degrees(angle: AngleDegrees) -> Self {
         angle.into()
     }
 
     /// Takes the mod of the angle
     /// "wraps" the angle around back to zero
+    #[inline]
     pub fn wrap(&self) -> Self {
         self % Self::two_pi()
     }
 
     /// The absolute value of the angle
+    #[inline]
     pub fn abs(&self) -> Self {
         AngleRadians {
             angle: self.angle.abs()
@@ -147,57 +165,68 @@ impl AngleRadians {
 
 impl AngleDegrees {
     /// Create a new angle in degrees
+    #[inline]
     pub fn new(angle: f64) -> Self {
         Self { angle }
     }
 
     /// Get the sine of the angle
+    #[inline]
     pub fn sin(&self) -> f64 {
         AngleRadians::from_degrees(AngleDegrees::new(self.angle)).sin()
     }
 
     /// Get the cosine of the angle
+    #[inline]
     pub fn cos(&self) -> f64 {
         AngleRadians::from_degrees(AngleDegrees::new(self.angle)).cos()
     }
 
     /// Get the tangent of the angle
+    #[inline]
     pub fn tan(&self) -> f64 {
         AngleRadians::from_degrees(AngleDegrees::new(self.angle)).tan()
     }
 
     /// Get the secant of the angle
+    #[inline]
     pub fn sec(&self) -> f64 {
         1.0 / self.cos()
     }
 
     /// Get the cosecant of the angle
+    #[inline]
     pub fn csc(&self) -> f64 {
         1.0 / self.sin()
     }
 
     /// Get the cotangent of the angle
+    #[inline]
     pub fn cot(&self) -> f64 {
         1.0 / self.tan()
     }
 
     /// Get the angle in radians
+    #[inline]
     pub fn to_radians(&self) -> AngleRadians {
         self.into()
     }
 
     /// Create a new angle from radians
+    #[inline]
     pub fn from_radians(angle: AngleRadians) -> Self {
         angle.into()
     }
 
     /// Takes the mod of the angle
     /// "wraps" the angle around back to zero
+    #[inline]
     pub fn wrap(&self) -> Self {
         self % Self::from_radians(AngleRadians::two_pi())
     }
 
     /// The absolute value of the angle
+    #[inline]
     pub fn abs(&self) -> Self {
         AngleDegrees {
             angle: self.angle.abs()

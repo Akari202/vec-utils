@@ -47,12 +47,14 @@ pub struct Quat {
 
 impl Quat {
     /// Create a new quaternion
+    #[inline]
     pub fn new(w: f64, i: f64, j: f64, k: f64) -> Quat {
         Quat { w, i, j, k }
     }
 
     /// Create a new identity quaternion
     /// i.e. a quaternion with a real component of 1 and imaginary components of 0
+    #[inline]
     pub fn identity() -> Quat {
         Quat {
             w: 1.0,
@@ -66,6 +68,7 @@ impl Quat {
     /// the slice should have a length of 4
     /// any additional elements will be ignored
     /// ordering of [w, x, y, z] is assumed
+    #[inline]
     pub fn from_slice(v: &[f64]) -> Quat {
         Quat {
             w: v[0],
@@ -77,6 +80,7 @@ impl Quat {
 
     /// Convert the Quat to a Vec of f64 with length 4
     /// ordering of [w, x, y, z] is assumed
+    #[inline]
     #[cfg(feature = "std")]
     pub fn to_vec(&self) -> Vec<f64> {
         vec![self.w, self.i, self.j, self.k]
@@ -84,6 +88,7 @@ impl Quat {
 
     /// Convert the Quat to a array of f64 with length 4
     /// ordering of [w, x, y, z] is assumed
+    #[inline]
     pub fn to_array(&self) -> [f64; 4] {
         [self.w, self.i, self.j, self.k]
     }
@@ -91,6 +96,7 @@ impl Quat {
     /// Create a quaternion from a Vec3d
     /// the x, y, and z components of the vector are used as the imaginary components of the quaternion
     /// the real component of the quaternion is set to 0
+    #[inline]
     pub fn from_vec3d(v: &Vec3d) -> Quat {
         Quat {
             w: 0.0,
@@ -103,6 +109,7 @@ impl Quat {
     /// Convert the quaternion to a vec3d
     /// the real component of the quaternion is discarded
     /// the imaginary components of the quaternion are used as the vector components
+    #[inline]
     pub fn to_vec3d(&self) -> Vec3d {
         Vec3d::new(self.i, self.j, self.k)
     }
@@ -110,6 +117,7 @@ impl Quat {
     /// Create a quaternion from a f64
     /// the real component of the quaternion is set to the float
     /// the imaginary components are set to 0
+    #[inline]
     pub fn from_f64(num: f64) -> Quat {
         Quat {
             w: num,
@@ -121,6 +129,7 @@ impl Quat {
 
     /// Convert the quaternion to a f64
     /// extracts the real component the imaginary part is discarded
+    #[inline]
     pub fn to_f64(&self) -> f64 {
         self.w
     }
@@ -385,6 +394,7 @@ impl Quat {
 
     /// Calculate the conjugate of the quaternion
     /// i.e. the quaternion with the same real component and negated imaginary components
+    #[inline]
     pub fn conjugate(&self) -> Quat {
         Quat {
             w: self.w,
@@ -396,6 +406,7 @@ impl Quat {
 
     /// Calculate the multiplicative inverse of the quaternion
     /// q^-1 = q^* / ||q||^2
+    #[inline]
     pub fn inverse(&self) -> Quat {
         let denom = self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k;
         Quat {
@@ -415,6 +426,7 @@ impl Quat {
 
     /// Calculate the norm of the quaternion
     /// sometimes called the magnitude
+    #[inline]
     pub fn norm(&self) -> f64 {
         return core::f64::math::sqrt(
             self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k
@@ -422,6 +434,7 @@ impl Quat {
     }
 
     /// Return a new Quat of the normalized quaternion
+    #[inline]
     pub fn normalize(&self) -> Quat {
         let magnitude = self.norm();
         Quat {
@@ -433,11 +446,13 @@ impl Quat {
     }
 
     /// Check if the quaternion is a unit quaternion
+    #[inline]
     pub fn is_unit(&self) -> bool {
         (self.norm() - 1.0).abs() < f64::EPSILON
     }
 
     /// Calculates the dot, or inner, product of two quaternions
+    #[inline]
     pub fn dot(&self, other: &Quat) -> f64 {
         self.w * other.w + self.i * other.i + self.j * other.j + self.k * other.k
     }
@@ -591,15 +606,17 @@ pub enum QuatFromMatrixAlgorithm<'a> {
 }
 
 #[cfg(feature = "matrix")]
-impl QuatFromMatrixAlgorithm<'_> {
+impl<'a> QuatFromMatrixAlgorithm<'a> {
     /// An array of all algorithm variations
-    pub const ALL: [Self; 5] = [
-        Self::Shepherd,
-        Self::SarabandiThomas,
-        Self::Markley,
-        Self::Wu(None),
-        Self::BarItzhack
-    ];
+    pub fn all() -> [Self; 5] {
+        [
+            Self::Shepherd,
+            Self::SarabandiThomas,
+            Self::Markley,
+            Self::Wu(None),
+            Self::BarItzhack,
+        ]
+    }
 }
 
 #[cfg(feature = "matrix")]
@@ -740,7 +757,9 @@ impl Distribution<Quat> for StandardUniform {
 
 #[cfg(test)]
 mod tests {
-    use assert_float_eq::{assert_f64_near, assert_float_absolute_eq};
+    use assert_float_eq::assert_f64_near;
+    #[cfg(feature = "matrix")]
+    use assert_float_eq::assert_float_absolute_eq;
     use pretty_assertions::assert_eq;
     #[cfg(feature = "rand")]
     use rand::SeedableRng;
@@ -777,7 +796,7 @@ mod tests {
     #[cfg(feature = "matrix")]
     fn test_from_rotation_matrix() {
         let m = Matrix3x3::from_nested_arr([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]]);
-        for i in QuatFromMatrixAlgorithm::ALL {
+        for i in QuatFromMatrixAlgorithm::all() {
             let q = Quat::from_rotation_matrix(&m, i);
             for (j, k) in q.to_array().into_iter().zip([1.0, 0.0, 0.0, 0.0]) {
                 assert_float_absolute_eq!(j, k, 1e-9);
@@ -794,7 +813,7 @@ mod tests {
             let original = Quat::random_unit(&mut rng);
             let m = original.to_rotation_matrix();
 
-            for i in QuatFromMatrixAlgorithm::ALL {
+            for i in QuatFromMatrixAlgorithm::all() {
                 let q = Quat::from_rotation_matrix(&m, i);
                 let dot_original = q.dot(&original).abs();
                 let dot_inverse = q.dot(&original.inverse()).abs();
@@ -953,7 +972,7 @@ mod tests {
     fn test_angular_distance() {
         let q1 = Quat::new(1.0, 0.0, 0.0, 0.0);
         let q2 = Quat::from_axis_angle(&Vec3d::k(), AngleRadians::half_pi());
-        assert_eq!(q1.angular_distance(&q2), AngleRadians::half_pi());
+        assert_f64_near!(q1.angular_distance(&q2).angle, AngleRadians::half_pi().angle);
     }
 
     #[test]

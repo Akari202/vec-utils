@@ -1,6 +1,6 @@
 [package]
 name = "bektor"
-version = "0.3.2"
+version = "0.3.3"
 edition = "2024"
 authors = ["Akari Harada <akaritwo0two@gmail.com>"]
 license = "GPL-3.0-only"
@@ -22,16 +22,16 @@ name = "matrix_math"
 required-features = ["matrix", "std"]
 
 [dependencies]
-glam = { version = "0.32.1", default-features = false, features = ["nostd-libm"], optional = true }
+glam = { version = "0.34.1", default-features = false, features = ["nostd-libm"], optional = true }
 libm = { version = "0.2.16" }
-matrixmultiply = { version = "0.3.10", default-features = false, features = [
+matrixmultiply = { version = "0.3.11", default-features = false, features = [
   "cgemm"
 ], optional = true }
-nalgebra = { version = "0.34.2", default-features = false, features = ["libm"], optional = true }
-rand = { version = "0.10.1", default-features = false, optional = true }
-rkyv = { version = "0.8.16", default-features = false, features = ["bytecheck"], optional = true }
-serde = { version = "1.0.219", default-features = false, features = ["derive"], optional = true }
-thiserror = { version = "2.0.17", default-features = false }
+nalgebra = { version = "0.35.0", default-features = false, features = ["libm"], optional = true }
+rand = { version = "0.10.3", default-features = false, optional = true }
+rkyv = { version = "0.8.18", default-features = false, features = ["bytecheck"], optional = true }
+serde = { version = "1.0.229", default-features = false, features = ["derive"], optional = true }
+thiserror = { version = "2.0.21", default-features = false, optional = true }
 
 [dev-dependencies]
 assert_float_eq = "1.2.0"
@@ -49,11 +49,12 @@ rand = ["dep:rand"]
 rkyv = ["dep:rkyv"]
 serde = ["dep:serde"]
 std = [
+  "dep:thiserror",
   "glam?/std",
   "matrixmultiply?/std",
   "nalgebra?/std",
   "rand?/std",
   "rkyv?/std",
   "serde?/std",
-  "thiserror/std"
+  "thiserror?/std"
 ]

@@ -1,5 +1,3 @@
-use core::f64;
-
 use thiserror::Error;
 
 use crate::geometry::circle::Circle;

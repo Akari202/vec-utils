@@ -967,6 +967,15 @@ class VecList:
         """
         ...
 
+    def get_centroid(self, axis: int) -> tuple[Vec3d, float]:
+        """
+        Uses the shoelace formula to find the centroid of an enclosed shape.
+
+        :param axis: The axis to collapse along (0 for x, 1 for y, 2 for z).
+        :return: A tuple with the centroid Vec3d and the enclosed area.
+        """
+        ...
+
     def distance_to(self, other: "Vec3d") -> list[float]:
         """
         Calculates the distance from each vector in the list to another vector.

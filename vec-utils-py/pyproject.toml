@@ -1,6 +1,6 @@
 [project]
 name = "vec-utils-py"
-version = "0.3.2"
+version = "0.3.3"
 description = "A simple vector operations library"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -39,10 +39,3 @@ bad-override = "ignore"
 missing-import = "ignore"
 unsupported-operation = "ignore"
 missing-module-attribute = "ignore"
-
-[tool.pyright]
-typeCheckingMode = "strict"
-reportImplicitOverride = "none"
-reportIncompatibleMethodOverride = "none"
-reportMissingImports = "none"
-ignore = ["tests/vec_list.py"]

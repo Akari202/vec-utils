@@ -21,10 +21,8 @@ use crate::matrix::traits::{Fourable, Oneable, Signed, Twoable, Zeroable};
 /// stored in row major order
 #[derive(Debug, Copy, Clone)]
 pub struct GMatrix<const R: usize, const C: usize, T>
-where
-    [T; R * C]: Sized
 {
-    pub(crate) values: [T; R * C]
+    pub(crate) values: [T; Self::LEN]
 }
 
 /// An alias for 2x2 matracies
@@ -33,8 +31,20 @@ pub type GMatrix2x2<T> = GMatrix<2, 2, T>;
 pub type GMatrix3x3<T> = GMatrix<3, 3, T>;
 
 impl<const R: usize, const C: usize, T> GMatrix<R, C, T>
+{
+    /// The total matrix element count
+    pub const LEN: usize = R * C;
+    const RMINUS: usize = R - 1;
+    const CMINUS: usize = C - 1;
+    const IS_2X2: bool = R == 2 && C == 2;
+    const IS_3X3: bool = R == 3 && C == 3;
+    const IS_ONE_DIMM: bool = R == 1 || C == 1;
+    /// Is the matrix square or not
+    pub const IS_SQUARE: bool = R == C;
+}
+
+impl<const R: usize, const C: usize, T> GMatrix<R, C, T>
 where
-    [T; R * C]: Sized,
     T: Debug
         + Oneable
         + Zeroable
@@ -51,12 +61,6 @@ where
         + Sub<Output = T>
         + Add<Output = T>
 {
-    const IS_2X2: bool = R == 2 && C == 2;
-    const IS_3X3: bool = R == 3 && C == 3;
-    const IS_ONE_DIMM: bool = R == 1 || C == 1;
-    /// Is the matrix square or not
-    pub const IS_SQUARE: bool = R == C;
-
     /// Create a matrix from nested vectors.
     /// # Panics
     /// A misshapen vector, i.e. one that's not of length C or that doesnt contain vectors of exclusively length R
@@ -64,7 +68,7 @@ where
     pub fn from_nested_vec(values: Vec<Vec<T>>) -> Self {
         let flattened: Vec<T> = values.into_iter().flatten().collect();
         dbg!(flattened.len());
-        let values: [T; R * C] = flattened
+        let values: [T; Self::LEN] = flattened
             .try_into()
             .expect("Input dimensions do not match Matrix size R * C");
         Self { values }
@@ -72,9 +76,9 @@ where
 
     /// Create a matrix from nested arrays.
     pub fn from_nested_arr(values: [[T; C]; R]) -> Self {
-        // Safety: [[T; C]; R] and [T; R * C] have the exact same memory layout
+        // Safety: [[T; C]; R] and [T; Self::LEN] have the exact same memory layout
         let flat_values = unsafe {
-            let ptr = (&raw const values).cast::<[T; R * C]>();
+            let ptr = (&raw const values).cast::<[T; Self::LEN]>();
             core::ptr::read(ptr)
         };
 
@@ -87,7 +91,7 @@ where
 
     /// Convert a matrix into nested arrays.
     pub fn to_nested_arr(&self) -> [[T; C]; R] {
-        // Safety: [[T; C]; R] and [T; R * C] have the exact same memory layout
+        // Safety: [[T; C]; R] and [T; Self::LEN] have the exact same memory layout
         let nested_values = unsafe {
             let ptr = (&raw const self.values).cast::<[[T; C]; R]>();
             core::ptr::read(ptr)
@@ -99,21 +103,21 @@ where
     }
 
     /// Create a matrix from a given row major array
-    pub fn from_flat_arr(values: [T; R * C]) -> Self {
+    pub fn from_flat_arr(values: [T; Self::LEN]) -> Self {
         Self { values }
     }
 
     /// Create a matrix filled with zeros
     pub fn zeros() -> Self {
         Self {
-            values: [T::zero(); R * C]
+            values: [T::zero(); Self::LEN]
         }
     }
 
     /// Create a matrix filled with ones
     pub fn ones() -> Self {
         Self {
-            values: [T::one(); R * C]
+            values: [T::one(); Self::LEN]
         }
     }
 
@@ -319,8 +323,6 @@ where
         row_to_skip: usize,
         col_to_skip: usize
     ) -> GMatrix<ROUT, COUT, T>
-    where
-        [T; ROUT * COUT]: Sized
     {
         assert_eq!(ROUT, R - 1, "Wrong sized generics. Output rows must be R-1");
         assert_eq!(
@@ -329,7 +331,7 @@ where
             "Wrong sized generics. Output columns must be C-1"
         );
 
-        let mut sub_values = [T::zero(); ROUT * COUT];
+        let mut sub_values = vec![T::zero(); ROUT * COUT];
         let mut sub_idx = 0;
 
         for r in 0..R {
@@ -345,15 +347,17 @@ where
             }
         }
 
+        let sub_values = sub_values
+            .try_into()
+            .unwrap_or_else(|_| panic!("Mismatch during submatrix conversion"));
+
         GMatrix { values: sub_values }
     }
 
     /// Calculates the cofactor of the matrix at the provided row and column
     pub fn cofactor(&self, row: usize, col: usize) -> T
-    where
-        [T; (R - 1) * (C - 1)]: Sized
     {
-        let sub = self.get_minor_submatrix::<{ R - 1 }, { C - 1 }>(row, col);
+        let sub = self.get_minor_submatrix::<{ Self::RMINUS }, { Self::CMINUS }>(row, col);
         let minor_det = sub.determinant();
 
         if (row + col).is_multiple_of(2) {
@@ -365,10 +369,8 @@ where
 
     /// Returns the full matrix of cofactors
     pub fn cofactor_matrix(&self) -> GMatrix<R, C, T>
-    where
-        [T; (R - 1) * (C - 1)]: Sized
     {
-        let mut cofactors = [T::zero(); R * C];
+        let mut cofactors = [T::zero(); Self::LEN];
         for r in 0..R {
             for c in 0..C {
                 cofactors[r * C + c] = self.cofactor(r, c);
@@ -381,8 +383,6 @@ where
     /// For matriacies with a dimension of 1 this is zerocopy.
     /// Otherwise it has to touch every value.
     pub fn transpose(&self) -> GMatrix<C, R, T>
-    where
-        [T; C * R]: Sized
     {
         if Self::IS_ONE_DIMM {
             // Safety: Both GMatrix<R, C, T> and GMatrix<C, R, T> have the same size and
@@ -395,31 +395,33 @@ where
             }
         } else {
             // TODO: implement blocking for bigger matracies
-            let mut output = [T::zero(); C * R];
+            let mut output = [T::zero(); Self::LEN];
             for row in 0..R {
                 for col in 0..C {
                     output[col * R + row] = self.values[row * C + col];
                 }
             }
-            GMatrix::<C, R, T> { values: output }
+            let result = GMatrix::<R, C, T> { values: output };
+            // Safety: Both GMatrix<R, C, T> and GMatrix<C, R, T> have the same size and
+            // both represent a contiguous strip of memory.
+            // transmute_copy is used to move the bits into the new type.
+            unsafe {
+                core::mem::transmute_copy::<Self, GMatrix<C, R, T>>(&result)
+            }
         }
     }
 
     /// Calculate the adjoint of a 3x3 matrix
     /// i.e. the transpose of the cofactor matrix
     pub fn adjoint(&self) -> GMatrix<C, R, T>
-    where
-        [T; (R - 1) * (C - 1)]: Sized,
-        [T; C * R]: Sized
     {
         self.cofactor_matrix().transpose()
     }
 }
 
+
 impl<const R: usize, T> GMatrix<R, R, T>
 where
-    [T; R * R]: Sized,
-    [T; R * 1]: Sized,
     GMatrix<R, R, T>: Mul<GMatrix<R, 1, T>, Output = GMatrix<R, 1, T>>,
     T: Debug
         + Oneable
@@ -453,8 +455,6 @@ where
 }
 
 impl<const R: usize, const C: usize, T> Index<[usize; 2]> for GMatrix<R, C, T>
-where
-    [T; R * C]: Sized
 {
     type Output = T;
 
@@ -469,8 +469,6 @@ where
 }
 
 impl<const R: usize, const C: usize, T> IndexMut<[usize; 2]> for GMatrix<R, C, T>
-where
-    [T; R * C]: Sized
 {
     fn index_mut(&mut self, idx: [usize; 2]) -> &mut Self::Output {
         let [row, col] = idx;
@@ -486,7 +484,6 @@ where
 impl<const R: usize, const C: usize, T> fmt::Display for GMatrix<R, C, T>
 where
     T: fmt::Display,
-    [T; R * C]: Sized
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let mut col_widths = vec![0; C];
@@ -521,7 +518,6 @@ where
 impl<const R: usize, const C: usize, T> From<GMatrix<R, C, T>> for SMatrix<T, R, C>
 where
     T: nalgebra::Scalar + Copy,
-    [T; R * C]: Sized
 {
     fn from(m: GMatrix<R, C, T>) -> Self {
         Self::from_row_slice(&m.values)
@@ -532,13 +528,12 @@ where
 impl<const R: usize, const C: usize, T> From<SMatrix<T, R, C>> for GMatrix<R, C, T>
 where
     T: nalgebra::Scalar + Copy,
-    [T; R * C]: Sized
 {
     fn from(m: SMatrix<T, R, C>) -> Self {
         // let mut values = [m.as_slice()[0]; R * C];
         // Safety: every element is explicitly written in the loop before self is constructed
         #[allow(clippy::uninit_assumed_init)]
-        let mut values = unsafe { core::mem::MaybeUninit::<[T; R * C]>::uninit().assume_init() };
+        let mut values = unsafe { core::mem::MaybeUninit::<[T; Self::LEN]>::uninit().assume_init() };
         for r in 0..R {
             for c in 0..C {
                 values[r * C + c] = m[(r, c)];
@@ -553,7 +548,6 @@ impl<const R: usize, const C: usize, T> Distribution<GMatrix<R, C, T>> for Stand
 where
     StandardUniform: Distribution<T>,
     T: Copy,
-    [T; R * C]: Sized
 {
     fn sample<Rng_: Rng + ?Sized>(&self, rng: &mut Rng_) -> GMatrix<R, C, T> {
         GMatrix {
@@ -740,7 +734,7 @@ mod tests {
         let expected = [4.0, 6.0, 7.0, 9.0];
 
         for (i, j) in sub.values.into_iter().zip(expected.into_iter()) {
-            assert_f64_near!(i, j);
+            assert_f64_near!(i.clone(), j.clone());
         }
     }
 
@@ -764,7 +758,7 @@ mod tests {
         let expected = [24.0, 5.0, -4.0, -12.0, 3.0, 2.0, -2.0, -5.0, 4.0];
 
         for (i, j) in cofactors.values.into_iter().zip(expected.into_iter()) {
-            assert_f64_near!(i, j);
+            assert_f64_near!(i.clone(), j.clone());
         }
     }
 
@@ -799,7 +793,7 @@ mod tests {
         let expected = [4.0, -2.0, -3.0, 1.0];
 
         for (i, j) in adj.values.into_iter().zip(expected.into_iter()) {
-            assert_f64_near!(i, j);
+            assert_f64_near!(i.clone(), j.clone());
         }
     }
 
@@ -813,7 +807,7 @@ mod tests {
         let expected = [-24.0, 18.0, 5.0, 20.0, -15.0, -4.0, -5.0, 4.0, 1.0];
 
         for (i, j) in adj.values.into_iter().zip(expected.into_iter()) {
-            assert_f64_near!(i, j);
+            assert_f64_near!(i.clone(), j.clone());
         }
     }
 
@@ -841,7 +835,7 @@ mod tests {
         let expected = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
 
         for (i, j) in adj.values.into_iter().zip(expected.into_iter()) {
-            assert_f64_near!(i, j);
+            assert_f64_near!(i.clone(), j.clone());
         }
     }
     #[test]

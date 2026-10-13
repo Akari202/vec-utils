@@ -39,7 +39,7 @@
     in {
       default = pkgs.python3Packages.buildPythonPackage {
         pname = "vec-utils-py";
-        version = "0.3.2";
+        version = "0.3.3";
         src = ./.;
         pyproject = true;
 
@@ -69,7 +69,7 @@
 
       crate = rustPlatform.buildRustPackage {
         pname = "bektor";
-        version = "0.3.2";
+        version = "0.3.3";
         src = ./.;
 
         cargoLock = {

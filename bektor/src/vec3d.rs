@@ -1,5 +1,5 @@
-use core::ops::{Add, Div, Index, Mul, Neg, Sub};
-use core::{f64, fmt};
+use core::ops::{Add, Div, Index, Mul, Neg, Sub, IndexMut};
+use core::fmt;
 #[cfg(feature = "std")]
 use std::vec::Vec;
 
@@ -39,11 +39,13 @@ pub struct Vec3d {
 
 impl Vec3d {
     /// Create a new Vec3d
+    #[inline]
     pub fn new(x: f64, y: f64, z: f64) -> Vec3d {
         Vec3d { x, y, z }
     }
 
     /// Create a new Vec3d from a start point to an end point
+    #[inline]
     pub fn new_from_to(from: &Vec3d, to: &Vec3d) -> Vec3d {
         Vec3d {
             x: to.x - from.x,
@@ -53,6 +55,7 @@ impl Vec3d {
     }
 
     /// Create a new Vec3d with all components set to 0
+    #[inline]
     pub fn zero() -> Vec3d {
         Vec3d {
             x: 0.0,
@@ -62,6 +65,7 @@ impl Vec3d {
     }
 
     /// Create a new Vec3d of the i unit vector
+    #[inline]
     pub fn i() -> Vec3d {
         Vec3d {
             x: 1.0,
@@ -71,6 +75,7 @@ impl Vec3d {
     }
 
     /// Create a new Vec3d of the j unit vector
+    #[inline]
     pub fn j() -> Vec3d {
         Vec3d {
             x: 0.0,
@@ -80,6 +85,7 @@ impl Vec3d {
     }
 
     /// Create a new Vec3d of the k unit vector
+    #[inline]
     pub fn k() -> Vec3d {
         Vec3d {
             x: 0.0,
@@ -91,6 +97,7 @@ impl Vec3d {
     /// Create a new Vec3d from a quaternion
     /// the imaginary components of the quaternion are used as the x, y, and z components of the vector
     /// the real component of the quaternion is ignored
+    #[inline]
     pub fn from_quat(q: &Quat) -> Vec3d {
         Vec3d {
             x: q.i,
@@ -100,6 +107,7 @@ impl Vec3d {
     }
 
     /// Convert the Vec3d to an array
+    #[inline]
     pub fn to_array(&self) -> [f64; 3] {
         [self.x, self.y, self.z]
     }
@@ -107,6 +115,7 @@ impl Vec3d {
     /// Convert the Vec3d to a quaternion
     /// the x, y, and z components of the vector are used as the imaginary components of the quaternion
     /// the real component of the quaternion is set to 0
+    #[inline]
     pub fn to_quat(&self) -> Quat {
         Quat {
             w: 0.0,
@@ -119,6 +128,7 @@ impl Vec3d {
     /// Create a new Vec3d from a slice of f64s
     /// the slice should have a length of 3
     /// any additional elements will be ignored
+    #[inline]
     pub fn from_slice(v: &[f64]) -> Vec3d {
         Vec3d {
             x: v[0],
@@ -128,12 +138,14 @@ impl Vec3d {
     }
 
     /// Convert the Vec3d to a Vec of f64 with length 3
+    #[inline]
     #[cfg(feature = "std")]
     pub fn to_vec(&self) -> Vec<f64> {
         vec![self.x, self.y, self.z]
     }
 
     /// Convert the Vec3d to a 1x3 matrix
+    #[inline]
     #[cfg(feature = "matrix")]
     pub fn to_hmatrix(&self) -> Matrix<1, 3> {
         Matrix::<1, 3> {
@@ -142,6 +154,7 @@ impl Vec3d {
     }
 
     /// Convert the Vec3d to a 3x1 matrix
+    #[inline]
     #[cfg(feature = "matrix")]
     pub fn to_vmatrix(&self) -> Matrix<3, 1> {
         Matrix::<3, 1> {
@@ -150,11 +163,13 @@ impl Vec3d {
     }
 
     /// Calculate the dot product of two Vec3d
+    #[inline]
     pub fn dot(&self, other: &Vec3d) -> f64 {
         self.x * other.x + self.y * other.y + self.z * other.z
     }
 
     /// Calculate the cross product of two Vec3d
+    #[inline]
     pub fn cross(&self, other: &Vec3d) -> Vec3d {
         Vec3d {
             x: self.y * other.z - self.z * other.y,
@@ -164,6 +179,7 @@ impl Vec3d {
     }
 
     /// Calculate the magnitude of the Vec3d
+    #[inline]
     pub fn magnitude(&self) -> f64 {
         #[cfg(not(feature = "std"))]
         return core::f64::math::sqrt(self.x * self.x + self.y * self.y + self.z * self.z);
@@ -172,11 +188,13 @@ impl Vec3d {
     }
 
     /// Check if the Vec3d is a unit vector
+    #[inline]
     pub fn is_unit(&self) -> bool {
         (self.magnitude() - 1.0).abs() < f64::EPSILON
     }
 
     /// Return a new Vec3d of the normalized vector
+    #[inline]
     pub fn normalize(&self) -> Vec3d {
         let magnitude = self.magnitude();
         Vec3d {
@@ -221,12 +239,14 @@ impl Vec3d {
 
     /// Calculate the squared distance to another Vec3d
     /// This avoids a sqrt operation while being similarly useful
+    #[inline]
     pub fn distance_squared(&self, other: &Vec3d) -> f64 {
         let between = self - other;
         between.x * between.x + between.y * between.y + between.z * between.z
     }
 
     /// Calculate the distance to another Vec3d
+    #[inline]
     pub fn distance_to(&self, other: &Vec3d) -> f64 {
         (self - other).magnitude()
     }
@@ -262,6 +282,7 @@ impl Vec3d {
     /// sets the axis to zero
     /// similar to `project_onto_plane` but might be faster
     /// returns self if the axis is out of range
+    #[inline]
     pub fn collapse(&self, axis: usize) -> Vec3d {
         match axis {
             0 => Vec3d {
@@ -346,11 +367,26 @@ impl Index<usize> for Vec3d {
     /// 0 is x, 1 is y, 2 is z
     /// # Panics
     /// if the index is out of bounds
-    fn index(&self, index: usize) -> &f64 {
+    fn index(&self, index: usize) -> &Self::Output {
         match index {
             0 => &self.x,
             1 => &self.y,
             2 => &self.z,
+            _ => panic!("Index out of bounds")
+        }
+    }
+}
+
+impl IndexMut<usize> for Vec3d {
+    /// Mutably index into a Vec3d
+    /// 0 is x, 1 is y, 2 is z
+    /// # Panics
+    /// if the index is out of bounds
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        match index {
+            0 => &mut self.x,
+            1 => &mut self.y,
+            2 => &mut self.z,
             _ => panic!("Index out of bounds")
         }
     }

@@ -14,19 +14,14 @@ pub type CMatrix2x2 = CMatrix<2, 2>;
 /// An alias for 3x3 matracies
 pub type CMatrix3x3 = CMatrix<3, 3>;
 
-impl<const R: usize, const C: usize> CMatrix<R, C> where [Complex; R * C]: Sized {}
 
 impl<const R: usize, const C: usize, const U: usize> Mul<CMatrix<U, C>> for CMatrix<R, U>
-where
-    [Complex; R * C]: Sized,
-    [Complex; R * U]: Sized,
-    [Complex; U * C]: Sized
 {
     type Output = CMatrix<R, C>;
 
     fn mul(self, rhs: CMatrix<U, C>) -> Self::Output {
         let mut result = CMatrix::<R, C>::zeros();
-        // Safety: [Complex; R * C] and [[f64; 2]; R * C] have the exact same memory layout. zgemm
+        // Safety: [Complex; Self::LEN] and [[f64; 2]; Self::LEN] have the exact same memory layout. zgemm
         // is an unsafe function.
         unsafe {
             let lhs_ptr = (&raw const self.values).cast::<[f64; 2]>();
@@ -56,8 +51,6 @@ where
 }
 
 impl<const R: usize, const C: usize> PartialEq for CMatrix<R, C>
-where
-    [Complex; R * C]: Sized
 {
     fn eq(&self, other: &Self) -> bool {
         self.values.iter().zip(other.values.iter()).all(|(a, b)| {

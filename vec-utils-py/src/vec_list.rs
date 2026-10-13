@@ -1,6 +1,7 @@
 use bektor::*;
 use pyo3::prelude::*;
 use rayon::prelude::*;
+use itertools::Itertools;
 
 use super::quat::Quat;
 use super::vec3d::Vec3d;
@@ -83,20 +84,29 @@ impl VecList {
         }
     }
 
-    // pub fn get_centroid(&self, axes: usize) -> (f64, f64) {
-    //     let mut all_axes = vec![0, 1, 2];
-    //     all_axes.remove(axes);
-    //     let axes = (all_axes[0], all_axes[1]);
-    //     self.list.iter()
-    //         .circular_tuple_windows()
-    //         .fold((0.0, 0.0), |acc, (i, j)| {
-    //             let step = i[axes.0] * j[axes.1] - j[axes.0] * i[axes.1];
-    //             (
-    //                 acc.0 + (i[axes.0] + j[axes.0]) * step,
-    //                 acc.1 + (i[axes.1] + j[axes.1]) * step
-    //             )
-    //         })
-    // }
+    pub fn get_centroid(&self, axes: usize) -> (Vec3d, f64) {
+        let mut all_axes = vec![0, 1, 2];
+        all_axes.remove(axes);
+        let axes = (all_axes[0], all_axes[1]);
+        let unscaled = self.list.iter()
+            .circular_tuple_windows()
+            .fold((vec3d::Vec3d::zero(), 0.0), |acc, (i, j)| {
+                let step = i[axes.0] * j[axes.1] - j[axes.0] * i[axes.1];
+                let mut new = vec3d::Vec3d::zero();
+                new[axes.0] = acc.0[axes.0] + (i[axes.0] + j[axes.0]) * step;
+                new[axes.1] = acc.0[axes.1] + (i[axes.1] + j[axes.1]) * step;
+                (
+                    new, acc.1 + step
+                )
+            });
+        (
+            Vec3d {
+inner: unscaled.0 / (3.0 * unscaled.1)
+            },
+            unscaled.1 * 0.5
+
+            )
+    }
 
     // pub fn angle_to(&self, other: &Vec3d) -> AngleRadians {
     //     AngleRadians {
@@ -131,7 +141,6 @@ impl VecList {
             .par_iter()
             .enumerate()
             .step_by(stride)
-            // .map(|(j, i)| (j, i.distance_to(&other.inner)))
             .map(|(j, i)| (j, i.distance_squared(&other.inner)))
             .min_by(|a, b| a.1.total_cmp(&b.1))
             .unwrap();
@@ -150,7 +159,6 @@ impl VecList {
         let (index, distance) = window
             .par_iter()
             .enumerate()
-            // .map(|(j, i)| (j, i.distance_to(&other.inner)))
             .map(|(j, i)| (j, i.distance_squared(&other.inner)))
             .min_by(|a, b| a.1.total_cmp(&b.1))
             .unwrap();

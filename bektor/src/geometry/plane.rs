@@ -1,5 +1,3 @@
-use core::f64;
-
 use crate::vec3d::Vec3d;
 
 /// A plane in 3D space

@@ -21,7 +21,6 @@
 #![cfg_attr(feature = "matrix", feature(generic_const_items))]
 #![cfg_attr(feature = "matrix", feature(adt_const_params))]
 #![cfg_attr(feature = "matrix", feature(inherent_associated_types))]
-#![cfg_attr(feature = "glam", feature(str_as_str))]
 #![cfg_attr(test, feature(test))]
 #![doc(test(attr(deny(dead_code))))]
 //! A crate for 3D vector, quaternion, geometry, and matrix operations

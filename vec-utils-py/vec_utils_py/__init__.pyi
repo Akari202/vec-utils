@@ -228,10 +228,16 @@ class Vec3d:
         """
         ...
 
-    @overload
+    def __eq__(self, other: "Vec3d") -> bool:
+        """
+        Checks if this vector is equal to another.
+
+        :param other: The other Vec3d instance.
+        :return: True if this vector is equal to `other`, False otherwise.
+        """
+        ...
+
     def __add__(self, other: "Vec3d") -> "Vec3d": ...
-    @overload
-    def __add__(self, other: Any) -> Any:
         """
         Adds another vector to this one.
 
@@ -240,10 +246,7 @@ class Vec3d:
         """
         ...
 
-    @overload
-    def __sub__(self, other: "Vec3d") -> "Vec3d": ...
-    @overload
-    def __sub__(self, other: Any) -> Any:
+    def __sub__(self, other: "Vec3d") -> "Vec3d": 
         """
         Subtracts another vector from this one.
 
@@ -252,10 +255,7 @@ class Vec3d:
         """
         ...
 
-    @overload
-    def __mul__(self, other: float) -> "Vec3d": ...
-    @overload
-    def __mul__(self, other: Any) -> Any:
+    def __mul__(self, other: float) -> "Vec3d":
         """
         Multiplies the vector by a scalar.
 
@@ -264,10 +264,7 @@ class Vec3d:
         """
         ...
 
-    @overload
-    def __rmul__(self, other: float) -> "Vec3d": ...
-    @overload
-    def __rmul__(self, other: Any) -> Any:
+    def __rmul__(self, other: float) -> "Vec3d": 
         """
         Allows for scalar multiplication from the left (e.g., `2 * vector`).
 
@@ -276,10 +273,7 @@ class Vec3d:
         """
         ...
 
-    @overload
-    def __truediv__(self, other: float) -> "Vec3d": ...
-    @overload
-    def __truediv__(self, other: Any) -> Any:
+    def __truediv__(self, other: float) -> "Vec3d": 
         """
         Divides the vector by a scalar.
 
@@ -640,10 +634,7 @@ class AngleRadians:
         """
         ...
 
-    @overload
     def __add__(self, other: "AngleRadians") -> "AngleRadians": ...
-    @overload
-    def __add__(self, other: Any) -> Any:
         """
         Adds another AngleRadians instance to this one.
 
@@ -652,10 +643,7 @@ class AngleRadians:
         """
         ...
 
-    @overload
     def __sub__(self, other: "AngleRadians") -> "AngleRadians": ...
-    @overload
-    def __sub__(self, other: Any) -> Any:
         """
         Subtracts another AngleRadians instance from this one.
 
@@ -732,10 +720,7 @@ class AngleRadians:
         """
         ...
 
-    @overload
     def __eq__(self, other: "AngleRadians") -> bool: ...
-    @overload
-    def __eq__(self, rhs: Any) -> Any:
         """
         Checks if this angle is equal to another.
 
@@ -829,10 +814,7 @@ class AngleDegrees:
         """
         ...
 
-    @overload
     def __eq__(self, other: "AngleDegrees") -> bool: ...
-    @overload
-    def __eq__(self, rhs: Any) -> Any:
         """
         Checks if this angle is equal to another.
 
@@ -1002,10 +984,7 @@ class VecList:
         :return: A tuple of the index of the closest point and its corresponding distance
         """
 
-    @overload
-    def __add__(self, other: "Vec3d") -> "VecList": ...
-    @overload
-    def __add__(self, other: Any) -> Any:
+    def __add__(self, other: "Vec3d") -> "VecList": 
         """
         Adds a single vector to every vector in the list.
 
@@ -1014,10 +993,7 @@ class VecList:
         """
         ...
 
-    @overload
-    def __sub__(self, other: "Vec3d") -> "VecList": ...
-    @overload
-    def __sub__(self, other: Any) -> Any:
+    def __sub__(self, other: "Vec3d") -> "VecList": 
         """
         Subtracts a single vector from every vector in the list.
 
@@ -1026,38 +1002,29 @@ class VecList:
         """
         ...
 
-    @overload
-    def __mul__(self, rhs: float) -> "VecList": ...
-    @overload
-    def __mul__(self, rhs: Any) -> Any:
+    def __mul__(self, other: float) -> "VecList": 
         """
         Multiplies every vector in the list by a scalar.
 
-        :param rhs: The scalar to multiply by.
+        :param other: The scalar to multiply by.
         :return: A new VecList with the results.
         """
         ...
 
-    @overload
-    def __rmul__(self, lhs: float) -> "VecList": ...
-    @overload
-    def __rmul__(self, lhs: Any) -> Any:
+    def __rmul__(self, other: float) -> "VecList": 
         """
         Allows for scalar multiplication from the left.
 
-        :param lhs: The scalar to multiply by.
+        :param other: The scalar to multiply by.
         :return: A new VecList with the results.
         """
         ...
 
-    @overload
-    def __truediv__(self, rhs: float) -> "VecList": ...
-    @overload
-    def __truediv__(self, rhs: Any) -> Any:
+    def __truediv__(self, other: float) -> "VecList": 
         """
         Divides every vector in the list by a scalar.
 
-        :param rhs: The scalar to divide by.
+        :param other: The scalar to divide by.
         :return: A new VecList with the results.
         """
         ...

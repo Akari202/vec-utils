@@ -1,4 +1,9 @@
 use core::f64::consts::PI;
+use core::ops::{ Mul, Div, Add, Sub };
+use crate::{
+    impl_single_op_comm, impl_single_op_variants,
+    impl_single_op_variants_comm
+};
 
 use crate::geometry::plane::Plane;
 use crate::vec3d::Vec3d;
@@ -59,6 +64,74 @@ impl Circle {
         self.radius == 0.0
     }
 }
+
+macro_rules! impl_single_op {
+    ($trait:ident, $method:ident, $op:tt, $T:ty, $W:ty, $description:literal) => {
+        impl $trait<$W> for $T {
+            type Output = $T;
+
+            #[doc = $description]
+            fn $method(self, other: $W) -> $T {
+                Self { 
+                    center: self.center $op other, 
+                    radius: self.radius $op other,
+                    normal: self.normal
+                }
+            }
+        }
+
+        impl_single_op_variants!($trait, $method, $T, $W, $description);
+    }
+}
+
+macro_rules! impl_single_op_center {
+    ($trait:ident, $method:ident, $op:tt, $T:ty, $W:ty, $description:literal) => {
+        impl $trait<$W> for $T {
+            type Output = $T;
+
+            #[doc = $description]
+            fn $method(self, other: $W) -> $T {
+                Self { 
+                    center: self.center $op other, 
+                    radius: self.radius,
+                    normal: self.normal
+                }
+            }
+        }
+
+        impl_single_op_variants!($trait, $method, $T, $W, $description);
+    }
+}
+
+macro_rules! impl_single_op_radius {
+($trait:ident, $method:ident, $op:tt, $T:ty, $W:ty, $description:literal) => {
+    impl $trait<$W> for $T {
+        type Output = $T;
+
+        #[doc = $description]
+        fn $method(self, other: $W) -> $T {
+            Self { 
+                center: self.center, 
+                radius: self.radius $op other,
+                normal: self.normal
+            }
+        }
+    }
+
+    impl_single_op_variants!($trait, $method, $T, $W, $description);
+}
+}
+
+
+
+impl_single_op_center!(Add, add, +, Circle, Vec3d, "Add a Vec3d to the center of a Circle");
+impl_single_op_center!(Sub, sub, -, Circle, Vec3d, "Subtract a Vec3d to the center of a Circle");
+impl_single_op_radius!(Add, add, +, Circle, f64, "Add a scalar to the radius of a Circle");
+impl_single_op_radius!(Sub, sub, -, Circle, f64, "Subtract a scalar to the radius of a Circle");
+
+impl_single_op_comm!(Mul, mul, *, Circle, f64, "Multiply a Circle by a scalar");
+impl_single_op!(Div, div, /, Circle, f64, "Divide a Circle by a scalar");
+
 
 impl PartialEq for Circle {
     fn eq(&self, other: &Self) -> bool {

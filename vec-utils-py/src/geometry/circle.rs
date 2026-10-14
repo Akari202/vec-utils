@@ -1,5 +1,6 @@
 use bektor::*;
 use pyo3::prelude::*;
+use pyo3::types::PyAny;
 
 use super::super::vec3d::Vec3d;
 use super::plane::Plane;
@@ -79,7 +80,53 @@ impl Circle {
         self.inner.is_degenerate()
     }
 
-    fn __eq__(&self, other: &Circle) -> bool {
+    pub fn __eq__(&self, other: &Circle) -> bool {
         self.inner == other.inner
+    }
+
+    pub fn __add__<'py>(&self, other: &Bound<'py, PyAny>) -> Self {
+        if let Ok(other_vec) = other.extract::<Vec3d>() {
+            Circle {
+                inner: self.inner + other_vec.inner,
+            }
+        } else if let Ok(other_f64) = other.extract::<f64>() {
+             Circle {
+                inner: self.inner + other_f64,
+            }
+        } else {
+            panic!("Unable to add non float or Vec3d to Circle")
+        }
+    }
+
+    pub fn __sub__<'py>(&self, other: &Bound<'py, PyAny>) -> Self {
+        if let Ok(other_vec) = other.extract::<Vec3d>() {
+            Circle {
+                inner: self.inner - other_vec.inner,
+            }
+        } else if let Ok(other_f64) = other.extract::<f64>() {
+             Circle {
+                inner: self.inner - other_f64,
+            }
+        } else {
+            panic!("Unable to subtract non float or Vec3d to Circle")
+        }
+    }
+
+    pub fn __mul__(&self, rhs: f64) -> Self {
+        Circle {
+            inner: self.inner * rhs
+        }
+    }
+
+    pub fn __rmul__(&self, lhs: f64) -> Self {
+        Circle {
+            inner: lhs * self.inner
+        }
+    }
+
+    pub fn __truediv__(&self, rhs: f64) -> Self {
+        Circle {
+            inner: self.inner / rhs
+        }
     }
 }

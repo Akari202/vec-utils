@@ -1,3 +1,5 @@
+from typing import overload
+
 from .. import Vec3d
 
 class Plane:
@@ -213,7 +215,72 @@ class Circle:
         """
         ...
 
-# --- Intersection Functions ---
+    @overload
+    def __add__(self, other: "Vec3d") -> "Circle":
+        """
+        Adds a vector to the center position of the circle
+
+        :param other: The vector to add.
+        :return: A new circle representing the sum.
+        """
+        ...
+
+    @overload
+    def __add__(self, other: float) -> "Circle":
+        """
+        Adds a float to the radius of the circle.
+
+        :param other: The float to add.
+        :return: A new circle representing the sum.
+        """
+        ...
+
+    @overload
+    def __sub__(self, other: "Vec3d") -> "Circle":
+        """
+        Subtracts a vector to the center position of the circle
+
+        :param other: The vector to add.
+        :return: A new circle representing the sum.
+        """
+        ...
+
+    @overload
+    def __sub__(self, other: float) -> "Circle":
+        """
+        Subtracts a float to the radius of the circle.
+
+        :param other: The float to add.
+        :return: A new circle representing the sum.
+        """
+        ...
+
+    def __mul__(self, other: float) -> "Circle":
+        """
+        Multiplies the circle by a scalar. Both the radius and center will be scaled.
+
+        :param other: The scalar to multiply by.
+        :return: A new scaled circle.
+        """
+        ...
+
+    def __rmul__(self, other: float) -> "Circle":
+        """
+        Allows for scalar multiplication from the left (e.g., `2 * circle`).
+
+        :param other: The scalar to multiply by.
+        :return: A new scaled circle.
+        """
+        ...
+
+    def __truediv__(self, other: float) -> "Circle":
+        """
+        Divides the circle by a scalar. Both the radius and center will be scaled.
+
+        :param other: The scalar to multiply by.
+        :return: A new scaled circle.
+        """
+        ...
 
 def circle_circle(
     circle1: "Circle", circle2: "Circle"

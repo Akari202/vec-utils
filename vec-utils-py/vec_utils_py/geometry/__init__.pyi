@@ -282,6 +282,14 @@ class Circle:
         """
         ...
 
+    def __repr__(self) -> str:
+        """
+        Provides a string representation of the circle.
+
+        :return: A string like "Circle(center: _, normal: _, radius: _)".
+        """
+        ...
+
 def circle_circle(
     circle1: "Circle", circle2: "Circle"
 ) -> tuple["Vec3d", "Vec3d"] | None:

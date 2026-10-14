@@ -129,4 +129,11 @@ impl Circle {
             inner: self.inner / rhs
         }
     }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "Circle(center: {}, normal: {}, radius: {})",
+            self.inner.center, self.inner.normal, self.inner.radius
+        )
+    }
 }

@@ -237,7 +237,7 @@ class Vec3d:
         """
         ...
 
-    def __add__(self, other: "Vec3d") -> "Vec3d": ...
+    def __add__(self, other: "Vec3d") -> "Vec3d":
         """
         Adds another vector to this one.
 
@@ -246,7 +246,7 @@ class Vec3d:
         """
         ...
 
-    def __sub__(self, other: "Vec3d") -> "Vec3d": 
+    def __sub__(self, other: "Vec3d") -> "Vec3d":
         """
         Subtracts another vector from this one.
 
@@ -264,7 +264,7 @@ class Vec3d:
         """
         ...
 
-    def __rmul__(self, other: float) -> "Vec3d": 
+    def __rmul__(self, other: float) -> "Vec3d":
         """
         Allows for scalar multiplication from the left (e.g., `2 * vector`).
 
@@ -273,7 +273,7 @@ class Vec3d:
         """
         ...
 
-    def __truediv__(self, other: float) -> "Vec3d": 
+    def __truediv__(self, other: float) -> "Vec3d":
         """
         Divides the vector by a scalar.
 
@@ -302,7 +302,7 @@ class Vec3d:
 
     def __repr__(self) -> str:
         """
-        Provides an official string representation of the vector.
+        Provides a string representation of the vector.
 
         :return: A string like "Vec3d(x, y, z)".
         """
@@ -634,7 +634,7 @@ class AngleRadians:
         """
         ...
 
-    def __add__(self, other: "AngleRadians") -> "AngleRadians": ...
+    def __add__(self, other: "AngleRadians") -> "AngleRadians":
         """
         Adds another AngleRadians instance to this one.
 
@@ -643,7 +643,7 @@ class AngleRadians:
         """
         ...
 
-    def __sub__(self, other: "AngleRadians") -> "AngleRadians": ...
+    def __sub__(self, other: "AngleRadians") -> "AngleRadians":
         """
         Subtracts another AngleRadians instance from this one.
 
@@ -720,7 +720,7 @@ class AngleRadians:
         """
         ...
 
-    def __eq__(self, other: "AngleRadians") -> bool: ...
+    def __eq__(self, other: "AngleRadians") -> bool:
         """
         Checks if this angle is equal to another.
 
@@ -814,7 +814,7 @@ class AngleDegrees:
         """
         ...
 
-    def __eq__(self, other: "AngleDegrees") -> bool: ...
+    def __eq__(self, other: "AngleDegrees") -> bool:
         """
         Checks if this angle is equal to another.
 
@@ -984,7 +984,7 @@ class VecList:
         :return: A tuple of the index of the closest point and its corresponding distance
         """
 
-    def __add__(self, other: "Vec3d") -> "VecList": 
+    def __add__(self, other: "Vec3d") -> "VecList":
         """
         Adds a single vector to every vector in the list.
 
@@ -993,7 +993,7 @@ class VecList:
         """
         ...
 
-    def __sub__(self, other: "Vec3d") -> "VecList": 
+    def __sub__(self, other: "Vec3d") -> "VecList":
         """
         Subtracts a single vector from every vector in the list.
 
@@ -1002,7 +1002,7 @@ class VecList:
         """
         ...
 
-    def __mul__(self, other: float) -> "VecList": 
+    def __mul__(self, other: float) -> "VecList":
         """
         Multiplies every vector in the list by a scalar.
 
@@ -1011,7 +1011,7 @@ class VecList:
         """
         ...
 
-    def __rmul__(self, other: float) -> "VecList": 
+    def __rmul__(self, other: float) -> "VecList":
         """
         Allows for scalar multiplication from the left.
 
@@ -1020,7 +1020,7 @@ class VecList:
         """
         ...
 
-    def __truediv__(self, other: float) -> "VecList": 
+    def __truediv__(self, other: float) -> "VecList":
         """
         Divides every vector in the list by a scalar.
 

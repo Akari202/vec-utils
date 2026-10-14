@@ -10,6 +10,7 @@
     clippy::many_single_char_names,
     clippy::return_self_not_must_use,
     clippy::derive_ord_xor_partial_ord,
+    clippy::cargo_common_metadata,
     incomplete_features
 )]
 #![feature(core_float_math)]

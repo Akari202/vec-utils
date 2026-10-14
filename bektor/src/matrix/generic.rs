@@ -502,7 +502,7 @@ where
             write!(f, "[ ")?;
             for (c, width) in col_widths.iter().enumerate() {
                 let idx = r * C + c;
-                write!(f, "{:>width$}", formatted_values[idx],)?;
+                write!(f, "{:>width$}", formatted_values[idx])?;
 
                 if c < C - 1 {
                     write!(f, "  ")?;
@@ -563,6 +563,15 @@ mod tests {
 
     use super::*;
     use crate::complex::Complex;
+
+macro_rules! assert_mat_eq {
+    ($lhs:ident, $rhs:ident) => {
+        for (i, j) in $lhs.values.into_iter().zip($rhs) {
+            assert_f64_near!(i, j);
+        }
+    }
+}
+
 
     #[test]
     fn test_constructors_f64() {
@@ -733,9 +742,7 @@ mod tests {
         let sub = m.get_minor_submatrix::<2, 2>(0, 1);
         let expected = [4.0, 6.0, 7.0, 9.0];
 
-        for (i, j) in sub.values.into_iter().zip(expected.into_iter()) {
-            assert_f64_near!(i.clone(), j.clone());
-        }
+        assert_mat_eq!(sub, expected);
     }
 
     #[test]
@@ -757,9 +764,7 @@ mod tests {
         let cofactors = m.cofactor_matrix();
         let expected = [24.0, 5.0, -4.0, -12.0, 3.0, 2.0, -2.0, -5.0, 4.0];
 
-        for (i, j) in cofactors.values.into_iter().zip(expected.into_iter()) {
-            assert_f64_near!(i.clone(), j.clone());
-        }
+        assert_mat_eq!(cofactors, expected);
     }
 
     #[test]
@@ -792,9 +797,7 @@ mod tests {
         let adj = m.adjoint();
         let expected = [4.0, -2.0, -3.0, 1.0];
 
-        for (i, j) in adj.values.into_iter().zip(expected.into_iter()) {
-            assert_f64_near!(i.clone(), j.clone());
-        }
+        assert_mat_eq!(adj, expected);
     }
 
     #[test]
@@ -806,9 +809,7 @@ mod tests {
         let adj = m.adjoint();
         let expected = [-24.0, 18.0, 5.0, 20.0, -15.0, -4.0, -5.0, 4.0, 1.0];
 
-        for (i, j) in adj.values.into_iter().zip(expected.into_iter()) {
-            assert_f64_near!(i.clone(), j.clone());
-        }
+        assert_mat_eq!(adj, expected);
     }
 
     #[test]
@@ -834,9 +835,7 @@ mod tests {
         let adj = m.adjoint();
         let expected = [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0];
 
-        for (i, j) in adj.values.into_iter().zip(expected.into_iter()) {
-            assert_f64_near!(i.clone(), j.clone());
-        }
+        assert_mat_eq!(adj, expected);
     }
     #[test]
     fn test_trace() {
@@ -857,7 +856,7 @@ mod tests {
         let eigen = m.eigenvalues();
         let expected = [5.791_287 * 1_000_000.0, 1.208_712 * 1_000_000.0];
 
-        for (i, j) in eigen.into_iter().zip(expected.into_iter()) {
+        for (i, j) in eigen.into_iter().zip(expected) {
             assert_f64_near!((i * 1_000_000.0).trunc(), j);
         }
     }

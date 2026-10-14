@@ -38,28 +38,24 @@ impl Complex {
     #[inline]
     pub fn from_sqrt(num: f64) -> Complex {
         if num < 0.0 {
-            #[cfg(not(feature = "std"))]
-            return Complex::new(0.0, core::f64::math::sqrt(num.abs()));
-            #[cfg(feature = "std")]
-            return Complex::new(0.0, num.abs().sqrt());
+             Complex::new(0.0, core::f64::math::sqrt(num.abs()))
+        } else {
+         Complex::new(core::f64::math::sqrt(num), 0.0)
         }
-        #[cfg(not(feature = "std"))]
-        return Complex::new(core::f64::math::sqrt(num), 0.0);
-        #[cfg(feature = "std")]
-        return Complex::new(num.sqrt(), 0.0);
     }
 
     /// Get the magnitude of the complex number
     #[inline]
     pub fn magnitude(&self) -> f64 {
-        return core::f64::math::sqrt(self.real * self.real + self.imaginary * self.imaginary);
+        core::f64::math::sqrt(self.real * self.real + self.imaginary * self.imaginary)
+
     }
 
     /// Calculates the square root of the complex number
     #[inline]
     pub fn sqrt(&self) -> Complex {
         let magnitude = self.magnitude();
-        let real = core::f64::math::sqrt((magnitude + self.real) / 2.0);
+        let real = core::f64::math::sqrt(f64::midpoint(magnitude , self.real));
         let imaginary =
             self.imaginary.signum() * core::f64::math::sqrt((magnitude - self.real) / 2.0);
         Complex { real, imaginary }
@@ -175,22 +171,14 @@ impl Div<Complex> for Complex {
 
     /// Divide a complex number by another complex number
     fn div(self, other: Complex) -> Complex {
-        #[cfg(not(feature = "std"))]
-        return Complex {
+         Complex {
             real: (self.real * other.real + self.imaginary * other.imaginary)
                 / (core::f64::math::powi(other.real, 2)
                     + core::f64::math::powi(other.imaginary, 2)),
             imaginary: (self.imaginary * other.real - self.real * other.imaginary)
                 / (core::f64::math::powi(other.real, 2)
                     + core::f64::math::powi(other.imaginary, 2))
-        };
-        #[cfg(feature = "std")]
-        return Complex {
-            real: (self.real * other.real + self.imaginary * other.imaginary)
-                / (other.real.powi(2) + other.imaginary.powi(2)),
-            imaginary: (self.imaginary * other.real - self.real * other.imaginary)
-                / (other.real.powi(2) + other.imaginary.powi(2))
-        };
+        }
     }
 }
 
@@ -206,16 +194,10 @@ impl Div<f64> for Complex {
 
     /// Divide a complex number by a real number
     fn div(self, other: f64) -> Complex {
-        #[cfg(not(feature = "std"))]
-        return Complex {
+         Complex {
             real: self.real * other / core::f64::math::powi(other, 2),
             imaginary: self.imaginary * other / core::f64::math::powi(other, 2)
-        };
-        #[cfg(feature = "std")]
-        return Complex {
-            real: self.real * other / other.powi(2),
-            imaginary: self.imaginary * other / other.powi(2)
-        };
+        }
     }
 }
 
@@ -232,20 +214,14 @@ impl Div<Complex> for f64 {
 
     /// Divide a real number by a complex number
     fn div(self, other: Complex) -> Complex {
-        #[cfg(not(feature = "std"))]
-        return Complex {
+         Complex {
             real: self * other.real
                 / (core::f64::math::powi(other.real, 2)
                     + core::f64::math::powi(other.imaginary, 2)),
             imaginary: -self * other.imaginary
                 / (core::f64::math::powi(other.real, 2)
                     + core::f64::math::powi(other.imaginary, 2))
-        };
-        #[cfg(feature = "std")]
-        return Complex {
-            real: self * other.real / (other.real.powi(2) + other.imaginary.powi(2)),
-            imaginary: -self * other.imaginary / (other.real.powi(2) + other.imaginary.powi(2))
-        };
+        }
     }
 }
 

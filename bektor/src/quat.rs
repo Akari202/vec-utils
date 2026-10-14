@@ -428,9 +428,9 @@ impl Quat {
     /// sometimes called the magnitude
     #[inline]
     pub fn norm(&self) -> f64 {
-        return core::f64::math::sqrt(
+        core::f64::math::sqrt(
             self.w * self.w + self.i * self.i + self.j * self.j + self.k * self.k
-        );
+        )
     }
 
     /// Return a new Quat of the normalized quaternion
@@ -606,7 +606,7 @@ pub enum QuatFromMatrixAlgorithm<'a> {
 }
 
 #[cfg(feature = "matrix")]
-impl<'a> QuatFromMatrixAlgorithm<'a> {
+impl QuatFromMatrixAlgorithm<'_> {
     /// An array of all algorithm variations
     pub fn all() -> [Self; 5] {
         [
@@ -629,7 +629,7 @@ impl fmt::Display for QuatFromMatrixAlgorithm<'_> {
             Self::Wu(_) => "Wu (2019)",
             Self::BarItzhack => "Bar-Itzhack (2000)"
         };
-        write!(f, "{}", name)
+        write!(f, "{name}")
     }
 }
 
@@ -692,6 +692,7 @@ impl_dual_op_variants!(
     "Multiply two quaternions, also known as a Hamilton product"
 );
 
+#[allow(clippy::suspicious_arithmetic_impl)]
 impl Div<Quat> for Quat {
     type Output = Quat;
 
@@ -752,6 +753,94 @@ impl Distribution<Quat> for StandardUniform {
             j: rng.random(),
             k: rng.random()
         }
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl From<Quat> for UnitQuaternion<f64> {
+    fn from(q: Quat) -> Self {
+        UnitQuaternion::new_normalize(Quaternion::new(q.w, q.i, q.j, q.k))
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl From<UnitQuaternion<f64>> for Quat {
+    fn from(q: UnitQuaternion<f64>) -> Self {
+        Self {
+            w: q.w,
+            i: q.i,
+            j: q.j,
+            k: q.k
+        }
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl From<Quaternion<f64>> for Quat {
+    fn from(q: Quaternion<f64>) -> Self {
+        Self {
+            w: q.w,
+            i: q.i,
+            j: q.j,
+            k: q.k
+        }
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl From<Quat> for Quaternion<f64> {
+    fn from(q: Quat) -> Self {
+        Quaternion::new(q.w, q.i, q.j, q.k)
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl PartialEq<Quaternion<f64>> for Quat {
+    fn eq(&self, other: &Quaternion<f64>) -> bool {
+        (self.w - other.w).abs() < f64::EPSILON
+            && (self.i - other.i).abs() < f64::EPSILON
+            && (self.j - other.j).abs() < f64::EPSILON
+            && (self.k - other.k).abs() < f64::EPSILON
+    }
+}
+
+#[cfg(feature = "nalgebra")]
+impl PartialEq<UnitQuaternion<f64>> for Quat {
+    fn eq(&self, other: &UnitQuaternion<f64>) -> bool {
+        self.is_unit()
+            && (self.w - other.w).abs() < f64::EPSILON
+            && (self.i - other.i).abs() < f64::EPSILON
+            && (self.j - other.j).abs() < f64::EPSILON
+            && (self.k - other.k).abs() < f64::EPSILON
+    }
+}
+
+#[cfg(feature = "glam")]
+impl From<Quat> for DQuat {
+    fn from(q: Quat) -> Self {
+        DQuat::from_xyzw(q.i, q.j, q.k, q.w)
+    }
+}
+
+#[cfg(feature = "glam")]
+impl From<DQuat> for Quat {
+    fn from(q: DQuat) -> Self {
+        Self {
+            w: q.w,
+            i: q.x,
+            j: q.y,
+            k: q.z
+        }
+    }
+}
+
+#[cfg(feature = "glam")]
+impl PartialEq<DQuat> for Quat {
+    fn eq(&self, other: &DQuat) -> bool {
+        (self.w - other.w).abs() < f64::EPSILON
+            && (self.i - other.x).abs() < f64::EPSILON
+            && (self.j - other.y).abs() < f64::EPSILON
+            && (self.k - other.z).abs() < f64::EPSILON
     }
 }
 
@@ -822,12 +911,7 @@ mod tests {
 
                 assert!(
                     (dot_original - 1.0).abs() < epsilon || (dot_inverse - 1.0).abs() < epsilon,
-                    "[{}] failed\ndot original: {}\ndot inverse: {}\nresult: {:?}\noriginal: {:?}",
-                    i,
-                    dot_original,
-                    dot_inverse,
-                    q,
-                    original
+                    "[{i}] failed\ndot original: {dot_original}\ndot inverse: {dot_inverse}\nresult: {q:?}\noriginal: {original:?}"
                 );
             }
         }
@@ -1007,93 +1091,5 @@ mod tests {
         assert_eq!(glam_q, DQuat::from_xyzw(1.0, 2.0, 3.0, 4.0));
         assert_eq!(q, glam_q);
         assert_eq!(roundtrip, q);
-    }
-}
-
-#[cfg(feature = "nalgebra")]
-impl From<Quat> for UnitQuaternion<f64> {
-    fn from(q: Quat) -> Self {
-        UnitQuaternion::new_normalize(Quaternion::new(q.w, q.i, q.j, q.k))
-    }
-}
-
-#[cfg(feature = "nalgebra")]
-impl From<UnitQuaternion<f64>> for Quat {
-    fn from(q: UnitQuaternion<f64>) -> Self {
-        Self {
-            w: q.w,
-            i: q.i,
-            j: q.j,
-            k: q.k
-        }
-    }
-}
-
-#[cfg(feature = "nalgebra")]
-impl From<Quaternion<f64>> for Quat {
-    fn from(q: Quaternion<f64>) -> Self {
-        Self {
-            w: q.w,
-            i: q.i,
-            j: q.j,
-            k: q.k
-        }
-    }
-}
-
-#[cfg(feature = "nalgebra")]
-impl From<Quat> for Quaternion<f64> {
-    fn from(q: Quat) -> Self {
-        Quaternion::new(q.w, q.i, q.j, q.k)
-    }
-}
-
-#[cfg(feature = "nalgebra")]
-impl PartialEq<Quaternion<f64>> for Quat {
-    fn eq(&self, other: &Quaternion<f64>) -> bool {
-        (self.w - other.w).abs() < f64::EPSILON
-            && (self.i - other.i).abs() < f64::EPSILON
-            && (self.j - other.j).abs() < f64::EPSILON
-            && (self.k - other.k).abs() < f64::EPSILON
-    }
-}
-
-#[cfg(feature = "nalgebra")]
-impl PartialEq<UnitQuaternion<f64>> for Quat {
-    fn eq(&self, other: &UnitQuaternion<f64>) -> bool {
-        self.is_unit()
-            && (self.w - other.w).abs() < f64::EPSILON
-            && (self.i - other.i).abs() < f64::EPSILON
-            && (self.j - other.j).abs() < f64::EPSILON
-            && (self.k - other.k).abs() < f64::EPSILON
-    }
-}
-
-#[cfg(feature = "glam")]
-impl From<Quat> for DQuat {
-    fn from(q: Quat) -> Self {
-        DQuat::from_xyzw(q.i, q.j, q.k, q.w)
-    }
-}
-
-#[cfg(feature = "glam")]
-impl From<DQuat> for Quat {
-    fn from(q: DQuat) -> Self {
-        Self {
-            w: q.w,
-            i: q.x,
-            j: q.y,
-            k: q.z
-        }
-    }
-}
-
-#[cfg(feature = "glam")]
-impl PartialEq<DQuat> for Quat {
-    fn eq(&self, other: &DQuat) -> bool {
-        (self.w - other.w).abs() < f64::EPSILON
-            && (self.i - other.x).abs() < f64::EPSILON
-            && (self.j - other.y).abs() < f64::EPSILON
-            && (self.k - other.z).abs() < f64::EPSILON
     }
 }

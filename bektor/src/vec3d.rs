@@ -181,10 +181,7 @@ impl Vec3d {
     /// Calculate the magnitude of the Vec3d
     #[inline]
     pub fn magnitude(&self) -> f64 {
-        #[cfg(not(feature = "std"))]
-        return core::f64::math::sqrt(self.x * self.x + self.y * self.y + self.z * self.z);
-        #[cfg(feature = "std")]
-        return (self.x * self.x + self.y * self.y + self.z * self.z).sqrt();
+         core::f64::math::sqrt(self.x * self.x + self.y * self.y + self.z * self.z)
     }
 
     /// Check if the Vec3d is a unit vector

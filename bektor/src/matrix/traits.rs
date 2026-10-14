@@ -68,19 +68,11 @@ impl Twoable for f64 {
     }
 
     fn sqr(&self) -> Self {
-        #[cfg(not(feature = "std"))]
-        return core::f64::math::powi(*self, 2);
-        #[cfg(feature = "std")]
-        return self.powi(2);
+         core::f64::math::powi(*self, 2)
     }
 
     fn sqrt(&self) -> Self {
-        // I know this looks dumb but its bc of the unstable core_flaot_math feature. I dont want
-        // to use it if i dont have to
-        #[cfg(not(feature = "std"))]
-        return core::f64::math::sqrt(*self);
-        #[cfg(feature = "std")]
-        return f64::sqrt(*self);
+         core::f64::math::sqrt(*self)
     }
 }
 
@@ -146,10 +138,7 @@ impl Twoable for Complex {
     }
 
     fn sqr(&self) -> Self {
-        #[cfg(not(feature = "std"))]
         let real = core::f64::math::powi(self.real, 2) - core::f64::math::powi(self.imaginary, 2);
-        #[cfg(feature = "std")]
-        let real = self.real.powi(2) - self.imaginary.powi(2);
         Self {
             real,
             imaginary: 2.0 * self.real * self.imaginary

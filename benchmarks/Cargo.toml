@@ -2,6 +2,7 @@
 name = "benchmarks"
 version = "0.3.3"
 edition = "2024"
+description = "Bektor benchmarks"
 license = "GPL-3.0-only"
 
 [[bench]]
